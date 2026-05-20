@@ -1,0 +1,175 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Sign Up";
+    ViewData["HideNavbar"] = true;
+}
+<style>    .register-wrapper {
+        min-height: 100vh;
+        padding: 24px 12px;
+        margin: 0;
+    }
+
+    .register-card {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .register-header {
+        width: 100%;
+    }
+
+    .register-logo-box {
+        flex: 0 0 auto;
+    }
+
+    .register-logo {
+        width: 180px;
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .register-title-box {
+        flex: 1;
+        min-width: 0;
+    }
+
+        .register-title-box h1 {
+            line-height: 1.2;
+        }
+
+        .register-title-box p {
+            line-height: 1.5;
+        }
+
+    @@media (max-width: 767.98px) {
+        .register-wrapper
+
+    {
+        padding: 12px 8px;
+    }
+
+    .register-logo {
+        width: 220px;
+    }
+
+    .register-title-box h1 {
+        font-size: 1.6rem;
+    }
+
+    .register-title-box p {
+        font-size: 0.95rem;
+    }
+
+    .register-card {
+        border-radius: 14px;
+    }
+
+    .d-grid.d-md-flex .btn {
+        width: 100%;
+    }
+
+    }
+
+    @@media (max-width: 420px) {
+        .register-logo
+
+    {
+        width: 190px;
+    }
+
+    .register-title-box h1 {
+        font-size: 1.4rem;
+    }
+
+    .register-title-box p {
+        font-size: 0.9rem;
+    }
+
+    }</style>
+<div class="register-wrapper row justify-content-center">
+    <div class="col-12 col-sm-11 col-md-10 col-lg-8 col-xl-7">
+        <div class="glass-card register-card p-3 p-sm-4 p-lg-5">
+
+            <div class="register-header d-flex flex-column flex-md-row align-items-center text-center text-md-start gap-3 gap-md-4 mb-4">
+                <div class="register-logo-box">
+                    <img src="~/img/logo2.png" alt="Logo" class="register-logo" />
+                </div>
+
+                <div class="register-title-box">
+                    <h1 class="h3 fw-bold mb-1">Create Player Profile</h1>
+                    <p class="text-white-50 mb-0">Admin approval is required before login.</p>
+                </div>
+            </div>
+
+            <form asp-action="Register" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-warning mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" placeholder="Your full name" />
+                        <span asp-validation-for="FullName" class="text-warning small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="MobileNo" class="form-label"></label>
+                        <input asp-for="MobileNo" class="form-control" placeholder="Mobile number" />
+                        <span asp-validation-for="MobileNo" class="text-warning small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Designation" class="form-label"></label>
+                        <input asp-for="Designation" class="form-control" placeholder="Your designation" />
+                        <span asp-validation-for="Designation" class="text-warning small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Department" class="form-label"></label>
+                        <input asp-for="Department" class="form-control" placeholder="Your department" />
+                        <span asp-validation-for="Department" class="text-warning small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" placeholder="you@example.com" />
+                        <span asp-validation-for="Email" class="text-warning small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ProfilePhoto" class="form-label"></label>
+                        <input asp-for="ProfilePhoto" class="form-control" type="file" accept="image/*" />
+                        <span asp-validation-for="ProfilePhoto" class="text-warning small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-warning small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <input asp-for="ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="ConfirmPassword" class="text-warning small"></span>
+                    </div>
+                </div>
+
+                <div class="d-grid d-md-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-warning btn-lg fw-bold flex-fill">
+                        <i class="bi bi-person-check"></i> Submit Registration
+                    </button>
+
+                    <a asp-action="Login" class="btn btn-outline-light btn-lg flex-fill">
+                        Already registered?
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

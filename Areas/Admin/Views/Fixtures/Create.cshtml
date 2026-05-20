@@ -1,0 +1,17 @@
+@model FixtureFormViewModel
+@{
+    ViewData["Title"] = "Create Fixture";
+}
+<div class="glass-card p-4 p-lg-5">
+    <h1 class="h2 fw-bold mb-4"><i class="bi bi-plus-circle text-warning"></i> Create Fixture</h1>
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <partial name="_FixtureForm" model="Model" />
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-warning btn-lg fw-bold" type="submit"><i class="bi bi-save"></i> Save Fixture</button>
+            <a asp-action="Index" class="btn btn-outline-light btn-lg">Back</a>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

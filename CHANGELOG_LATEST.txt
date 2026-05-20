@@ -1,0 +1,6 @@
+Latest package changes:
+1. Ranking changed to dense ranking: 50/50/50 = Rank #1, next 40 = Rank #2, zero score = No rank.
+2. Prediction Save action now re-checks fixture status from database and allows saving only for Upcoming fixtures.
+3. Live and Finished fixture prediction inputs are disabled in user dashboard.
+4. Fixture cards are compact and status-highlighted.
+5. Live status badge blinks.

@@ -1,0 +1,50 @@
+@model List<LeaderboardUserViewModel>
+@{
+    ViewData["Title"] = "Leaderboard";
+}
+<div class="dashboard-card p-4 p-lg-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="pill"><i class="bi bi-trophy"></i> Ranking Table</span>
+            <h1 class="h2 fw-bold mt-3 mb-0">Leaderboard</h1>
+            <p class="text-muted mb-0">Users with the same score share the same rank. Users with zero score show No rank.</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Total Score</th>
+                    <th>Exact Predictions</th>
+                    <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="5" class="text-center text-muted">No active user found.</td></tr>
+                }
+                else
+                {
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td><span class="rank-circle">@user.RankText</span></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src=".@(user.PhotoPath ?? "../img/default-avatar.svg")" class="avatar-sm" />
+                                    <strong>@user.FullName</strong>
+                                </div>
+                            </td>
+                            <td><span class="score-pill">@user.TotalScore pts</span></td>
+                            <td>@user.ExactPredictionCount</td>
+                            <td>@user.CreatedAt.ToString("dd MMM yyyy")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,78 @@
+@model FixtureFormViewModel
+@using FootballPredictionGame.Models
+<div asp-validation-summary="ModelOnly" class="text-warning mb-3"></div>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="form-panel p-3 h-100">
+            <h5 class="fw-bold mb-3">Team One</h5>
+            <div class="mb-3">
+                <label asp-for="TeamOneName" class="form-label"></label>
+                <input asp-for="TeamOneName" class="form-control" />
+                <span asp-validation-for="TeamOneName" class="text-danger small"></span>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.ExistingTeamOneFlagPath))
+            {
+                <div class="mb-2"><img src="../../..@Model.ExistingTeamOneFlagPath" class="flag" /> <span class="text-white-50 small">Current flag</span></div>
+            }
+            <div>
+                <label asp-for="TeamOneFlag" class="form-label"></label>
+                <input asp-for="TeamOneFlag" type="file" accept="image/*" class="form-control" />
+                <span asp-validation-for="TeamOneFlag" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="form-panel p-3 h-100">
+            <h5 class="fw-bold mb-3">Team Two</h5>
+            <div class="mb-3">
+                <label asp-for="TeamTwoName" class="form-label"></label>
+                <input asp-for="TeamTwoName" class="form-control" />
+                <span asp-validation-for="TeamTwoName" class="text-danger small"></span>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.ExistingTeamTwoFlagPath))
+            {
+                <div class="mb-2"><img src="../../..@Model.ExistingTeamTwoFlagPath" class="flag" /> <span class="text-white-50 small">Current flag</span></div>
+            }
+            <div>
+                <label asp-for="TeamTwoFlag" class="form-label"></label>
+                <input asp-for="TeamTwoFlag" type="file" accept="image/*" class="form-control" />
+                <span asp-validation-for="TeamTwoFlag" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <label asp-for="Stage" class="form-label"></label>
+        <select asp-for="Stage" asp-items="Html.GetEnumSelectList<FixtureStage>()" class="form-select"></select>
+        <span asp-validation-for="Stage" class="text-danger small"></span>
+    </div>
+    <div class="col-lg-4">
+        <label asp-for="MatchDateTime" class="form-label"></label>
+        <input asp-for="MatchDateTime" type="datetime-local" class="form-control" value='@Model.MatchDateTime.ToString("yyyy-MM-ddTHH:mm")' />
+        <span asp-validation-for="MatchDateTime" class="text-danger small"></span>
+    </div>
+    <div class="col-lg-4">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<MatchStatus>()" class="form-select"></select>
+        <span asp-validation-for="Status" class="text-danger small"></span>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="col-lg-4 d-flex align-items-end">
+            <div class="form-check form-switch fs-5">
+                <input asp-for="IsPublished" class="form-check-input" />
+                <label asp-for="IsPublished" class="form-check-label"></label>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <label asp-for="TeamOneActualGoal" class="form-label"></label>
+        <input asp-for="TeamOneActualGoal" class="form-control" min="0" max="99" readonly="@Model.IsProcessed" />
+        <span asp-validation-for="TeamOneActualGoal" class="text-danger small"></span>
+    </div>
+    <div class="col-lg-4">
+        <label asp-for="TeamTwoActualGoal" class="form-label"></label>
+        <input asp-for="TeamTwoActualGoal" class="form-control" min="0" max="99" readonly="@Model.IsProcessed" />
+        <span asp-validation-for="TeamTwoActualGoal" class="text-danger small"></span>
+    </div>
+</div>

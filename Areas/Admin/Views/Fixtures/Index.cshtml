@@ -1,0 +1,102 @@
+@model List<Fixture>
+@{
+    ViewData["Title"] = "Fixtures";
+    var groups = Model.GroupBy(x => x.Stage).OrderBy(x => (int)x.Key).ToList();
+}
+<div class="dashboard-card p-4 p-lg-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="pill"><i class="bi bi-calendar-event"></i> Match Center</span>
+            <h1 class="h2 fw-bold mt-3 mb-0">Fixture Management</h1>
+            <p class="text-muted mb-0">Create fixtures by segment, update actual goals and process results.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary btn-lg"><i class="bi bi-plus-circle"></i> Add Fixture</a>
+    </div>
+
+    @if (!groups.Any())
+    {
+        <div class="empty-state">No fixture created yet.</div>
+    }
+    else
+    {
+        @foreach (var group in groups)
+        {
+            <div class="d-flex align-items-center justify-content-between mt-4 mb-2">
+                <span class="segment-chip">@group.Key.GetDisplayName()</span>
+                <span class="small text-muted">@group.Count() match(es)</span>
+            </div>
+            <div class="table-responsive mb-3">
+                <table class="table table-clean table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Match</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actual Score</th>
+                            <th>Published</th>
+                            <th>Processed</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var fixture in group.OrderBy(x => x.MatchDateTime))
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <img src="..@(fixture.TeamOneFlagPath ?? "../img/default-flag.svg")" class="flag-sm" />
+                                        <strong>@fixture.TeamOneName</strong>
+                                        <span class="text-muted">vs</span>
+                                        <strong>@fixture.TeamTwoName</strong>
+                                        <img src="..@(fixture.TeamTwoFlagPath ?? "../img/default-flag.svg")" class="flag-sm" />
+                                    </div>
+                                </td>
+                                <td>@fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")</td>
+                                <td><span class="badge text-bg-info">@fixture.Status</span></td>
+                                <td>
+                                    @if (fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue)
+                                    {
+                                        <strong>@fixture.TeamOneActualGoal - @fixture.TeamTwoActualGoal</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not set</span>
+                                    }
+                                </td>
+                                <td>@(fixture.IsPublished ? "Yes" : "No")</td>
+                                <td>
+                                    @if (fixture.IsProcessed)
+                                    {
+                                        <span class="badge text-bg-success">Processed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-secondary">Pending</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@fixture.Id" class="btn btn-sm btn-outline-light"><i class="bi bi-pencil"></i> Edit</a>
+                                    @if (!fixture.IsProcessed && fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue)
+                                    {
+                                        <form asp-area="Admin" asp-controller="ResultProcessing" asp-action="Process" asp-route-id="@fixture.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Process this result now?')"><i class="bi bi-play-circle"></i> Process</button>
+                                        </form>
+                                    }
+                                    @if (fixture.IsProcessed)
+                                    {
+                                        <form asp-area="Admin" asp-controller="ResultProcessing" asp-action="Undo" asp-route-id="@fixture.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Undo this processed result? User points from this fixture will be reverted. Then you can edit the actual goals and process again.')"><i class="bi bi-arrow-counterclockwise"></i> Undo</button>
+                                        </form>
+                                    }
+                                    <form asp-action="Delete" asp-route-id="@fixture.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this fixture?')"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>

@@ -1,0 +1,248 @@
+@model DashboardViewModel
+@using FootballPredictionGame.Models
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Dashboard";
+    var avatar = string.IsNullOrWhiteSpace(Model.ProfilePhotoPath) ? "../img/default-avatar.svg" : Model.ProfilePhotoPath;
+    var groupedFixtures = Model.PredictionFixtures.GroupBy(x => x.Stage).OrderBy(x => (int)x.Key).ToList();
+    var segmentLabels = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.SegmentName));
+    var segmentPoints = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.Points));
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-left"><span class="stat-icon blue"><i class="bi bi-check2-square"></i></span><div><div class="stat-title">Task Completed</div><div class="stat-value">@Model.TotalScore pts</div></div></div>
+            <i class="bi bi-three-dots-vertical stat-menu"></i>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-left"><span class="stat-icon orange"><i class="bi bi-trophy"></i></span><div><div class="stat-title">Current Position</div><div class="stat-value">@Model.RankText</div></div></div>
+            <i class="bi bi-three-dots-vertical stat-menu"></i>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-left"><span class="stat-icon pink"><i class="bi bi-emoji-smile"></i></span><div><div class="stat-title">Exact Matches</div><div class="stat-value">@Model.ExactPredictionCount</div></div></div>
+            <i class="bi bi-three-dots-vertical stat-menu"></i>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-left"><span class="stat-icon green"><i class="bi bi-calendar-event"></i></span><div><div class="stat-title">Open Fixtures</div><div class="stat-value">@Model.PredictionFixtures.Count</div></div></div>
+            <i class="bi bi-three-dots-vertical stat-menu"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="dashboard-card p-4 h-100 chart-box">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <span class="pill"><i class="bi bi-bar-chart"></i> Segment Performance</span>
+                    <h1 class="h4 fw-bold mt-2 mb-0">Points by Group / Knockout Segment</h1>
+                </div>
+            </div>
+            @if (Model.SegmentPoints.Any())
+            {
+                <canvas id="segmentChart" height="110"></canvas>
+            }
+            else
+            {
+                <div class="empty-state">No processed points yet. Your segment graph will appear after results are processed.</div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="dashboard-card p-4 h-100 text-center">
+            <img src=".@avatar" class="avatar-xl mb-3" alt="Profile" />
+            <h2 class="h4 fw-bold mb-1">@Model.FullName</h2>
+            <p class="text-muted mb-3">Current position: <strong class="text-primary">@Model.RankText</strong></p>
+            <div class="row g-2">
+                <div class="col-6"><div class="metric-card"><div class="metric-value">@Model.TotalScore</div><div class="metric-label">Points</div></div></div>
+                <div class="col-6"><div class="metric-card"><div class="metric-value">@Model.ExactPredictionCount</div><div class="metric-label">Exact</div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="dashboard-card p-4 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h2 class="h4 fw-bold mb-0"><i class="bi bi-calendar-check text-primary"></i> Fixtures & Predictions</h2>
+                <span class="text-muted small">Exact score = 3 pts, correct result = 1 pt</span>
+            </div>
+            @if (!groupedFixtures.Any())
+            {
+                <div class="empty-state">No fixture found for the selected range.</div>
+            }
+            else
+            {
+                @foreach (var group in groupedFixtures)
+                {
+                    <div class="d-flex align-items-center justify-content-between mt-3 mb-2">
+                        <span class="segment-chip">@group.Key.GetDisplayName()</span>
+                        <span class="small text-muted">@group.Count() match(es)</span>
+                    </div>
+                    <div class="row g-3">
+                        @foreach (var fixture in group)
+                        {
+                            var hasPrediction = Model.UserPredictionLookup.TryGetValue(fixture.Id, out var prediction);
+                            var canPredict = fixture.Status == MatchStatus.Upcoming && !fixture.IsProcessed && DateTime.Now < fixture.MatchDateTime;
+                            var statusClass = fixture.Status == MatchStatus.Live ? "status-live blink-live" : fixture.Status == MatchStatus.Finished ? "status-finished" : "status-upcoming";
+                            var cardClass = canPredict ? "fixture-open" : "fixture-locked";
+                            <div class="col-lg-6 col-xxl-4">
+                                <div class="fixture-card fixture-card-compact h-100 @cardClass">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge text-bg-primary">@fixture.Stage.GetDisplayName()</span>
+                                        <span class="fixture-status @statusClass">@fixture.Status</span>
+                                    </div>
+                                    <div class="small text-muted mb-2"><i class="bi bi-clock"></i> @fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")</div>
+                                    <div class="teams-row compact mb-2">
+                                        <div class="team-block compact-team">
+                                            <img src=".@(fixture.TeamOneFlagPath ?? "/img/default-flag.svg")" class="flag flag-compact" alt="@fixture.TeamOneName" />
+                                            <strong>@fixture.TeamOneName</strong>
+                                        </div>
+                                        <span class="vs-badge vs-small">VS</span>
+                                        <div class="team-block compact-team text-end">
+                                            <img src=".@(fixture.TeamTwoFlagPath ?? "/img/default-flag.svg")" class="flag flag-compact" alt="@fixture.TeamTwoName" />
+                                            <strong>@fixture.TeamTwoName</strong>
+                                        </div>
+                                    </div>
+                                    <form asp-controller="Prediction" asp-action="Save" method="post">
+                                        <input type="hidden" name="fixtureId" value="@fixture.Id" />
+                                        <div class="row g-2 align-items-end">
+                                            <div class="col-5">
+                                                <label class="form-label small text-muted mb-1">@fixture.TeamOneName</label>
+                                                <input type="number" min="0" max="99" name="teamOneGoal" class="form-control prediction-input prediction-input-sm" value="@(hasPrediction ? prediction!.TeamOnePredictedGoal : 0)" disabled="@(!canPredict)" />
+                                            </div>
+                                            <div class="col-2 text-center pb-2 fw-bold">-</div>
+                                            <div class="col-5">
+                                                <label class="form-label small text-muted mb-1">@fixture.TeamTwoName</label>
+                                                <input type="number" min="0" max="99" name="teamTwoGoal" class="form-control prediction-input prediction-input-sm" value="@(hasPrediction ? prediction!.TeamTwoPredictedGoal : 0)" disabled="@(!canPredict)" />
+                                            </div>
+                                        </div>
+                                        @if (canPredict)
+                                        {
+                                            <button type="submit" class="btn btn-primary w-100 mt-3"><i class="bi bi-send"></i> @(hasPrediction ? "Update Prediction" : "Submit Prediction")</button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-secondary w-100 mt-3" disabled><i class="bi bi-lock-fill"></i> Locked - @fixture.Status</button>
+                                            @if (hasPrediction)
+                                            {
+                                                <div class="small text-muted text-center mt-2">Your prediction: @prediction!.TeamOnePredictedGoal - @prediction.TeamTwoPredictedGoal</div>
+                                            }
+                                        }
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="dashboard-card p-4">
+            <h2 class="h4 fw-bold mb-3"><i class="bi bi-hourglass-split text-primary"></i> Recent Predictions</h2>
+            <div class="table-responsive">
+                <table class="table table-clean table-hover align-middle mb-0">
+                    <thead><tr><th>Segment</th><th>Match</th><th>Prediction</th><th>Actual</th><th>Point</th></tr></thead>
+                    <tbody>
+                        @if (!Model.RecentPredictions.Any())
+                        {
+                            <tr><td colspan="5" class="text-center text-muted">No prediction submitted yet.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.RecentPredictions)
+                            {
+                                <tr>
+                                    <td><span class="segment-chip">@item.Fixture.Stage.GetDisplayName()</span></td>
+                                    <td>@item.Fixture.TeamOneName vs @item.Fixture.TeamTwoName</td>
+                                    <td>@item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal</td>
+                                    <td>@(item.Fixture.TeamOneActualGoal.HasValue && item.Fixture.TeamTwoActualGoal.HasValue ? $"{item.Fixture.TeamOneActualGoal} - {item.Fixture.TeamTwoActualGoal}" : "Pending")</td>
+                                    <td><span class="badge text-bg-warning">@item.EarnedPoint</span></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="dashboard-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 fw-bold mb-0"><i class="bi bi-trophy text-primary"></i> Top 10</h2>
+                <a asp-controller="Leaderboard" asp-action="Index" class="small text-decoration-none">View all</a>
+            </div>
+            @foreach (var user in Model.TopUsers)
+            {
+                <div class="leaderboard-row">
+                    <span class="rank-circle">@user.RankText</span>
+                    <img src=".@(user.PhotoPath ?? "/img/default-avatar.svg")" class="avatar-sm" alt="@user.FullName" />
+                    <div class="flex-grow-1"><div class="fw-semibold">@user.FullName</div><div class="small text-muted">Exact: @user.ExactPredictionCount</div></div>
+                    <span class="score-pill">@user.TotalScore pts</span>
+                </div>
+            }
+        </div>
+
+        <div class="dashboard-card p-4 mb-4">
+            <h2 class="h4 fw-bold mb-3"><i class="bi bi-pie-chart text-primary"></i> Segment Points</h2>
+            @if (!Model.SegmentPoints.Any())
+            {
+                <div class="empty-state">No segment points yet.</div>
+            }
+            else
+            {
+                @foreach (var segment in Model.SegmentPoints)
+                {
+                    <div class="d-flex justify-content-between border-bottom py-2">
+                        <span>@segment.SegmentName</span>
+                        <strong>@segment.Points pts</strong>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="dashboard-card p-4">
+            <h2 class="h4 fw-bold mb-3"><i class="bi bi-calendar-event text-primary"></i> Today</h2>
+            @if (!Model.TodayFixtures.Any())
+            {
+                <div class="empty-state">No fixture today.</div>
+            }
+            else
+            {
+                @foreach (var fixture in Model.TodayFixtures)
+                {
+                    <div class="mini-fixture">
+                        <span class="segment-chip">@fixture.Stage.GetDisplayName()</span>
+                        <img src=".@(fixture.TeamOneFlagPath ?? "/img/default-flag.svg")" class="flag-sm" />
+                        <span>@fixture.TeamOneName</span><strong>vs</strong><span>@fixture.TeamTwoName</span>
+                        <img src=".@(fixture.TeamTwoFlagPath ?? "/img/default-flag.svg")" class="flag-sm" />
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(segmentLabels);
+        const points = @Html.Raw(segmentPoints);
+        if (document.getElementById('segmentChart') && labels.length > 0) {
+            new Chart(document.getElementById('segmentChart'), {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Points', data: points }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+            });
+        }
+    </script>
+}

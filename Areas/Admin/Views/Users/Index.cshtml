@@ -1,0 +1,87 @@
+@model List<UserManagementItemViewModel>
+@{
+    ViewData["Title"] = "User Management";
+    var status = (string?)ViewBag.Status ?? "all";
+}
+<div class="dashboard-card p-4 p-lg-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="pill"><i class="bi bi-people"></i> User Control</span>
+            <h1 class="h2 fw-bold mt-3 mb-0">User Management</h1>
+            <p class="text-muted mb-0">Activate players, deactivate accounts and reset user passwords to the default password.</p>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Index" asp-route-status="all" class="btn @(status == "all" ? "btn-primary" : "btn-outline-light")">All</a>
+            <a asp-action="Index" asp-route-status="pending" class="btn @(status == "pending" ? "btn-primary" : "btn-outline-light")">Pending</a>
+            <a asp-action="Index" asp-route-status="active" class="btn @(status == "active" ? "btn-primary" : "btn-outline-light")">Active</a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Score</th>
+                    <th>Registered</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-muted">No user found.</td></tr>
+                }
+                else
+                {
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="..@(user.PhotoPath ?? "/img/default-avatar.svg")" class="avatar-sm" />
+                                    <strong>@user.FullName</strong>
+                                    <div class="small text-muted">@user.Designation | @user.Department</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>@user.Email</div>
+                                <div class="small text-muted">@user.MobileNo</div>
+                            </td>
+                            <td>
+                                @if (user.IsActive)
+                                {
+                                    <span class="badge text-bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-warning">Pending</span>
+                                }
+                            </td>
+                            <td>@user.TotalScore pts</td>
+                            <td>@user.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td class="text-end">
+                                @if (user.IsActive)
+                                {
+                                    <form asp-action="Deactivate" asp-route-id="@user.Id" method="post" class="d-inline">
+                                        <button class="btn btn-sm btn-outline-warning" onclick="return confirm('Deactivate this user?')"><i class="bi bi-person-x"></i> Deactivate</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Activate" asp-route-id="@user.Id" method="post" class="d-inline">
+                                        <button class="btn btn-sm btn-primary"><i class="bi bi-person-check"></i> Activate</button>
+                                    </form>
+                                }
+                                <form asp-action="ResetPassword" asp-route-id="@user.Id" method="post" class="d-inline">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Reset password to default? The user will be forced to change it after login.')"><i class="bi bi-key"></i> Reset Password</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
