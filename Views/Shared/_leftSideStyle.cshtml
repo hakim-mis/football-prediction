@@ -1,0 +1,292 @@
+﻿<!-- Bootstrap (keep only once globally, ideally in _Layout.cshtml) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .brand {
+        position: absolute;
+        top: 30px;
+        left: 40px;
+        z-index: 2;
+        display: flex;
+        flex-direction: column; /* 👈 key change */
+        align-items: flex-start;
+    }
+
+    .brand-logo {
+        height: 80px;
+        width: auto;
+    }
+
+    .brand-sub {
+        font-size: 20px;
+        margin-top: 0px;
+        letter-spacing: 8px;
+        font-weight: 600;
+    }
+    /* MAIN LAYOUT */
+
+    .auth-wrapper {
+        display: flex;
+        min-height: 100vh;
+    }
+    /* LEFT SIDE IMAGE */
+
+    .auth-left {
+        flex: 1.3;
+        height: 100vh;
+        position: relative;
+        background: url('/img/login-left.png') center/cover no-repeat;
+        color: #fff;
+        z-index: 1;
+    }
+        /* OPTIONAL OVERLAY */
+
+        .auth-left::before {
+            content: "";
+            position: absolute;
+            inset: 0; /* Enable if needed */ /* background: linear-gradient(to bottom, rgba(10,37,64,0.2), rgba(10,37,64,0.9)); */
+        }
+    /* RIGHT SIDE */
+
+    .auth-right {
+        flex: 0.65;
+        background: #f5f7fb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+    /* COMMON BOX (LOGIN / FORGOT / RESET) */
+
+/*     .login-box, .forgot-box, .box {
+        width: 100%;
+        max-width: 420px;
+        padding: 25px;
+    } */
+    .register-logo-box {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .register-logo {
+        max-width: 220px;
+        width: 100%;
+        height: auto;
+    }
+    .login-box,
+    .forgot-box,
+    .box {
+        width: 100%;
+        height: 100%;
+        max-width: 420px;
+        padding: 25px;
+        background: #fff;
+/*         border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,.08); */
+    }
+    /* TITLES */
+
+    .title {
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+    /* BRAND (optional for left side) */
+
+    .brand {
+        position: absolute;
+        top: 30px;
+        left: 40px;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .brand i {
+            font-size: 28px;
+        }
+
+        .brand span {
+            font-size: 20px;
+            font-weight: 600;
+        }
+    /* LEFT CONTENT TEXT */
+
+    .left-content {
+        position: absolute;
+        bottom: 40px;
+        left: 40px;
+        right: 40px;
+        z-index: 2;
+    }
+
+    .main-title {
+        font-size: 38px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .subtitle-left {
+        font-size: 16px;
+        opacity: 0.9;
+        margin-bottom: 30px;
+    }
+    /* FEATURES ROW */
+
+    .features-row {
+        display: flex;
+        gap: 20px;
+    }
+
+    .feature-col {
+        flex: 1;
+    }
+
+        .feature-col i {
+            font-size: 22px;
+            background: rgba(255,255,255,0.15);
+            padding: 10px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+    .feature-title {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .feature-desc {
+        font-size: 13px;
+        opacity: 0.85;
+    }
+    /* INPUT */
+
+    .input-group-text {
+        background: #fff;
+        border-right: none;
+    }
+
+    .form-control {
+        border-left: none;
+        border-radius: 8px;
+    }
+
+        .form-control:focus {
+            box-shadow: none;
+        }
+    /* BUTTON */
+
+    .btn-primary {
+        background: #1d4ed8;
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background: #1e40af;
+        }
+    /* DIVIDER */
+
+    .divider {
+        position: relative;
+        font-size: 13px;
+        color: #999;
+    }
+
+        .divider::before, .divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+    /* SOCIAL BUTTON */
+
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid #ddd;
+    }
+    /* INFO BOX (Forgot Password) */
+
+    .info-box {
+        background: #eef2ff;
+        border-left: 4px solid #1d4ed8;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        color: #555;
+    }
+    /* VALIDATION */
+
+    .validation-message {
+        font-size: 0.8rem;
+    }
+    /* PASSWORD RULE UI */
+
+    .progress {
+        height: 6px;
+    }
+
+    .req-item {
+        transition: color .2s;
+        font-size: .85rem;
+    }
+
+        .req-item.pass {
+            color: #198754 !important;
+        }
+
+            .req-item.pass .req-icon::before {
+                content: "\F26B";
+            }
+
+        .req-item.fail {
+            color: #dc3545 !important;
+        }
+
+            .req-item.fail .req-icon::before {
+                content: "\F623";
+            }
+    /* FOOTER */
+
+    .footer {
+        color: #999;
+    }
+    /* RESPONSIVE */
+
+    @@media(max-width:768px) {
+        .auth-left {
+            display: none;
+        }
+        .auth-right{
+        flex:1;
+        }
+        .features-row {
+            flex-direction: column;
+        }
+    }
+</style>

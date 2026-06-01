@@ -53,13 +53,14 @@
                             <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i> Admin</a></li>
                             <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-people"></i> Users</a></li>
                             <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Fixtures" asp-action="Index"><i class="bi bi-calendar-event"></i> Fixtures</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-person-check"></i> Approve Users</a></li>
+             @*                <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-person-check"></i> Approve Users</a></li>
                             <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Fixtures" asp-action="Create"><i class="bi bi-plus-circle"></i> Add Fixture</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Fixtures" asp-action="Index"><i class="bi bi-gear"></i> Process Results</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Fixtures" asp-action="Index"><i class="bi bi-gear"></i> Process Results</a></li> *@
                         }
                         else
                         {
                             <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-grid-1x2"></i> Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Dashboard" asp-action="PredictionScore"><i class="bi bi-grid-1x2"></i> Prediction & Score</a></li>
                         }
                         <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Leaderboard" asp-action="Index"><i class="bi bi-trophy"></i> Leaderboard</a></li>
                     }

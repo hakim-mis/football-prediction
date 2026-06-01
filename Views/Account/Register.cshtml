@@ -3,7 +3,8 @@
     ViewData["Title"] = "Sign Up";
     ViewData["HideNavbar"] = true;
 }
-<style>    .register-wrapper {
+<style>    
+    .register-wrapper {
         min-height: 100vh;
         padding: 24px 12px;
         margin: 0;
@@ -44,47 +45,45 @@
 
     @@media (max-width: 767.98px) {
         .register-wrapper
+        {
+            padding: 12px 8px;
+        }
 
-    {
-        padding: 12px 8px;
-    }
+        .register-logo {
+            width: 220px;
+        }
 
-    .register-logo {
-        width: 220px;
-    }
+        .register-title-box h1 {
+            font-size: 1.6rem;
+        }
 
-    .register-title-box h1 {
-        font-size: 1.6rem;
-    }
+        .register-title-box p {
+            font-size: 0.95rem;
+        }
 
-    .register-title-box p {
-        font-size: 0.95rem;
-    }
+        .register-card {
+            border-radius: 14px;
+        }
 
-    .register-card {
-        border-radius: 14px;
-    }
-
-    .d-grid.d-md-flex .btn {
-        width: 100%;
-    }
+        .d-grid.d-md-flex .btn {
+            width: 100%;
+        }
 
     }
 
     @@media (max-width: 420px) {
         .register-logo
+        {
+            width: 190px;
+        }
 
-    {
-        width: 190px;
-    }
+        .register-title-box h1 {
+            font-size: 1.4rem;
+        }
 
-    .register-title-box h1 {
-        font-size: 1.4rem;
-    }
-
-    .register-title-box p {
-        font-size: 0.9rem;
-    }
+        .register-title-box p {
+            font-size: 0.9rem;
+        }
 
     }</style>
 <div class="register-wrapper row justify-content-center">
@@ -98,7 +97,7 @@
 
                 <div class="register-title-box">
                     <h1 class="h3 fw-bold mb-1">Create Player Profile</h1>
-                    <p class="text-white-50 mb-0">Admin approval is required before login.</p>
+                    <p class="text-white-50 mb-0">Please verify your email address first. After verification, admin will approve your account.</p>
                 </div>
             </div>
 

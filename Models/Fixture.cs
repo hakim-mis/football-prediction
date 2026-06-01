@@ -52,12 +52,42 @@ public enum FixtureStage
     [Display(Name = "Group D")]
     GroupD = 4,
 
+    [Display(Name = "Group E")]
+    GroupE = 5,
+
+    [Display(Name = "Group F")]
+    GroupF = 6,
+
+    [Display(Name = "Group G")]
+    GroupG = 7,
+
+    [Display(Name = "Group H")]
+    GroupH = 8,
+
+    [Display(Name = "Group I")]
+    GroupI = 9,
+
+    [Display(Name = "Group J")]
+    GroupJ = 10,
+
+    [Display(Name = "Group K")]
+    GroupK = 11,
+
+    [Display(Name = "Group L")]
+    GroupL = 12,
+
+    [Display(Name = "Round of 32")]
+    Roundof32 = 13,
+
+    [Display(Name = "Round of 16")]
+    Roundof16 = 14,
+
     [Display(Name = "Quarter Final")]
-    QuarterFinal = 5,
+    QuarterFinal = 15,
 
     [Display(Name = "Semi Final")]
-    SemiFinal = 6,
+    SemiFinal = 16,
 
     [Display(Name = "Final")]
-    Final = 7
+    Final = 17
 }

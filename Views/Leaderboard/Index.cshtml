@@ -6,7 +6,7 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <span class="pill"><i class="bi bi-trophy"></i> Ranking Table</span>
-            <h1 class="h2 fw-bold mt-3 mb-0">Leaderboard</h1>
+            <h1 class="h2 fw-bold mt-3 mb-0">Leaderboard (Top 100)</h1>
             <p class="text-muted mb-0">Users with the same score share the same rank. Users with zero score show No rank.</p>
         </div>
     </div>
@@ -16,9 +16,11 @@
                 <tr>
                     <th>Rank</th>
                     <th>Player</th>
+                    <th>Designation</th>
+                    <th>Department</th>
                     <th>Total Score</th>
                     <th>Exact Predictions</th>
-                    <th>Joined</th>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -38,9 +40,11 @@
                                     <strong>@user.FullName</strong>
                                 </div>
                             </td>
+                            <td>@user.Designation</td>
+                            <td>@user.Department</td>
                             <td><span class="score-pill">@user.TotalScore pts</span></td>
                             <td>@user.ExactPredictionCount</td>
-                            <td>@user.CreatedAt.ToString("dd MMM yyyy")</td>
+                            @* <td>@user.CreatedAt.ToString("dd MMM yyyy")</td> *@
                         </tr>
                     }
                 }

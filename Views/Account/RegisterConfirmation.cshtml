@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = "Registration Submitted";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card text-center">
+        <h3 class="mb-3">Check Your Email</h3>
+
+        <p>
+            Your registration has been submitted successfully.
+            We sent a verification link to your email address.
+        </p>
+
+        <p>
+            After email verification, admin will review and approve your account.
+        </p>
+
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary mt-3">
+            Back to Login
+        </a>
+    </div>
+</div>

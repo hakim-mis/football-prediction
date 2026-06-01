@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Email Verified";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card text-center">
+        <h3 class="mb-3 text-success">Email Verified Successfully</h3>
+
+        <p>
+            Your email address has been verified.
+            Please wait for admin approval before login.
+        </p>
+
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary mt-3">
+            Go to Login
+        </a>
+    </div>
+</div>

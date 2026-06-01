@@ -16,6 +16,7 @@ public class ApplicationUser : IdentityUser
     public int ExactPredictionCount { get; set; } = 0;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? UpdatedAt { get; set; }
+    public bool EmailConfirmed { get; set; } = false;
 
     public ICollection<Prediction> Predictions { get; set; } = new List<Prediction>();
 }

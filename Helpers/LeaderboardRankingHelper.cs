@@ -40,6 +40,8 @@ public static class LeaderboardRankingHelper
                 Rank = rank,
                 UserId = user.Id,
                 FullName = user.FullName,
+                Designation = user.Designation,
+                Department = user.Department,
                 PhotoPath = user.ProfilePhotoPath,
                 TotalScore = user.TotalScore,
                 ExactPredictionCount = user.ExactPredictionCount,

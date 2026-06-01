@@ -1,0 +1,161 @@
+﻿@model FootballPredictionGame.ViewModels.ResendEmailVerificationViewModel
+
+@{
+    ViewData["Title"] = "Resend Email Verification";
+    ViewData["HideNavbar"] = true;
+}
+
+<style>
+    .forgot-wrapper {
+        min-height: 100vh;
+        padding: 24px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .forgot-card {
+        width: 100%;
+        max-width: 650px;
+        overflow: hidden;
+    }
+
+    .forgot-header {
+        width: 100%;
+    }
+
+    .forgot-logo-box {
+        flex: 0 0 auto;
+    }
+
+    .forgot-logo {
+        width: 180px;
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .forgot-title-box {
+        flex: 1;
+        min-width: 0;
+    }
+
+        .forgot-title-box h1 {
+            line-height: 1.2;
+        }
+
+        .forgot-title-box p {
+            line-height: 1.5;
+        }
+
+    @@media (max-width: 767.98px) {
+
+        .forgot-wrapper {
+            padding: 12px 8px;
+        }
+
+        .forgot-logo {
+            width: 220px;
+        }
+
+        .forgot-title-box h1 {
+            font-size: 1.6rem;
+        }
+
+        .forgot-title-box p {
+            font-size: .95rem;
+        }
+
+        .forgot-card {
+            border-radius: 14px;
+        }
+
+        .d-grid.d-md-flex .btn {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 420px) {
+
+        .forgot-logo {
+            width: 190px;
+        }
+
+        .forgot-title-box h1 {
+            font-size: 1.4rem;
+        }
+
+        .forgot-title-box p {
+            font-size: .9rem;
+        }
+    }
+</style>
+
+<div class="forgot-wrapper">
+
+    <div class="col-12 col-sm-11 col-md-8 col-lg-6">
+
+        <div class="glass-card forgot-card p-3 p-sm-4 p-lg-5">
+
+            <div class="forgot-header d-flex flex-column flex-md-row align-items-center text-center text-md-start gap-3 gap-md-4 mb-4">
+
+                <div class="forgot-logo-box">
+                    <img src="~/img/logo2.png" alt="Logo" class="forgot-logo" />
+                </div>
+
+                <div class="forgot-title-box">
+                    <h1 class="h3 fw-bold mb-1">Resend Email Verification</h1>
+                    <p class="text-white-50 mb-0">
+                        Enter your registered email address. We will send a new verification link if your email is not verified yet.
+                    </p>
+                </div>
+
+            </div>
+
+            <form asp-action="ResendEmailVerification" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-warning mb-3"></div>
+
+                <div class="mb-4">
+                    <label asp-for="Email" class="form-label"></label>
+
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-envelope"></i>
+                        </span>
+
+                        <input asp-for="Email"
+                               class="form-control"
+                               placeholder="you@example.com" />
+                    </div>
+
+                    <span asp-validation-for="Email" class="text-warning small"></span>
+                </div>
+
+                <div class="d-grid d-md-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-warning btn-lg fw-bold flex-fill">
+                        <i class="bi bi-send"></i>
+                        Resend Verification Link
+                    </button>
+
+                    <a asp-action="Login"
+                       class="btn btn-outline-light btn-lg flex-fill">
+                        Back to Login
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

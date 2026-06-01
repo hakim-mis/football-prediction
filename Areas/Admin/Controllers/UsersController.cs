@@ -1,4 +1,5 @@
-using FootballPredictionGame.Models;
+﻿using FootballPredictionGame.Models;
+using FootballPredictionGame.Services;
 using FootballPredictionGame.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,11 +14,13 @@ public class UsersController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly IEmailService _emailService;
 
-    public UsersController(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+    public UsersController(UserManager<ApplicationUser> userManager, IConfiguration configuration, IEmailService emailService)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _emailService = emailService;
     }
 
     public async Task<IActionResult> Index(string status = "all")
@@ -37,7 +40,7 @@ public class UsersController : Controller
 
         if (status == "pending")
         {
-            nonAdminUsers = nonAdminUsers.Where(x => !x.IsActive).ToList();
+            nonAdminUsers = nonAdminUsers.Where(x => x.EmailConfirmed && !x.IsActive).ToList();
         }
         else if (status == "active")
         {
@@ -80,11 +83,27 @@ public class UsersController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        if (!user.EmailConfirmed)
+        {
+            TempData["Error"] = "User email is not verified yet. Approval is not allowed.";
+            return RedirectToAction(nameof(Index), new { status = "pending" });
+        }
+
         user.IsActive = true;
         user.UpdatedAt = DateTime.Now;
-        await _userManager.UpdateAsync(user);
 
-        TempData["Success"] = "User activated successfully.";
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            await SendAccountActivatedEmailAsync(user);
+            TempData["Success"] = "User activated successfully and congratulation email sent.";
+        }
+        else
+        {
+            TempData["Error"] = "User activation failed.";
+        }
+
         return RedirectToAction(nameof(Index), new { status = "pending" });
     }
 
@@ -106,11 +125,22 @@ public class UsersController : Controller
 
         user.IsActive = false;
         user.UpdatedAt = DateTime.Now;
-        await _userManager.UpdateAsync(user);
 
-        TempData["Success"] = "User deactivated successfully.";
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            await SendAccountDeactivatedEmailAsync(user);
+            TempData["Success"] = "User deactivated successfully and notification email sent.";
+        }
+        else
+        {
+            TempData["Error"] = "User deactivation failed.";
+        }
+
         return RedirectToAction(nameof(Index), new { status = "active" });
     }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ResetPassword(string id)
@@ -128,6 +158,7 @@ public class UsersController : Controller
         }
 
         var defaultPassword = _configuration["Security:DefaultResetPassword"] ?? "User@12345";
+
         var removeResult = await _userManager.RemovePasswordAsync(user);
         if (!removeResult.Succeeded)
         {
@@ -135,6 +166,7 @@ public class UsersController : Controller
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
+
             TempData["Error"] = "Password reset failed. Please check password policy or user status.";
             return RedirectToAction(nameof(Index));
         }
@@ -146,16 +178,181 @@ public class UsersController : Controller
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
+
             TempData["Error"] = "Password reset failed. Default password does not meet policy.";
             return RedirectToAction(nameof(Index));
         }
 
         user.MustChangePassword = true;
         user.UpdatedAt = DateTime.Now;
-        await _userManager.UpdateAsync(user);
 
-        TempData["Success"] = $"Password reset successfully. Default password is {defaultPassword}. User must change it after login.";
+        var updateResult = await _userManager.UpdateAsync(user);
+
+        if (!updateResult.Succeeded)
+        {
+            TempData["Error"] = "Password reset completed, but user change-password status could not be updated.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        await SendAdminPasswordResetEmailAsync(user, defaultPassword);
+
+        TempData["Success"] = "Password reset successfully. Default password email has been sent to the user.";
         return RedirectToAction(nameof(Index));
     }
+    private async Task SendAccountActivatedEmailAsync(ApplicationUser user)
+    {
+        var loginUrl = Url.Action(
+            action: "Login",
+            controller: "Account",
+            values: null,
+            protocol: Request.Scheme
+        );
 
+        var emailBody = $@"
+    <div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
+        <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>
+
+            <div style='text-align:center;margin-bottom:20px;'>
+                <div style='font-size:48px;'>🏆</div>
+                <h2 style='color:#099b49;margin:10px 0 5px;'>Congratulations!</h2>
+                <p style='color:#64748b;margin:0;'>Your account has been approved</p>
+            </div>
+
+            <p>Dear {user.FullName},</p>
+
+            <p>
+                Congratulations! Your <strong>Transtec 360° Football Prediction</strong> account has been activated by admin.
+            </p>
+
+            <p>
+                You can now login, submit predictions, view fixtures, track your score, and compete on the leaderboard.
+            </p>
+
+            <p style='text-align:center;margin:30px 0;'>
+                <a href='{loginUrl}'
+                   style='background:#ffc107;border:1px solid #e0a800;border-radius:8px;
+                          color:#212529 !important;display:inline-block;font-family:Arial,sans-serif;
+                          font-size:18px;font-weight:700;line-height:24px;padding:14px 32px;
+                          text-align:center;text-decoration:none;min-width:220px;'>
+                    ⚽ Login Now
+                </a>
+            </p>
+
+            <p style='font-size:13px;color:#64748b;'>
+                Please follow the game rules and enjoy the prediction challenge.
+            </p>
+
+        </div>
+    </div>";
+
+        await _emailService.SendEmailAsync(
+            user.Email!,
+            "Congratulations! Your Transtec 360° Football Prediction account is active",
+            emailBody
+        );
+    }
+
+    private async Task SendAccountDeactivatedEmailAsync(ApplicationUser user)
+    {
+        var emailBody = $@"
+    <div style='font-family:Arial,sans-serif;padding:20px;background:#fff7ed;'>
+        <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #fed7aa;'>
+
+            <div style='text-align:center;margin-bottom:20px;'>
+                <div style='font-size:48px;'>⚠️</div>
+                <h2 style='color:#dc2626;margin:10px 0 5px;'>Account Deactivated</h2>
+                <p style='color:#64748b;margin:0;'>Violation of game rules</p>
+            </div>
+
+            <p>Dear {user.FullName},</p>
+
+            <p>
+                Your <strong>Transtec 360° Football Prediction</strong> account has been deactivated by admin due to violation of the game rules.
+            </p>
+
+            <p>
+                You will not be able to login or submit predictions while your account is inactive.
+            </p>
+
+            <p style='background:#fff7ed;border:1px solid #fed7aa;padding:14px;border-radius:8px;color:#7c2d12;'>
+                If you believe this action was taken by mistake, please contact the game administrator.
+            </p>
+
+            <p style='font-size:13px;color:#64748b;'>
+                This message was generated automatically by Transtec 360° Football Prediction.
+            </p>
+
+        </div>
+    </div>";
+
+        await _emailService.SendEmailAsync(
+            user.Email!,
+            "Your Transtec 360° Football Prediction account has been deactivated",
+            emailBody
+        );
+    }
+
+    private async Task SendAdminPasswordResetEmailAsync(ApplicationUser user, string defaultPassword)
+    {
+        var loginUrl = Url.Action(
+            action: "Login",
+            controller: "Account",
+            values: null,
+            protocol: Request.Scheme
+        );
+
+        var emailBody = $@"
+    <div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
+        <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>
+
+            <div style='text-align:center;margin-bottom:20px;'>
+                <div style='font-size:48px;'>🔐</div>
+                <h2 style='color:#155dfc;margin:10px 0 5px;'>Password Reset by Admin</h2>
+                <p style='color:#64748b;margin:0;'>Temporary login password issued</p>
+            </div>
+
+            <p>Dear {user.FullName},</p>
+
+            <p>
+                Your <strong>Transtec 360° Football Prediction</strong> account password has been reset by admin.
+            </p>
+
+            <p>
+                Please login using the temporary password below. After login, you must set a new password before using the system.
+            </p>
+
+            <div style='background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:18px;text-align:center;margin:25px 0;'>
+                <p style='margin:0 0 8px;color:#7c2d12;font-size:14px;font-weight:bold;'>One-Time Default Password</p>
+                <div style='font-size:24px;font-weight:800;letter-spacing:1px;color:#111827;'>
+                    {defaultPassword}
+                </div>
+            </div>
+
+            <p style='text-align:center;margin:30px 0;'>
+                <a href='{loginUrl}'
+                   style='background:#ffc107;border:1px solid #e0a800;border-radius:8px;
+                          color:#212529 !important;display:inline-block;font-family:Arial,sans-serif;
+                          font-size:18px;font-weight:700;line-height:24px;padding:14px 32px;
+                          text-align:center;text-decoration:none;min-width:220px;'>
+                    🔐 Login & Change Password
+                </a>
+            </p>
+
+            <p style='background:#f8fafc;border:1px solid #e2e8f0;padding:14px;border-radius:8px;color:#334155;'>
+                For security, this password should be used only once. You will be required to create a new password immediately after login.
+            </p>
+
+            <p style='font-size:13px;color:#64748b;'>
+                If you did not request this reset, please contact the game administrator immediately.
+            </p>
+
+        </div>
+    </div>";
+
+        await _emailService.SendEmailAsync(
+            user.Email!,
+            "Your Transtec 360° Football Prediction password has been reset",
+            emailBody
+        );
+    }
 }

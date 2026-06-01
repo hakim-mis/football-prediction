@@ -13,6 +13,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Fixture> Fixtures => Set<Fixture>();
     public DbSet<Prediction> Predictions => Set<Prediction>();
     public DbSet<ResultProcessingLog> ResultProcessingLogs => Set<ResultProcessingLog>();
+    public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -57,5 +58,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasForeignKey(x => x.FixtureId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        //builder.Entity<PasswordResetOtp>()
+        //    .HasOne(x => x.User)
+        //    .WithMany()
+        //    .HasForeignKey(x => x.UserId)
+        //    .OnDelete(DeleteBehavior.Cascade);
     }
 }

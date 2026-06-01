@@ -1,46 +1,239 @@
 @model LoginViewModel
 @{
-    ViewData["Title"] = "Login";
-    ViewData["HideNavbar"] = true;
+    Layout = null;
 }
-<div class="auth-wrapper row align-items-center justify-content-center">
-    <div class="col-lg-5 col-md-8">
-        <div class="glass-card auth-card p-4 p-lg-5">
-            <div class="text-center mb-4">
-                @* <div class="auth-icon mx-auto"><i class="bi bi-dribbble"></i></div>
-                <h1 class="h3 fw-bold mt-3">Welcome Back</h1>
-                <p class="text-white-50 mb-0">Login to predict matches and climb the leaderboard.</p> *@
-                
-                    <img src="~/img/baner.png" alt="Logo" class="brand-logo" />
-                
-            </div>
-            <form asp-action="Login" method="post">
-                <div asp-validation-summary="ModelOnly" class="text-warning mb-3"></div>
-                <input type="hidden" name="returnUrl" value='@ViewData["ReturnUrl"]' />
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control form-control-lg" placeholder="you@example.com" />
-                    <span asp-validation-for="Email" class="text-warning small"></span>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login - Transtec360 Football</title>
+
+    @await Html.PartialAsync("_leftSideStyle")
+
+    <style>
+        /* LOGIN CARD ENHANCEMENT */
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+            padding: 28px;
+            background: #fff;
+            border-radius: 16px;
+        }
+
+        .auth-right {
+            background: #f5f7fb;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .input-group-text {
+            border-radius: 10px;
+        }
+
+        .btn-primary {
+            border-radius: 10px;
+            padding: 10px;
+            font-weight: 600;
+        }
+
+        .auth-title {
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 18px;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 15px 0;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+            .auth-divider::before,
+            .auth-divider::after {
+                content: "";
+                flex: 1;
+                height: 1px;
+                background: #e5e5e5;
+            }
+
+            .auth-divider span {
+                padding: 0 10px;
+            }
+
+        .auth-links {
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+            .auth-links a {
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+        .remember-row {
+            font-size: 0.85rem;
+        }
+
+        @@media(max-width:768px) {
+            .login-box {
+                border-radius: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-wrapper">
+
+        <!-- LEFT SIDE (UNCHANGED) -->
+        @await Html.PartialAsync("_leftside")
+
+        <!-- RIGHT SIDE -->
+        <div class="auth-right">
+
+            <div class="login-box">
+
+                <!-- LOGO (UNCHANGED POSITION STYLE) -->
+                <div class="register-logo-box">
+                    <img src="~/img/logo2.png" alt="Logo" class="register-logo" />
                 </div>
-                <div class="mb-3">
-                    <label asp-for="Password" class="form-label"></label>
-                    <input asp-for="Password" class="form-control form-control-lg" placeholder="Password" />
-                    <span asp-validation-for="Password" class="text-warning small"></span>
-                </div>
-                <div class="form-check mb-4">
-                    <input asp-for="RememberMe" class="form-check-input" />
-                    <label asp-for="RememberMe" class="form-check-label"></label>
-                </div>
-                <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold">Login</button>
-            </form>
-            <div class="text-center mt-4">
-                <span class="text-white-50">New player?</span>
-                <a asp-action="Register" class="text-warning fw-bold text-decoration-none">Create account</a>
+
+                <h2 class="auth-title">Welcome Back!</h2>
+                <p class="auth-subtitle">Transtec 360° Football Prediction</p>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success py-2 mb-3">
+                        @TempData["Success"]
+                    </div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger py-2 mb-3">
+                        @TempData["Error"]
+                    </div>
+                }
+
+                <form asp-action="Login" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="alert alert-danger py-2 mb-3">
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="input-group mb-1">
+                        <span class="input-group-text">
+                            <i class="bi bi-envelope"></i>
+                        </span>
+                        <input asp-for="Email"
+                               class="form-control"
+                               placeholder="Email Address"
+                               autocomplete="email" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger small d-block mb-3"></span>
+
+                    <!-- PASSWORD -->
+                    <div class="input-group mb-1">
+                        <span class="input-group-text">
+                            <i class="bi bi-lock"></i>
+                        </span>
+
+                        <input asp-for="Password"
+                               type="password"
+                               id="passwordInput"
+                               class="form-control"
+                               placeholder="Password"
+                               autocomplete="current-password" />
+
+                        <span class="input-group-text" onclick="togglePassword()" style="cursor:pointer;">
+                            <i id="eyeIcon" class="bi bi-eye"></i>
+                        </span>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small d-block mb-2"></span>
+
+                    <!-- REMEMBER + FORGOT -->
+                    <div class="d-flex justify-content-between align-items-center mb-3 remember-row">
+
+                        <div>
+                            <input asp-for="RememberMe" type="checkbox" />
+                            <span>Remember me</span>
+                        </div>
+
+                        <a asp-controller="Account"
+                           asp-action="ForgotPassword"
+                           class="text-decoration-none">
+                            Forgot Password?
+                        </a>
+                        <a asp-controller="Account"
+                           asp-action="ResendEmailVerification"
+                           class="text-decoration-none d-block small">
+                            Resend Verification
+                        </a>
+                    </div>
+
+                    <!-- LOGIN BUTTON -->
+                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Sign In
+                    </button>
+
+                    <!-- DIVIDER -->
+                    <div class="auth-divider">
+                        <span>or</span>
+                    </div>
+
+                    <!-- CREATE ACCOUNT -->
+                    <div class="auth-links mt-2">
+                        <span class="text-muted">New player?</span>
+                        <a asp-action="Register" class="ms-1">
+                            Create account
+                        </a>
+                    </div>
+
+                </form>
+
             </div>
 
         </div>
+
     </div>
-</div>
-@section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
-}
+
+    <script>
+        function togglePassword() {
+            const input = document.getElementById("passwordInput");
+            const icon = document.getElementById("eyeIcon");
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("bi-eye-slash", "bi-eye");
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -9,7 +9,7 @@
     var segmentPoints = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.Points));
 }
 
-<div class="row g-4 mb-4">
+@* <div class="row g-4 mb-4">
     <div class="col-xl-3 col-md-6">
         <div class="stat-card">
             <div class="stat-left"><span class="stat-icon blue"><i class="bi bi-check2-square"></i></span><div><div class="stat-title">Task Completed</div><div class="stat-value">@Model.TotalScore pts</div></div></div>
@@ -34,11 +34,49 @@
             <i class="bi bi-three-dots-vertical stat-menu"></i>
         </div>
     </div>
-</div>
+</div> *@
 
 <div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="dashboard-card p-4 h-100 text-center">
+            <img src=".@avatar" class="avatar-xl mb-3" alt="Profile" />
+            <h2 class="h4 fw-bold mb-1">@Model.FullName</h2>
+            <p class="text-muted mb-3">Current position: <strong class="text-primary">@Model.RankText</strong></p>
+            <div class="row g-2">
+                <div class="col-6"><div class="metric-card"><div class="metric-value">@Model.TotalScore</div><div class="metric-label">Points</div></div></div>
+                <div class="col-6"><div class="metric-card"><div class="metric-value">@Model.ExactPredictionCount</div><div class="metric-label">Exact</div></div></div>
+            </div>
+        </div>
+    </div>
     <div class="col-lg-8">
-        <div class="dashboard-card p-4 h-100 chart-box">
+        <div class="dashboard-card p-4">
+            <h2 class="h4 fw-bold mb-3"><i class="bi bi-hourglass-split text-primary"></i> Rules</h2>
+            @* <div class="table-responsive">
+                <table class="table table-clean table-hover align-middle mb-0">
+                    <thead><tr><th>Segment</th><th>Match</th><th>Prediction</th><th>Actual</th><th>Point</th></tr></thead>
+                    <tbody>
+                        @if (!Model.RecentPredictions.Any())
+                        {
+                            <tr><td colspan="5" class="text-center text-muted">No prediction submitted yet.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.RecentPredictions)
+                            {
+                                <tr>
+                                    <td><span class="segment-chip">@item.Fixture.Stage.GetDisplayName()</span></td>
+                                    <td>@item.Fixture.TeamOneName vs @item.Fixture.TeamTwoName</td>
+                                    <td>@item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal</td>
+                                    <td>@(item.Fixture.TeamOneActualGoal.HasValue && item.Fixture.TeamTwoActualGoal.HasValue ? $"{item.Fixture.TeamOneActualGoal} - {item.Fixture.TeamTwoActualGoal}" : "Pending")</td>
+                                    <td><span class="badge text-bg-warning">@item.EarnedPoint</span></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+              </table>
+          </div> *@
+      </div>
+        @* <div class="dashboard-card p-4 h-100 chart-box">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                     <span class="pill"><i class="bi bi-bar-chart"></i> Segment Performance</span>
@@ -53,23 +91,13 @@
             {
                 <div class="empty-state">No processed points yet. Your segment graph will appear after results are processed.</div>
             }
-        </div>
+        </div> *@
     </div>
-    <div class="col-lg-4">
-        <div class="dashboard-card p-4 h-100 text-center">
-            <img src=".@avatar" class="avatar-xl mb-3" alt="Profile" />
-            <h2 class="h4 fw-bold mb-1">@Model.FullName</h2>
-            <p class="text-muted mb-3">Current position: <strong class="text-primary">@Model.RankText</strong></p>
-            <div class="row g-2">
-                <div class="col-6"><div class="metric-card"><div class="metric-value">@Model.TotalScore</div><div class="metric-label">Points</div></div></div>
-                <div class="col-6"><div class="metric-card"><div class="metric-value">@Model.ExactPredictionCount</div><div class="metric-label">Exact</div></div></div>
-            </div>
-        </div>
-    </div>
+   
 </div>
 
 <div class="row g-4">
-    <div class="col-xl-8">
+    <div class="col-xl-12">
         <div class="dashboard-card p-4 mb-4">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <h2 class="h4 fw-bold mb-0"><i class="bi bi-calendar-check text-primary"></i> Fixtures & Predictions</h2>
@@ -94,10 +122,26 @@
                             var canPredict = fixture.Status == MatchStatus.Upcoming && !fixture.IsProcessed && DateTime.Now < fixture.MatchDateTime;
                             var statusClass = fixture.Status == MatchStatus.Live ? "status-live blink-live" : fixture.Status == MatchStatus.Finished ? "status-finished" : "status-upcoming";
                             var cardClass = canPredict ? "fixture-open" : "fixture-locked";
-                            <div class="col-lg-6 col-xxl-4">
+
+                            //var isPredict = Model.RecentPredictions.Where(x => x.FixtureId == fixture.Id).Count();
+                            
+   @*  var isPredict = Model.RecentPredictions
+        .Count(x => x.FixtureId == fixture.Id); *@
+
+
+                            <div class="col-lg-4 col-xxl-4">
                                 <div class="fixture-card fixture-card-compact h-100 @cardClass">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="badge text-bg-primary">@fixture.Stage.GetDisplayName()</span>
+                                       @*  @if(isPredict!=0)
+                                        {
+                                        <span class="fixture-status status-finished">YES</span>
+                                        }
+                                        else
+                                        {
+                                        <span class="fixture-status status-live blink-live">NO</span>
+                                        } *@
+                                        
                                         <span class="fixture-status @statusClass">@fixture.Status</span>
                                     </div>
                                     <div class="small text-muted mb-2"><i class="bi bi-clock"></i> @fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")</div>
@@ -107,7 +151,7 @@
                                             <strong>@fixture.TeamOneName</strong>
                                         </div>
                                         <span class="vs-badge vs-small">VS</span>
-                                        <div class="team-block compact-team text-end">
+                                        <div class="team-block compact-team text-end" style="align-items: end;">
                                             <img src=".@(fixture.TeamTwoFlagPath ?? "/img/default-flag.svg")" class="flag flag-compact" alt="@fixture.TeamTwoName" />
                                             <strong>@fixture.TeamTwoName</strong>
                                         </div>
@@ -116,18 +160,18 @@
                                         <input type="hidden" name="fixtureId" value="@fixture.Id" />
                                         <div class="row g-2 align-items-end">
                                             <div class="col-5">
-                                                <label class="form-label small text-muted mb-1">@fixture.TeamOneName</label>
+                                                @* <label class="form-label small text-muted mb-1">@fixture.TeamOneName</label> *@
                                                 <input type="number" min="0" max="99" name="teamOneGoal" class="form-control prediction-input prediction-input-sm" value="@(hasPrediction ? prediction!.TeamOnePredictedGoal : 0)" disabled="@(!canPredict)" />
                                             </div>
                                             <div class="col-2 text-center pb-2 fw-bold">-</div>
                                             <div class="col-5">
-                                                <label class="form-label small text-muted mb-1">@fixture.TeamTwoName</label>
+                                                @* <label class="form-label small text-muted mb-1">@fixture.TeamTwoName</label> *@
                                                 <input type="number" min="0" max="99" name="teamTwoGoal" class="form-control prediction-input prediction-input-sm" value="@(hasPrediction ? prediction!.TeamTwoPredictedGoal : 0)" disabled="@(!canPredict)" />
                                             </div>
                                         </div>
                                         @if (canPredict)
                                         {
-                                            <button type="submit" class="btn btn-primary w-100 mt-3"><i class="bi bi-send"></i> @(hasPrediction ? "Update Prediction" : "Submit Prediction")</button>
+                                            <button type="submit" class="btn btn-@(hasPrediction ? "primary" : "warning") w-100 mt-3"><i class="bi bi-send"></i> @(hasPrediction ? "Update Prediction" : "Submit Prediction")</button>
                                         }
                                         else
                                         {
@@ -146,36 +190,10 @@
             }
         </div>
 
-        <div class="dashboard-card p-4">
-            <h2 class="h4 fw-bold mb-3"><i class="bi bi-hourglass-split text-primary"></i> Recent Predictions</h2>
-            <div class="table-responsive">
-                <table class="table table-clean table-hover align-middle mb-0">
-                    <thead><tr><th>Segment</th><th>Match</th><th>Prediction</th><th>Actual</th><th>Point</th></tr></thead>
-                    <tbody>
-                        @if (!Model.RecentPredictions.Any())
-                        {
-                            <tr><td colspan="5" class="text-center text-muted">No prediction submitted yet.</td></tr>
-                        }
-                        else
-                        {
-                            @foreach (var item in Model.RecentPredictions)
-                            {
-                                <tr>
-                                    <td><span class="segment-chip">@item.Fixture.Stage.GetDisplayName()</span></td>
-                                    <td>@item.Fixture.TeamOneName vs @item.Fixture.TeamTwoName</td>
-                                    <td>@item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal</td>
-                                    <td>@(item.Fixture.TeamOneActualGoal.HasValue && item.Fixture.TeamTwoActualGoal.HasValue ? $"{item.Fixture.TeamOneActualGoal} - {item.Fixture.TeamTwoActualGoal}" : "Pending")</td>
-                                    <td><span class="badge text-bg-warning">@item.EarnedPoint</span></td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        
     </div>
 
-    <div class="col-xl-4">
+    @* <div class="col-xl-4">
         <div class="dashboard-card p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="h4 fw-bold mb-0"><i class="bi bi-trophy text-primary"></i> Top 10</h2>
@@ -229,7 +247,7 @@
                 }
             }
         </div>
-    </div>
+    </div> *@
 </div>
 
 @section Scripts {

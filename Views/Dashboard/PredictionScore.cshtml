@@ -1,0 +1,81 @@
+﻿@model DashboardViewModel
+@using FootballPredictionGame.Models
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Prediction & Score";
+    var avatar = string.IsNullOrWhiteSpace(Model.ProfilePhotoPath) ? "../img/default-avatar.svg" : Model.ProfilePhotoPath;
+    var groupedFixtures = Model.PredictionFixtures.GroupBy(x => x.Stage).OrderBy(x => (int)x.Key).ToList();
+    var segmentLabels = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.SegmentName));
+    var segmentPoints = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.Points));
+}
+
+
+
+<div class="row g-4 mb-4">
+    
+    <div class="col-lg-8">
+        <div class="dashboard-card p-4">
+            <h2 class="h4 fw-bold mb-3"><i class="bi bi-hourglass-split text-primary"></i> Recent Predictions</h2>
+            <div class="table-responsive">
+                <table class="table table-clean table-hover align-middle mb-0">
+                    <thead><tr><th>Segment</th><th>Match</th><th>Prediction</th><th>Actual</th><th>Point</th></tr></thead>
+                    <tbody>
+                        @if (!Model.RecentPredictions.Any())
+                        {
+                            <tr><td colspan="5" class="text-center text-muted">No prediction submitted yet.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.RecentPredictions)
+                            {
+                                <tr>
+                                    <td><span class="segment-chip">@item.Fixture.Stage.GetDisplayName()</span></td>
+                                    <td>@item.Fixture.TeamOneName vs @item.Fixture.TeamTwoName</td>
+                                    <td>@item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal</td>
+                                    <td>@(item.Fixture.TeamOneActualGoal.HasValue && item.Fixture.TeamTwoActualGoal.HasValue ? $"{item.Fixture.TeamOneActualGoal} - {item.Fixture.TeamTwoActualGoal}" : "Pending")</td>
+                                    <td><span class="badge text-bg-warning">@item.EarnedPoint</span></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="dashboard-card p-4 mb-4">
+            <h2 class="h4 fw-bold mb-3"><i class="bi bi-pie-chart text-primary"></i> Segment Points</h2>
+            @if (!Model.SegmentPoints.Any())
+            {
+                <div class="empty-state">No segment points yet.</div>
+            }
+            else
+            {
+                @foreach (var segment in Model.SegmentPoints)
+                {
+                    <div class="d-flex justify-content-between border-bottom py-2">
+                        <span>@segment.SegmentName</span>
+                        <strong>@segment.Points pts</strong>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(segmentLabels);
+        const points = @Html.Raw(segmentPoints);
+        if (document.getElementById('segmentChart') && labels.length > 0) {
+            new Chart(document.getElementById('segmentChart'), {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Points', data: points }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+            });
+        }
+    </script>
+}
