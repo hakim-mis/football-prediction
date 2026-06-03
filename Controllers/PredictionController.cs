@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace FootballPredictionGame.Controllers;
 
 [Authorize(Roles = "User")]
@@ -90,5 +91,94 @@ public class PredictionController : Controller
 
         await _context.SaveChangesAsync();
         return RedirectToAction("Index", "Dashboard");
+    }
+
+
+    [Authorize(Roles = "User")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveAjax(int fixtureId, int teamOneGoal, int teamTwoGoal)
+    {
+        var userId = _userManager.GetUserId(User);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Json(new
+            {
+                success = false,
+                message = "Session expired. Please login again."
+            });
+        }
+
+        var fixture = await _context.Fixtures
+            .FirstOrDefaultAsync(x => x.Id == fixtureId && x.IsPublished);
+
+        if (fixture == null)
+        {
+            return Json(new
+            {
+                success = false,
+                message = "Fixture not found."
+            });
+        }
+
+        if (fixture.Status != MatchStatus.Upcoming ||
+            fixture.IsProcessed ||
+            DateTime.Now >= fixture.MatchDateTime)
+        {
+            return Json(new
+            {
+                success = false,
+                message = "Prediction is locked for this fixture."
+            });
+        }
+
+        if (teamOneGoal < 0 || teamTwoGoal < 0 || teamOneGoal > 99 || teamTwoGoal > 99)
+        {
+            return Json(new
+            {
+                success = false,
+                message = "Goal must be between 0 and 99."
+            });
+        }
+
+        var prediction = await _context.Predictions
+            .FirstOrDefaultAsync(x => x.UserId == userId && x.FixtureId == fixtureId);
+
+        var isNew = false;
+
+        if (prediction == null)
+        {
+            prediction = new Prediction
+            {
+                UserId = userId,
+                FixtureId = fixtureId,
+                TeamOnePredictedGoal = teamOneGoal,
+                TeamTwoPredictedGoal = teamTwoGoal,
+                EarnedPoint = 0,
+                IsProcessed = false,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Predictions.Add(prediction);
+            isNew = true;
+        }
+        else
+        {
+            prediction.TeamOnePredictedGoal = teamOneGoal;
+            prediction.TeamTwoPredictedGoal = teamTwoGoal;
+            prediction.UpdatedAt = DateTime.Now;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Json(new
+        {
+            success = true,
+            message = isNew ? "Prediction submitted successfully." : "Prediction updated successfully.",
+            fixtureId = fixture.Id,
+            predictionText = $"{teamOneGoal} - {teamTwoGoal}",
+            pointText = "Pending"
+        });
     }
 }

@@ -201,49 +201,80 @@ public class UsersController : Controller
     }
     private async Task SendAccountActivatedEmailAsync(ApplicationUser user)
     {
-        var loginUrl = Url.Action(
-            action: "Login",
-            controller: "Account",
-            values: null,
-            protocol: Request.Scheme
-        );
+        var motherUrl = _configuration["AppSettings:MotherUrl"] ?? "https://localhost:7042/";
+        var loginUrl = motherUrl.TrimEnd('/') + "/Account/Login";
+
+        var whatsAppGroupUrl = _configuration["AppSettings:WhatsAppGroupUrl"] ?? "";
+
+        var whatsAppBlock = string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(whatsAppGroupUrl))
+        {
+            whatsAppBlock = $@"
+        <div style='background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px;margin:25px 0;text-align:center;'>
+            <div style='font-size:38px;margin-bottom:8px;'>💬</div>
+
+            <h3 style='color:#15803d;margin:0 0 8px;font-size:20px;'>
+                Join Our WhatsApp Group
+            </h3>
+
+            <p style='color:#334155;margin:0 0 16px;font-size:14px;line-height:1.6;'>
+                Get match updates, prediction reminders, leaderboard news, and interact with other players.
+            </p>
+
+            <a href='{whatsAppGroupUrl}'
+               style='background:#22c55e;border:1px solid #16a34a;border-radius:8px;
+                      color:#ffffff !important;display:inline-block;font-family:Arial,sans-serif;
+                      font-size:17px;font-weight:700;line-height:22px;padding:13px 28px;
+                      text-align:center;text-decoration:none;min-width:230px;'>
+                💬 Join WhatsApp Group
+            </a>
+
+            <p style='font-size:12px;color:#64748b;margin:14px 0 0;word-break:break-all;'>
+                If the button does not work, copy this link:<br />
+                <span style='color:#15803d;'>{whatsAppGroupUrl}</span>
+            </p>
+        </div>";
+        }
 
         var emailBody = $@"
-    <div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
-        <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>
+<div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
+    <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>
 
-            <div style='text-align:center;margin-bottom:20px;'>
-                <div style='font-size:48px;'>🏆</div>
-                <h2 style='color:#099b49;margin:10px 0 5px;'>Congratulations!</h2>
-                <p style='color:#64748b;margin:0;'>Your account has been approved</p>
-            </div>
-
-            <p>Dear {user.FullName},</p>
-
-            <p>
-                Congratulations! Your <strong>Transtec 360° Football Prediction</strong> account has been activated by admin.
-            </p>
-
-            <p>
-                You can now login, submit predictions, view fixtures, track your score, and compete on the leaderboard.
-            </p>
-
-            <p style='text-align:center;margin:30px 0;'>
-                <a href='{loginUrl}'
-                   style='background:#ffc107;border:1px solid #e0a800;border-radius:8px;
-                          color:#212529 !important;display:inline-block;font-family:Arial,sans-serif;
-                          font-size:18px;font-weight:700;line-height:24px;padding:14px 32px;
-                          text-align:center;text-decoration:none;min-width:220px;'>
-                    ⚽ Login Now
-                </a>
-            </p>
-
-            <p style='font-size:13px;color:#64748b;'>
-                Please follow the game rules and enjoy the prediction challenge.
-            </p>
-
+        <div style='text-align:center;margin-bottom:20px;'>
+            <div style='font-size:48px;'>🏆</div>
+            <h2 style='color:#099b49;margin:10px 0 5px;'>Congratulations!</h2>
+            <p style='color:#64748b;margin:0;'>Your account has been approved</p>
         </div>
-    </div>";
+
+        <p>Dear {user.FullName},</p>
+
+        <p>
+            Congratulations! Your <strong>Transtec 360° Football Prediction</strong> account has been activated by admin.
+        </p>
+
+        <p>
+            You can now login, submit predictions, view fixtures, track your score, and compete on the leaderboard.
+        </p>
+
+        <p style='text-align:center;margin:30px 0;'>
+            <a href='{loginUrl}'
+               style='background:#ffc107;border:1px solid #e0a800;border-radius:8px;
+                      color:#212529 !important;display:inline-block;font-family:Arial,sans-serif;
+                      font-size:18px;font-weight:700;line-height:24px;padding:14px 32px;
+                      text-align:center;text-decoration:none;min-width:220px;'>
+                ⚽ Login Now
+            </a>
+        </p>
+
+        {whatsAppBlock}
+
+        <p style='font-size:13px;color:#64748b;'>
+            Please follow the game rules and enjoy the prediction challenge.
+        </p>
+
+    </div>
+</div>";
 
         await _emailService.SendEmailAsync(
             user.Email!,
@@ -294,13 +325,14 @@ public class UsersController : Controller
 
     private async Task SendAdminPasswordResetEmailAsync(ApplicationUser user, string defaultPassword)
     {
-        var loginUrl = Url.Action(
-            action: "Login",
-            controller: "Account",
-            values: null,
-            protocol: Request.Scheme
-        );
-
+        //var loginUrl = Url.Action(
+        //    action: "Login",
+        //    controller: "Account",
+        //    values: null,
+        //    protocol: Request.Scheme
+        //);
+        var loginUrl = _configuration["AppSettings:MotherUrl"] + "Account/Login"
+               ?? "";
         var emailBody = $@"
     <div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
         <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>

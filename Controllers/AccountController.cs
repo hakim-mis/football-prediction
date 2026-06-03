@@ -486,55 +486,73 @@ public class AccountController : Controller
         );
 
         var emailBody = $@"
-        <div style='font-family:Arial, sans-serif; padding:20px; background:#f5f8ff;'>
-            <div style='max-width:600px; margin:auto; background:#ffffff; padding:25px; border-radius:10px; border:1px solid #b9d7ff;'>
-                <h2 style='color:#0d6efd; margin-bottom:15px;'>Transtec 360° Football Prediction</h2>
-                </br>
-                <p>Dear {user.FullName},</p>
+            <div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
+                <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>
 
-                <p>
-                    You requested a new email verification link for your Transtec 360° Football Prediction account.
-                </p>
+                    <div style='text-align:center;margin-bottom:20px;'>
+                        <div style='font-size:48px;'>🛡️</div>
+                        <h2 style='color:#155dfc;margin:10px 0 5px;'>Verify Your Email Address</h2>
+                        <p style='color:#64748b;margin:0;'>New verification link requested</p>
+                    </div>
 
-                <p>
-                    Please verify your email address by clicking the button below.
-                </p>
+                    <p>Dear {user.FullName},</p>
 
-                <p style='margin:25px 0;'>
-                    <a href='{confirmationLink}'
-                       style=' background:#ffc107;
-            border:1px solid #e0a800;
-            border-radius:8px;
-            color:#212529 !important;
-            display:inline-block;
-            font-family:Arial,sans-serif;
-            font-size:18px;
-            font-weight:700;
-            line-height:24px;
-            padding:14px 32px;
-            text-align:center;
-            text-decoration:none;
-            min-width:220px;'>
-                        🛡️ Verify Email Address
-                    </a>
-                </p>
+                    <p>
+                        You requested a new email verification link for your
+                        <strong>Transtec 360° Football Prediction</strong> account.
+                    </p>
 
-                <p>
-                    After email verification, admin will review and approve your account.
-                </p>
+                    <p>
+                        Please verify your email address by clicking the button below.
+                        After verification, admin will review and approve your account.
+                    </p>
 
-                <p style='font-size:13px; color:#666;'>
-                    If the button does not work, copy and paste this link into your browser:
-                </p>
+                    <div style='background:#eef6ff;border:1px solid #b9d7ff;border-radius:10px;padding:16px;margin:24px 0;color:#334155;'>
+                        <strong style='color:#155dfc;'>Important:</strong>
+                        Your account will remain inactive until your email is verified and admin approval is completed.
+                    </div>
 
-                <p style='font-size:13px; word-break:break-all; color:#0d6efd;'>
-                    {confirmationLink}
-                </p>
-            </div>
-        </div>";
+                    <p style='text-align:center;margin:30px 0;'>
+                        <a href='{confirmationLink}'
+                           style='background:#ffc107;border:1px solid #e0a800;border-radius:8px;
+                                  color:#212529 !important;display:inline-block;font-family:Arial,sans-serif;
+                                  font-size:18px;font-weight:700;line-height:24px;padding:14px 32px;
+                                  text-align:center;text-decoration:none;min-width:240px;'>
+                            🛡️ Verify Email Address
+                        </a>
+                    </p>
+
+                    <div style='background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin:22px 0;'>
+                        <p style='margin:0 0 8px;color:#334155;font-weight:bold;'>
+                            What happens next?
+                        </p>
+
+                        <ol style='margin:0;padding-left:20px;color:#475569;line-height:1.6;'>
+                            <li>Click the verification button above.</li>
+                            <li>Your email address will be verified.</li>
+                            <li>Admin will review and approve your account.</li>
+                            <li>After approval, you can log in and start predicting fixtures.</li>
+                        </ol>
+                    </div>
+
+                    <p style='font-size:13px;color:#64748b;margin-bottom:8px;'>
+                        If the button does not work, copy and paste this link into your browser:
+                    </p>
+
+                    <p style='font-size:13px;word-break:break-all;color:#155dfc;background:#f8fafc;
+                              border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:0;'>
+                        {confirmationLink}
+                    </p>
+
+                    <p style='font-size:13px;color:#64748b;margin-top:18px;'>
+                        Please ignore this email if you did not request a new verification link.
+                    </p>
+
+                </div>
+            </div>";
 
         await _emailService.SendEmailAsync(
-            user.Email,
+            user.Email!,
             "Resend Email Verification - Transtec 360° Football Prediction",
             emailBody
         );
@@ -656,7 +674,7 @@ public class AccountController : Controller
         {
             return RedirectToAction(nameof(Login));
         }
-
+        ModelState.Remove(nameof(model.Email));
         if (!ModelState.IsValid)
         {
             model.ExistingPhotoPath = user.ProfilePhotoPath;

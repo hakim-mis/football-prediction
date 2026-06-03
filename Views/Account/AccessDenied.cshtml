@@ -1,13 +1,252 @@
 @{
     ViewData["Title"] = "Access Denied";
+    ViewData["HideNavbar"] = true;
 }
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="glass-card p-5 text-center">
-            <i class="bi bi-shield-lock display-3 text-warning"></i>
-            <h1 class="mt-3">Access Denied</h1>
-            <p class="text-white-50">You do not have permission to access this page.</p>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-warning">Back to Home</a>
+
+<style>
+    .forgot-wrapper {
+        min-height: 100vh;
+        padding: 24px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .forgot-card {
+        width: 100%;
+        max-width: 650px;
+        overflow: hidden;
+    }
+
+    .forgot-header {
+        width: 100%;
+    }
+
+    .forgot-logo-box {
+        flex: 0 0 auto;
+    }
+
+    .forgot-logo {
+        width: 180px;
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .forgot-title-box {
+        flex: 1;
+        min-width: 0;
+    }
+
+        .forgot-title-box h1 {
+            line-height: 1.2;
+        }
+
+        .forgot-title-box p {
+            line-height: 1.5;
+        }
+
+    .access-status-box {
+        background: rgba(255, 255, 255, .08);
+        border: 1px solid rgba(255, 255, 255, .18);
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 20px;
+    }
+
+    .access-icon-main {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: #fff7ed;
+        color: #f97316;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 38px;
+        margin: 0 auto 16px;
+        border: 1px solid #fdba74;
+    }
+
+    .access-status-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+        .access-status-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .access-status-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #ffc107;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        font-size: 17px;
+    }
+
+    .access-status-text strong {
+        display: block;
+        color: #ffffff;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+
+    .access-status-text span {
+        color: rgba(255, 255, 255, .65);
+        font-size: .92rem;
+        line-height: 1.45;
+    }
+
+    @@media (max-width: 767.98px) {
+        .forgot-wrapper {
+            padding: 12px 8px;
+        }
+
+        .forgot-logo {
+            width: 220px;
+        }
+
+        .forgot-title-box h1 {
+            font-size: 1.6rem;
+        }
+
+        .forgot-title-box p {
+            font-size: .95rem;
+        }
+
+        .forgot-card {
+            border-radius: 14px;
+        }
+
+        .d-grid.d-md-flex .btn {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 420px) {
+        .forgot-logo {
+            width: 190px;
+        }
+
+        .forgot-title-box h1 {
+            font-size: 1.4rem;
+        }
+
+        .forgot-title-box p {
+            font-size: .9rem;
+        }
+    }
+</style>
+
+<div class="forgot-wrapper">
+
+    <div class="col-12 col-sm-11 col-md-8 col-lg-6">
+
+        <div class="glass-card forgot-card p-3 p-sm-4 p-lg-5">
+
+            <div class="forgot-header d-flex flex-column flex-md-row align-items-center text-center text-md-start gap-3 gap-md-4 mb-4">
+
+                <div class="forgot-logo-box">
+                    <img src="~/img/logo2.png" alt="Logo" class="forgot-logo" />
+                </div>
+
+                <div class="forgot-title-box">
+                    <h1 class="h3 fw-bold mb-1">
+                        Access Denied
+                    </h1>
+
+                    <p class="text-white-50 mb-0">
+                        You do not have permission to access this page.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="access-status-box">
+
+                <div class="access-icon-main">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-warning mb-2">
+                        Permission Required
+                    </h3>
+
+                    <p class="text-white-50 mb-0">
+                        This area is restricted. Please use an authorized account or contact the administrator.
+                    </p>
+                </div>
+
+                <div class="access-status-item">
+                    <div class="access-status-icon">
+                        <i class="bi bi-person-lock"></i>
+                    </div>
+
+                    <div class="access-status-text">
+                        <strong>Restricted page</strong>
+                        <span>
+                            Your current account does not have the required role or permission.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="access-status-item">
+                    <div class="access-status-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+
+                    <div class="access-status-text">
+                        <strong>Role-based access</strong>
+                        <span>
+                            Some pages are available only for admin or authorized users.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="access-status-item">
+                    <div class="access-status-icon">
+                        <i class="bi bi-headset"></i>
+                    </div>
+
+                    <div class="access-status-text">
+                        <strong>Need help?</strong>
+                        <span>
+                            Contact the game administrator if you believe you should have access.
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="d-grid d-md-flex gap-2">
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="btn btn-warning btn-lg fw-bold flex-fill">
+                    <i class="bi bi-house"></i>
+                    Back to Home
+                </a>
+
+                <a asp-controller="Account"
+                   asp-action="Login"
+                   class="btn btn-outline-light btn-lg flex-fill">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    Login Again
+                </a>
+
+            </div>
+
         </div>
+
     </div>
+
 </div>

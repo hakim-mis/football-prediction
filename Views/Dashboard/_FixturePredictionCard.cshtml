@@ -1,0 +1,134 @@
+﻿@model FootballPredictionGame.Models.Fixture
+@using FootballPredictionGame.Models
+@using FootballPredictionGame.ViewModels
+
+@{
+ 
+    var dashboardModel = ViewData["DashboardModel"] as DashboardViewModel;
+
+    Prediction? prediction = null;
+
+    var hasPrediction = dashboardModel != null &&
+                        dashboardModel.UserPredictionLookup.TryGetValue(Model.Id, out prediction);
+
+    var canPredict = Model.Status == MatchStatus.Upcoming &&
+                     !Model.IsProcessed &&
+                     DateTime.Now < Model.MatchDateTime;
+
+    var statusClass = Model.Status == MatchStatus.Live
+        ? "status-live blink-live"
+        : Model.Status == MatchStatus.Finished
+            ? "status-finished"
+            : "status-upcoming";
+
+    var cardClass = canPredict ? "fixture-open" : "fixture-locked";
+
+}
+
+<div class="col-md-6 col-xl-4">
+    <div class="fixture-card fixture-card-compact smart-fixture-card h-100 @cardClass">
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge text-bg-primary">
+                @Model.Stage.GetDisplayName()
+            </span>
+
+            <span class="fixture-status @statusClass">
+                @Model.Status
+            </span>
+        </div>
+
+        <div class="small text-muted mb-2">
+            <i class="bi bi-clock"></i>
+            @Model.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")
+        </div>
+
+        <div class="teams-row compact mb-3">
+            <div class="team-block compact-team">
+                <img src=".@(Model.TeamOneFlagPath ?? "/img/default-flag.svg")"
+                     class="flag flag-compact"
+                     alt="@Model.TeamOneName" />
+
+                <strong>@Model.TeamOneName</strong>
+            </div>
+
+            <span class="vs-badge vs-small">VS</span>
+
+            <div class="team-block compact-team text-end" style="align-items:end;">
+                <img src=".@(Model.TeamTwoFlagPath ?? "/img/default-flag.svg")"
+                     class="flag flag-compact"
+                     alt="@Model.TeamTwoName" />
+
+                <strong>@Model.TeamTwoName</strong>
+            </div>
+        </div>
+
+        @if (canPredict)
+        {
+            <form asp-controller="Prediction" asp-action="Save" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="fixtureId" value="@Model.Id" />
+
+                <div class="row g-2 align-items-end">
+                    <div class="col-5">
+                        <input type="number"
+                               min="0"
+                               max="99"
+                               name="teamOneGoal"
+                               class="form-control prediction-input prediction-input-sm"
+                               value="@(hasPrediction && prediction != null ? prediction.TeamOnePredictedGoal : 0)" />
+                    </div>
+
+                    <div class="col-2 text-center pb-2 fw-bold">-</div>
+
+                    <div class="col-5">
+                        <input type="number"
+                               min="0"
+                               max="99"
+                               name="teamTwoGoal"
+                               class="form-control prediction-input prediction-input-sm"
+                               value="@(hasPrediction && prediction != null ? prediction.TeamTwoPredictedGoal : 0)" />
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-@(hasPrediction ? "primary" : "warning") w-100 mt-3">
+                    <i class="bi bi-send"></i>
+                    @(hasPrediction ? "Update Prediction" : "Submit Prediction")
+                </button>
+            </form>
+        }
+        else
+        {
+            <button type="button"
+                    class="btn btn-secondary w-100 mt-2"
+                    disabled>
+                <i class="bi bi-lock-fill"></i>
+                Locked - @Model.Status
+            </button>
+
+            @if (hasPrediction && prediction != null)
+            {
+                <div class="small text-muted text-center mt-2">
+                    Your prediction:
+                    <strong>
+                        @prediction!.TeamOnePredictedGoal - @prediction.TeamTwoPredictedGoal
+                    </strong>
+                </div>
+            }
+
+            @if (Model.Status == MatchStatus.Live || Model.Status == MatchStatus.Finished)
+            {
+                <a asp-controller="Dashboard"
+                   asp-action="PredictionDetail"
+                   asp-route-fixtureId="@Model.Id"
+                   class="btn btn-outline-primary w-100 mt-2">
+                    <i class="bi bi-list-check"></i>
+                    Prediction Detail
+                </a>
+            }
+        }
+
+    </div>
+</div>

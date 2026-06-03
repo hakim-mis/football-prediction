@@ -1,0 +1,134 @@
+﻿@model FootballPredictionGame.ViewModels.FixturePredictionDetailViewModel
+
+@{
+    ViewData["Title"] = "Prediction Detail";
+}
+
+<div class="dashboard-card p-4 mb-4">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <span class="segment-chip">@Model.StageName</span>
+
+            <h2 class="h4 fw-bold mt-2 mb-1">
+                Prediction Detail
+            </h2>
+
+            <div class="text-muted">
+                <i class="bi bi-clock"></i>
+                @Model.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")
+            </div>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="fixture-detail-header mb-4">
+
+        <div class="text-center">
+            <img src="..@Model.TeamOneFlagPath"
+                 class="detail-flag"
+                 alt="@Model.TeamOneName" />
+
+            <h4 class="mt-2">@Model.TeamOneName</h4>
+        </div>
+
+        <div class="text-center">
+            <div class="detail-score">
+                @(Model.TeamOneActualGoal.HasValue? Model.TeamOneActualGoal.ToString() : "-")
+                :
+                @(Model.TeamTwoActualGoal.HasValue? Model.TeamTwoActualGoal.ToString() : "-")
+            </div>
+
+            <div class="fixture-status @(Model.StatusName == "Live" ? "status-live blink-live" : "status-finished")">
+                @Model.StatusName
+            </div>
+        </div>
+
+        <div class="text-center">
+            <img src="..@Model.TeamTwoFlagPath"
+                 class="detail-flag"
+                 alt="@Model.TeamTwoName" />
+
+            <h4 class="mt-2">@Model.TeamTwoName</h4>
+        </div>
+
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-clean table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Rank</th>
+                    <th>Prediction</th>
+                    <th>Actual</th>
+                    <th>Point</th>
+                    <th>Total Score</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (!Model.Predictions.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No prediction submitted for this fixture.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model.Predictions)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="..@item.PhotoPath"
+                                         class="avatar-sm"
+                                         alt="@item.UserName" />
+
+                                    <strong>@item.UserName</strong>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="rank-circle">
+                                    @item.RankText
+                                </span>
+                            </td>
+
+                            <td>
+                                <strong>
+                                    @item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal
+                                </strong>
+                            </td>
+
+                            <td>
+                                @(Model.TeamOneActualGoal.HasValue
+                                                        ? $"{Model.TeamOneActualGoal} - {Model.TeamTwoActualGoal}"
+                                                        : "Pending")
+                    </td>
+
+                            <td>
+                                <span class="badge text-bg-warning">
+                                    @item.EarnedPoint
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="score-pill">
+                                    @item.TotalScore pts
+                                </span>
+                            </td>
+                        </tr>
+                                }
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

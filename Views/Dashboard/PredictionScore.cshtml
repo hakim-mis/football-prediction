@@ -1,81 +1,1175 @@
 ﻿@model DashboardViewModel
 @using FootballPredictionGame.Models
+@using FootballPredictionGame.Helpers
 @using System.Text.Json
+
 @{
     ViewData["Title"] = "Prediction & Score";
-    var avatar = string.IsNullOrWhiteSpace(Model.ProfilePhotoPath) ? "../img/default-avatar.svg" : Model.ProfilePhotoPath;
-    var groupedFixtures = Model.PredictionFixtures.GroupBy(x => x.Stage).OrderBy(x => (int)x.Key).ToList();
+
     var segmentLabels = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.SegmentName));
     var segmentPoints = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.Points));
+
+    var avatarPath = string.IsNullOrWhiteSpace(Model.ProfilePhotoPath)
+        ? Url.Content("~/img/default-avatar.svg")
+        : Url.Content("~/" + Model.ProfilePhotoPath.TrimStart('/', '~'));
+
+    var totalFixtureCount = Model.PredictionFixtures?.Count ?? 0;
+
+    var totalPredictionCount = Model.PredictionFixtures?
+        .Count(f => Model.UserPredictionLookup != null && Model.UserPredictionLookup.ContainsKey(f.Id)) ?? 0;
+
+    var notPredictCount = Model.PredictionFixtures?
+        .Count(f =>
+            f.Status == MatchStatus.Upcoming &&
+            !f.IsProcessed &&
+            DateTime.Now < f.MatchDateTime &&
+            (Model.UserPredictionLookup == null || !Model.UserPredictionLookup.ContainsKey(f.Id))) ?? 0;
+
+    var notParticipateCount = Model.PredictionFixtures?
+        .Count(f =>
+            (f.Status == MatchStatus.Live ||
+             f.Status == MatchStatus.Finished ||
+             DateTime.Now >= f.MatchDateTime) &&
+            (Model.UserPredictionLookup == null || !Model.UserPredictionLookup.ContainsKey(f.Id))) ?? 0;
+
+    var upcomingCount = Model.PredictionFixtures?.Count(f => f.Status == MatchStatus.Upcoming) ?? 0;
+    var liveCount = Model.PredictionFixtures?.Count(f => f.Status == MatchStatus.Live) ?? 0;
+    var finishedCount = Model.PredictionFixtures?.Count(f => f.Status == MatchStatus.Finished) ?? 0;
 }
 
+@functions {
+    private string ToImageUrl(IUrlHelper url, string? path, string fallback)
+    {
+        var finalPath = string.IsNullOrWhiteSpace(path) ? fallback : path;
+        return url.Content("~/" + finalPath.TrimStart('/', '~'));
+    }
 
+    private string StatusClass(MatchStatus status)
+    {
+        return status == MatchStatus.Live ? "status-live blink-live" :
+               status == MatchStatus.Finished ? "status-finished" :
+               "status-upcoming";
+    }
 
-<div class="row g-4 mb-4">
-    
-    <div class="col-lg-8">
-        <div class="dashboard-card p-4">
-            <h2 class="h4 fw-bold mb-3"><i class="bi bi-hourglass-split text-primary"></i> Recent Predictions</h2>
-            <div class="table-responsive">
-                <table class="table table-clean table-hover align-middle mb-0">
-                    <thead><tr><th>Segment</th><th>Match</th><th>Prediction</th><th>Actual</th><th>Point</th></tr></thead>
-                    <tbody>
-                        @if (!Model.RecentPredictions.Any())
+    private string ParticipationText(bool hasPrediction, bool canPredict)
+    {
+        if (hasPrediction)
+        {
+            return "predicted";
+        }
+
+        if (canPredict)
+        {
+            return "notpredict";
+        }
+
+        return "notparticipate";
+    }
+}
+
+<div class="dashboard-card prediction-score-page-card p-3 p-md-4 mb-4" id="predictionScoreCard">
+
+    <!-- Header -->
+    <div class="prediction-score-header mb-3">
+        <div>
+            <h2 class="h4 fw-bold mb-1">
+                <i class="bi bi-grid-1x2 text-primary"></i>
+                Prediction & Score
+            </h2>
+
+            <div class="text-muted small">
+                All fixtures are shown date-time wise ascending.
+            </div>
+        </div>
+
+        <a asp-controller="Dashboard"
+           asp-action="Index"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-calendar-check"></i>
+            Go to Fixtures
+        </a>
+    </div>
+
+    <div id="predictionPageAlert" class="alert d-none mb-3"></div>
+
+    <!-- Compact Profile + Stats -->
+    <div class="prediction-score-summary mb-3">
+
+        <div class="prediction-score-user">
+            <img src="@avatarPath"
+                 alt="@Model.FullName"
+                 class="prediction-score-avatar" />
+
+            <div class="prediction-score-user-info">
+
+                <div class="prediction-user-title-row">
+                    <h5 class="fw-bold mb-0">@Model.FullName</h5>
+
+                    <div class="prediction-basic-info">
+                        <span class="basic-rank">
+                            Rank:
+                            <strong>@Model.RankText</strong>
+                        </span>
+
+                        <span class="basic-point">
+                            Total Point:
+                            <strong id="summaryTotalPoint">@Model.TotalScore</strong>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="prediction-score-stat-row mt-2">
+
+                    <button type="button"
+                            class="prediction-stat-chip stat-predicted"
+                            data-filter="predicted">
+                        Total Prediction:
+                        <strong id="summaryTotalPrediction">@totalPredictionCount</strong>
+                    </button>
+
+                    <button type="button"
+                            class="prediction-stat-chip stat-notpredict"
+                            data-filter="notpredict">
+                        Not Predict:
+                        <strong id="summaryNotPredict">@notPredictCount</strong>
+                    </button>
+
+                    <button type="button"
+                            class="prediction-stat-chip stat-notparticipate"
+                            data-filter="notparticipate">
+                        Not Participate:
+                        <strong id="summaryNotParticipate">@notParticipateCount</strong>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="prediction-filter-buttons">
+
+            <button type="button"
+                    class="prediction-filter-btn filter-all active"
+                    data-filter="all">
+                <i class="bi bi-grid"></i>
+                All
+                <span id="countAll">@totalFixtureCount</span>
+            </button>
+
+            <button type="button"
+                    class="prediction-filter-btn filter-upcoming"
+                    data-filter="Upcoming">
+                <i class="bi bi-calendar-event"></i>
+                Upcoming
+                <span id="countUpcoming">@upcomingCount</span>
+            </button>
+
+            <button type="button"
+                    class="prediction-filter-btn filter-live"
+                    data-filter="Live">
+                <i class="bi bi-broadcast"></i>
+                Live
+                <span id="countLive">@liveCount</span>
+            </button>
+
+            <button type="button"
+                    class="prediction-filter-btn filter-finished"
+                    data-filter="Finished">
+                <i class="bi bi-check-circle"></i>
+                Finished
+                <span id="countFinished">@finishedCount</span>
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Desktop Table -->
+    <div class="prediction-table-wrap d-none d-lg-block">
+        <table class="table table-clean table-hover align-middle mb-0 prediction-table">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Segment</th>
+                    <th>Match</th>
+                    <th>Status</th>
+                    <th>Prediction</th>
+                    <th>Actual</th>
+                    <th>Point</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="predictionTableBody">
+                @if (Model.PredictionFixtures == null || !Model.PredictionFixtures.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            No fixture found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var fixture in Model.PredictionFixtures.OrderBy(x => x.MatchDateTime))
+                    {
+                        Prediction? prediction = null;
+
+                        var hasPrediction = Model.UserPredictionLookup != null &&
+                                            Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
+
+                        var canPredict = fixture.Status == MatchStatus.Upcoming &&
+                                         !fixture.IsProcessed &&
+                                         DateTime.Now < fixture.MatchDateTime;
+
+                        var participation = ParticipationText(hasPrediction, canPredict);
+
+                        var teamOneFlag = ToImageUrl(Url, fixture.TeamOneFlagPath, "/img/default-flag.svg");
+                        var teamTwoFlag = ToImageUrl(Url, fixture.TeamTwoFlagPath, "/img/default-flag.svg");
+
+                        var actualText = fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue
+                            ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
+                            : "Pending";
+
+                        <tr id="fixture-row-@fixture.Id"
+                            class="prediction-fixture-row"
+                            data-fixture-id="@fixture.Id"
+                            data-status="@fixture.Status"
+                            data-can-predict="@(canPredict ? "true" : "false")"
+                            data-has-prediction="@(hasPrediction ? "true" : "false")"
+                            data-participation="@participation">
+
+                            <td>
+                                <div class="fw-semibold">
+                                    @fixture.MatchDateTime.ToString("dd MMM yyyy")
+                                </div>
+                                <div class="small text-muted">
+                                    @fixture.MatchDateTime.ToString("hh:mm tt")
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="segment-chip">
+                                    @fixture.Stage.GetDisplayName()
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="prediction-score-team-row">
+
+                                    <div class="prediction-score-team">
+                                        <img src="@teamOneFlag"
+                                             class="flag-sm"
+                                             alt="@fixture.TeamOneName" />
+
+                                        <span>@fixture.TeamOneName</span>
+                                    </div>
+
+                                    <strong class="text-muted">vs</strong>
+
+                                    <div class="prediction-score-team">
+                                        <img src="@teamTwoFlag"
+                                             class="flag-sm"
+                                             alt="@fixture.TeamTwoName" />
+
+                                        <span>@fixture.TeamTwoName</span>
+                                    </div>
+
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="fixture-status @StatusClass(fixture.Status)">
+                                    @fixture.Status
+                                </span>
+                            </td>
+
+                            <td class="prediction-value-cell" data-fixture-id="@fixture.Id">
+                                @if (hasPrediction && prediction != null)
+                                {
+                                    <span class="prediction-text-success">
+                                        @prediction.TeamOnePredictedGoal - @prediction.TeamTwoPredictedGoal
+                                    </span>
+                                }
+                                else if (canPredict)
+                                {
+                                    <span class="prediction-text-danger">
+                                        No Prediction
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="prediction-text-muted">
+                                        Not Participated
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue)
+                                {
+                                    <strong>@actualText</strong>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Pending</span>
+                                }
+                            </td>
+
+                            <td class="prediction-point-cell" data-fixture-id="@fixture.Id">
+                                @if (hasPrediction && prediction != null && prediction.IsProcessed)
+                                {
+                                    <span class="badge text-bg-warning">
+                                        @prediction.EarnedPoint
+                                    </span>
+                                }
+                                else if (hasPrediction && prediction != null)
+                                {
+                                    <span class="badge text-bg-secondary">
+                                        Pending
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-light text-muted">
+                                        -
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="prediction-action-cell" data-fixture-id="@fixture.Id">
+                                @if (!hasPrediction && canPredict)
+                                {
+                                    <button type="button"
+                                            class="btn btn-warning btn-sm fw-bold js-open-prediction-modal"
+                                            data-fixture-id="@fixture.Id"
+                                            data-team-one="@fixture.TeamOneName"
+                                            data-team-two="@fixture.TeamTwoName"
+                                            data-team-one-flag="@teamOneFlag"
+                                            data-team-two-flag="@teamTwoFlag"
+                                            data-team-one-goal="0"
+                                            data-team-two-goal="0"
+                                            data-match-time="@fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")"
+                                            data-mode="Predict">
+                                        <i class="bi bi-send"></i>
+                                        Predict
+                                    </button>
+                                }
+                                else if (hasPrediction && canPredict && prediction != null)
+                                {
+                                    <button type="button"
+                                            class="btn btn-primary btn-sm fw-bold js-open-prediction-modal"
+                                            data-fixture-id="@fixture.Id"
+                                            data-team-one="@fixture.TeamOneName"
+                                            data-team-two="@fixture.TeamTwoName"
+                                            data-team-one-flag="@teamOneFlag"
+                                            data-team-two-flag="@teamTwoFlag"
+                                            data-team-one-goal="@prediction.TeamOnePredictedGoal"
+                                            data-team-two-goal="@prediction.TeamTwoPredictedGoal"
+                                            data-match-time="@fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")"
+                                            data-mode="Update">
+                                        <i class="bi bi-pencil-square"></i>
+                                        Update
+                                    </button>
+                                }
+                                else if (fixture.Status == MatchStatus.Live || fixture.Status == MatchStatus.Finished)
+                                {
+                                    <a asp-controller="Dashboard"
+                                       asp-action="PredictionDetail"
+                                       asp-route-fixtureId="@fixture.Id"
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-list-check"></i>
+                                        Detail
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Locked</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mobile Card List -->
+    <div class="prediction-mobile-list d-lg-none" id="predictionMobileList">
+
+        @if (Model.PredictionFixtures == null || !Model.PredictionFixtures.Any())
+        {
+            <div class="empty-state">
+                No fixture found.
+            </div>
+        }
+        else
+        {
+            foreach (var fixture in Model.PredictionFixtures.OrderBy(x => x.MatchDateTime))
+            {
+                Prediction? prediction = null;
+
+                var hasPrediction = Model.UserPredictionLookup != null &&
+                                    Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
+
+                var canPredict = fixture.Status == MatchStatus.Upcoming &&
+                                 !fixture.IsProcessed &&
+                                 DateTime.Now < fixture.MatchDateTime;
+
+                var participation = ParticipationText(hasPrediction, canPredict);
+
+                var teamOneFlag = ToImageUrl(Url, fixture.TeamOneFlagPath, "/img/default-flag.svg");
+                var teamTwoFlag = ToImageUrl(Url, fixture.TeamTwoFlagPath, "/img/default-flag.svg");
+
+                var actualText = fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue
+                    ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
+                    : "Pending";
+
+                <div id="fixture-card-@fixture.Id"
+                     class="mobile-fixture-card prediction-fixture-card"
+                     data-fixture-id="@fixture.Id"
+                     data-status="@fixture.Status"
+                     data-can-predict="@(canPredict ? "true" : "false")"
+                     data-has-prediction="@(hasPrediction ? "true" : "false")"
+                     data-participation="@participation">
+
+                    <div class="mobile-fixture-top">
+                        <span class="segment-chip">
+                            @fixture.Stage.GetDisplayName()
+                        </span>
+
+                        <span class="fixture-status @StatusClass(fixture.Status)">
+                            @fixture.Status
+                        </span>
+                    </div>
+
+                    <div class="mobile-fixture-time">
+                        <i class="bi bi-calendar-event"></i>
+                        @fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")
+                    </div>
+
+                    <div class="mobile-fixture-teams">
+                        <div class="mobile-team">
+                            <img src="@teamOneFlag" alt="@fixture.TeamOneName" />
+                            <span>@fixture.TeamOneName</span>
+                        </div>
+
+                        <div class="mobile-vs">VS</div>
+
+                        <div class="mobile-team">
+                            <img src="@teamTwoFlag" alt="@fixture.TeamTwoName" />
+                            <span>@fixture.TeamTwoName</span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-fixture-mini-summary">
+                        <div class="mini-summary-item prediction-mini" data-fixture-id="@fixture.Id">
+                            <span>Prediction</span>
+
+                            <strong class="mobile-prediction-value" data-fixture-id="@fixture.Id">
+                                @if (hasPrediction && prediction != null)
+                                {
+                                    <span class="prediction-text-success">
+                                        @prediction.TeamOnePredictedGoal - @prediction.TeamTwoPredictedGoal
+                                    </span>
+                                }
+                                else if (canPredict)
+                                {
+                                    <span class="prediction-text-danger">
+                                        No Prediction
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="prediction-text-muted">
+                                        Not Participated
+                                    </span>
+                                }
+                            </strong>
+                        </div>
+
+                        <div class="mini-summary-item actual-mini">
+                            <span>Actual</span>
+                            <strong>@actualText</strong>
+                        </div>
+
+                        <div class="mini-summary-item point-mini">
+                            <span>Point</span>
+
+                            <strong class="mobile-point-value" data-fixture-id="@fixture.Id">
+                                @if (hasPrediction && prediction != null && prediction.IsProcessed)
+                                {
+                                    <span class="badge text-bg-warning">
+                                        @prediction.EarnedPoint
+                                    </span>
+                                }
+                                else if (hasPrediction && prediction != null)
+                                {
+                                    <span class="badge text-bg-secondary">
+                                        Pending
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-light text-muted">
+                                        -
+                                    </span>
+                                }
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="mobile-action-cell" data-fixture-id="@fixture.Id">
+                        @if (!hasPrediction && canPredict)
                         {
-                            <tr><td colspan="5" class="text-center text-muted">No prediction submitted yet.</td></tr>
+                            <button type="button"
+                                    class="btn btn-warning btn-sm fw-bold w-100 js-open-prediction-modal"
+                                    data-fixture-id="@fixture.Id"
+                                    data-team-one="@fixture.TeamOneName"
+                                    data-team-two="@fixture.TeamTwoName"
+                                    data-team-one-flag="@teamOneFlag"
+                                    data-team-two-flag="@teamTwoFlag"
+                                    data-team-one-goal="0"
+                                    data-team-two-goal="0"
+                                    data-match-time="@fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")"
+                                    data-mode="Predict">
+                                <i class="bi bi-send"></i>
+                                Predict
+                            </button>
+                        }
+                        else if (hasPrediction && canPredict && prediction != null)
+                        {
+                            <button type="button"
+                                    class="btn btn-primary btn-sm fw-bold w-100 js-open-prediction-modal"
+                                    data-fixture-id="@fixture.Id"
+                                    data-team-one="@fixture.TeamOneName"
+                                    data-team-two="@fixture.TeamTwoName"
+                                    data-team-one-flag="@teamOneFlag"
+                                    data-team-two-flag="@teamTwoFlag"
+                                    data-team-one-goal="@prediction.TeamOnePredictedGoal"
+                                    data-team-two-goal="@prediction.TeamTwoPredictedGoal"
+                                    data-match-time="@fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")"
+                                    data-mode="Update">
+                                <i class="bi bi-pencil-square"></i>
+                                Update
+                            </button>
+                        }
+                        else if (fixture.Status == MatchStatus.Live || fixture.Status == MatchStatus.Finished)
+                        {
+                            <a asp-controller="Dashboard"
+                               asp-action="PredictionDetail"
+                               asp-route-fixtureId="@fixture.Id"
+                               class="btn btn-outline-primary btn-sm w-100">
+                                <i class="bi bi-list-check"></i>
+                                Detail
+                            </a>
                         }
                         else
                         {
-                            @foreach (var item in Model.RecentPredictions)
-                            {
-                                <tr>
-                                    <td><span class="segment-chip">@item.Fixture.Stage.GetDisplayName()</span></td>
-                                    <td>@item.Fixture.TeamOneName vs @item.Fixture.TeamTwoName</td>
-                                    <td>@item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal</td>
-                                    <td>@(item.Fixture.TeamOneActualGoal.HasValue && item.Fixture.TeamTwoActualGoal.HasValue ? $"{item.Fixture.TeamOneActualGoal} - {item.Fixture.TeamTwoActualGoal}" : "Pending")</td>
-                                    <td><span class="badge text-bg-warning">@item.EarnedPoint</span></td>
-                                </tr>
-                            }
+                            <span class="text-muted small d-block text-center">Locked</span>
                         }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="dashboard-card p-4 mb-4">
-            <h2 class="h4 fw-bold mb-3"><i class="bi bi-pie-chart text-primary"></i> Segment Points</h2>
-            @if (!Model.SegmentPoints.Any())
-            {
-                <div class="empty-state">No segment points yet.</div>
-            }
-            else
-            {
-                @foreach (var segment in Model.SegmentPoints)
-                {
-                    <div class="d-flex justify-content-between border-bottom py-2">
-                        <span>@segment.SegmentName</span>
-                        <strong>@segment.Points pts</strong>
                     </div>
-                }
+
+                </div>
             }
+        }
+
+    </div>
+
+</div>
+
+<!-- Prediction Modal -->
+<div class="modal fade" id="predictionModal" tabindex="-1" aria-labelledby="predictionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content prediction-modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="predictionModalLabel">
+                    Submit Prediction
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <form id="predictionAjaxForm">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="modalFixtureId" name="fixtureId" />
+
+                    <div id="predictionAjaxMessage" class="alert d-none"></div>
+
+                    <div class="prediction-modal-match-time mb-3">
+                        <div class="match-time-icon">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+
+                        <div>
+                            <div class="match-time-label">Match Date & Time</div>
+                            <div class="match-time-value" id="modalMatchDateTime"></div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-modal-teams">
+
+                        <div class="prediction-modal-team">
+                            <img id="modalTeamOneFlag" src="" alt="Team One" />
+                            <strong id="modalTeamOneName"></strong>
+                        </div>
+
+                        <div class="prediction-modal-vs">VS</div>
+
+                        <div class="prediction-modal-team">
+                            <img id="modalTeamTwoFlag" src="" alt="Team Two" />
+                            <strong id="modalTeamTwoName"></strong>
+                        </div>
+
+                    </div>
+
+                    <div class="row g-3 mt-3 align-items-end">
+                        <div class="col-5">
+                            <label class="form-label small text-muted" id="modalTeamOneLabel"></label>
+                            <input type="number"
+                                   id="modalTeamOneGoal"
+                                   name="teamOneGoal"
+                                   min="0"
+                                   max="99"
+                                   class="form-control prediction-input text-center fw-bold"
+                                   required />
+                        </div>
+
+                        <div class="col-2 text-center fw-bold pb-2">
+                            -
+                        </div>
+
+                        <div class="col-5">
+                            <label class="form-label small text-muted" id="modalTeamTwoLabel"></label>
+                            <input type="number"
+                                   id="modalTeamTwoGoal"
+                                   name="teamTwoGoal"
+                                   min="0"
+                                   max="99"
+                                   class="form-control prediction-input text-center fw-bold"
+                                   required />
+                        </div>
+                    </div>
+
+                    <div class="small text-muted mt-3">
+                        Prediction is allowed only before match starts and only for Upcoming fixtures.
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            id="modalSavePredictionBtn"
+                            class="btn btn-warning fw-bold">
+                        <i class="bi bi-send"></i>
+                        Save Prediction
+                    </button>
+                </div>
+
+            </form>
+
         </div>
     </div>
 </div>
 
+<!-- Toast -->
+<div id="customToast" class="custom-toast d-none">
+    <div class="custom-toast-icon">
+        <i id="customToastIcon" class="bi bi-check-circle-fill"></i>
+    </div>
 
+    <div id="customToastMessage" class="custom-toast-message">
+        Prediction saved successfully.
+    </div>
+
+    <button type="button" class="custom-toast-close" onclick="hideCustomToast()">
+        <i class="bi bi-x-lg"></i>
+    </button>
+</div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         const labels = @Html.Raw(segmentLabels);
         const points = @Html.Raw(segmentPoints);
+
         if (document.getElementById('segmentChart') && labels.length > 0) {
             new Chart(document.getElementById('segmentChart'), {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Points', data: points }] },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Points',
+                            data: points
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
             });
+        }
+    </script>
+
+    <script>
+        let predictionModal;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const modalElement = document.getElementById("predictionModal");
+
+            if (modalElement && typeof bootstrap !== "undefined") {
+                predictionModal = new bootstrap.Modal(modalElement);
+            }
+
+            bindPredictionButtons();
+            bindPredictionFilterButtons();
+
+            const form = document.getElementById("predictionAjaxForm");
+
+            if (form) {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    savePredictionAjax();
+                });
+            }
+        });
+
+        function bindPredictionButtons() {
+            document.querySelectorAll(".js-open-prediction-modal").forEach(function (button) {
+                button.removeEventListener("click", predictionButtonClickHandler);
+                button.addEventListener("click", predictionButtonClickHandler);
+            });
+        }
+
+        function predictionButtonClickHandler(e) {
+            openPredictionModal(e.currentTarget);
+        }
+
+        function bindPredictionFilterButtons() {
+            document.querySelectorAll(".prediction-filter-btn, .prediction-stat-chip").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const filter = button.getAttribute("data-filter") || "all";
+
+                    document.querySelectorAll(".prediction-filter-btn").forEach(function (btn) {
+                        btn.classList.remove("active");
+                    });
+
+                    const matchingFilterButton = document.querySelector('.prediction-filter-btn[data-filter="' + filter + '"]');
+
+                    if (matchingFilterButton) {
+                        matchingFilterButton.classList.add("active");
+                    }
+
+                    filterPredictionItems(filter);
+                });
+            });
+        }
+
+        function filterPredictionItems(filter) {
+            const allItems = document.querySelectorAll(".prediction-fixture-row, .prediction-fixture-card");
+
+            allItems.forEach(function (item) {
+                const status = item.getAttribute("data-status");
+                const participation = item.getAttribute("data-participation");
+
+                let shouldShow = false;
+
+                if (filter === "all") {
+                    shouldShow = true;
+                } else if (filter === "Upcoming" || filter === "Live" || filter === "Finished") {
+                    shouldShow = status === filter;
+                } else if (filter === "predicted" || filter === "notpredict" || filter === "notparticipate") {
+                    shouldShow = participation === filter;
+                }
+
+                if (shouldShow) {
+                    item.classList.remove("d-none");
+                } else {
+                    item.classList.add("d-none");
+                }
+            });
+        }
+
+        function openPredictionModal(button) {
+            if (!predictionModal) {
+                showCustomToast("Prediction popup could not be loaded. Please refresh the page.", "error");
+                return;
+            }
+
+            const fixtureId = button.getAttribute("data-fixture-id");
+            const teamOne = button.getAttribute("data-team-one") || "";
+            const teamTwo = button.getAttribute("data-team-two") || "";
+            const teamOneFlag = button.getAttribute("data-team-one-flag") || "";
+            const teamTwoFlag = button.getAttribute("data-team-two-flag") || "";
+            const teamOneGoal = button.getAttribute("data-team-one-goal") || "0";
+            const teamTwoGoal = button.getAttribute("data-team-two-goal") || "0";
+            const matchTime = button.getAttribute("data-match-time") || "";
+            const mode = button.getAttribute("data-mode") || "Predict";
+
+            setText("predictionModalLabel", mode + " Prediction");
+            setValue("modalFixtureId", fixtureId);
+            setText("modalMatchDateTime", matchTime);
+
+            setText("modalTeamOneName", teamOne);
+            setText("modalTeamTwoName", teamTwo);
+
+            setText("modalTeamOneLabel", teamOne);
+            setText("modalTeamTwoLabel", teamTwo);
+
+            setImage("modalTeamOneFlag", teamOneFlag);
+            setImage("modalTeamTwoFlag", teamTwoFlag);
+
+            setValue("modalTeamOneGoal", teamOneGoal);
+            setValue("modalTeamTwoGoal", teamTwoGoal);
+
+            const messageBox = document.getElementById("predictionAjaxMessage");
+            if (messageBox) {
+                messageBox.className = "alert d-none";
+                messageBox.innerText = "";
+            }
+
+            const saveBtn = document.getElementById("modalSavePredictionBtn");
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bi bi-send"></i> Save Prediction';
+            }
+
+            predictionModal.show();
+        }
+
+        async function savePredictionAjax() {
+            const form = document.getElementById("predictionAjaxForm");
+            const saveBtn = document.getElementById("modalSavePredictionBtn");
+
+            if (!form) {
+                showModalMessage("Prediction form not found.", "danger");
+                return;
+            }
+
+            const teamOneGoal = document.getElementById("modalTeamOneGoal")?.value;
+            const teamTwoGoal = document.getElementById("modalTeamTwoGoal")?.value;
+
+            if (teamOneGoal === "" || teamTwoGoal === "") {
+                showModalMessage("Please enter both team goals.", "danger");
+                return;
+            }
+
+            if (parseInt(teamOneGoal) < 0 || parseInt(teamTwoGoal) < 0) {
+                showModalMessage("Goal cannot be negative.", "danger");
+                return;
+            }
+
+            const formData = new FormData(form);
+            const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenInput ? tokenInput.value : "";
+
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+            }
+
+            try {
+                const response = await fetch('@Url.Action("SaveAjax", "Prediction")', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const contentType = response.headers.get("content-type") || "";
+
+                if (!response.ok) {
+                    throw new Error("Server returned " + response.status);
+                }
+
+                if (!contentType.includes("application/json")) {
+                    throw new Error("Server did not return JSON. Check SaveAjax action and login/session.");
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showCustomToast(data.message || "Prediction could not be saved.", "error");
+                    resetSaveButton();
+                    return;
+                }
+
+                updatePredictionUi(data);
+
+                if (predictionModal) {
+                    predictionModal.hide();
+                }
+
+                showCustomToast(data.message || "Prediction saved successfully.", "success");
+
+                resetSaveButton();
+            }
+            catch (error) {
+                console.error(error);
+                showCustomToast("Unexpected error occurred. Please try again.", "error");
+                resetSaveButton();
+            }
+        }
+
+        function updatePredictionUi(data) {
+            const fixtureId = data.fixtureId;
+
+            const row = document.getElementById("fixture-row-" + fixtureId);
+            const wasPredictedBefore = row ? row.getAttribute("data-has-prediction") === "true" : true;
+            const canPredict = row ? row.getAttribute("data-can-predict") === "true" : false;
+
+            updatePredictionTableRow(data);
+            updatePredictionMobileCard(data);
+
+            if (!wasPredictedBefore && canPredict) {
+                updatePredictionCountersAfterSave();
+            }
+        }
+
+        function updatePredictionTableRow(data) {
+            const fixtureId = data.fixtureId;
+
+            const row = document.getElementById("fixture-row-" + fixtureId);
+            const predictionCell = document.querySelector('.prediction-value-cell[data-fixture-id="' + fixtureId + '"]');
+            const pointCell = document.querySelector('.prediction-point-cell[data-fixture-id="' + fixtureId + '"]');
+            const actionCell = document.querySelector('.prediction-action-cell[data-fixture-id="' + fixtureId + '"]');
+
+            if (predictionCell) {
+                predictionCell.innerHTML =
+                    '<span class="prediction-text-success">' + escapeHtml(data.predictionText) + '</span>';
+            }
+
+            if (pointCell) {
+                pointCell.innerHTML =
+                    '<span class="badge text-bg-secondary">' + escapeHtml(data.pointText || "Pending") + '</span>';
+            }
+
+            if (actionCell) {
+                actionCell.innerHTML = buildUpdateButtonHtml(fixtureId, false);
+                bindPredictionButtons();
+            }
+
+            if (row) {
+                row.setAttribute("data-has-prediction", "true");
+                row.setAttribute("data-participation", "predicted");
+                flashUpdatedItem(row);
+            }
+        }
+
+        function updatePredictionMobileCard(data) {
+            const fixtureId = data.fixtureId;
+
+            const card = document.getElementById("fixture-card-" + fixtureId);
+            const predictionValue = document.querySelector('.mobile-prediction-value[data-fixture-id="' + fixtureId + '"]');
+            const pointValue = document.querySelector('.mobile-point-value[data-fixture-id="' + fixtureId + '"]');
+            const actionCell = document.querySelector('.mobile-action-cell[data-fixture-id="' + fixtureId + '"]');
+
+            if (predictionValue) {
+                predictionValue.innerHTML =
+                    '<span class="prediction-text-success">' + escapeHtml(data.predictionText) + '</span>';
+            }
+
+            if (pointValue) {
+                pointValue.innerHTML =
+                    '<span class="badge text-bg-secondary">' + escapeHtml(data.pointText || "Pending") + '</span>';
+            }
+
+            if (actionCell) {
+                actionCell.innerHTML = buildUpdateButtonHtml(fixtureId, true);
+                bindPredictionButtons();
+            }
+
+            if (card) {
+                card.setAttribute("data-has-prediction", "true");
+                card.setAttribute("data-participation", "predicted");
+                flashUpdatedItem(card);
+            }
+        }
+
+        function buildUpdateButtonHtml(fixtureId, isMobile) {
+            const teamOne = getText("modalTeamOneName");
+            const teamTwo = getText("modalTeamTwoName");
+            const teamOneFlag = document.getElementById("modalTeamOneFlag")?.src || "";
+            const teamTwoFlag = document.getElementById("modalTeamTwoFlag")?.src || "";
+            const teamOneGoal = document.getElementById("modalTeamOneGoal")?.value || "0";
+            const teamTwoGoal = document.getElementById("modalTeamTwoGoal")?.value || "0";
+            const matchTime = document.getElementById("modalMatchDateTime")?.innerText || "";
+
+            const fullWidth = isMobile ? " w-100" : "";
+
+            return '<button type="button" ' +
+                'class="btn btn-primary btn-sm fw-bold js-open-prediction-modal' + fullWidth + '" ' +
+                'data-fixture-id="' + escapeHtml(fixtureId) + '" ' +
+                'data-team-one="' + escapeHtml(teamOne) + '" ' +
+                'data-team-two="' + escapeHtml(teamTwo) + '" ' +
+                'data-team-one-flag="' + escapeHtml(teamOneFlag) + '" ' +
+                'data-team-two-flag="' + escapeHtml(teamTwoFlag) + '" ' +
+                'data-team-one-goal="' + escapeHtml(teamOneGoal) + '" ' +
+                'data-team-two-goal="' + escapeHtml(teamTwoGoal) + '" ' +
+                'data-match-time="' + escapeHtml(matchTime) + '" ' +
+                'data-mode="Update">' +
+                '<i class="bi bi-pencil-square"></i> Update' +
+                '</button>';
+        }
+
+        function updatePredictionCountersAfterSave() {
+            incrementNumber("summaryTotalPrediction", 1);
+            incrementNumber("summaryNotPredict", -1);
+            incrementNumber("countNotPredict", -1);
+        }
+
+        function incrementNumber(id, amount) {
+            const element = document.getElementById(id);
+
+            if (!element) {
+                return;
+            }
+
+            const currentValue = parseInt(element.innerText || "0");
+            const nextValue = Math.max(currentValue + amount, 0);
+
+            element.innerText = nextValue;
+        }
+
+        function flashUpdatedItem(element) {
+            element.classList.add("prediction-row-updated");
+
+            setTimeout(function () {
+                element.classList.remove("prediction-row-updated");
+            }, 1800);
+        }
+
+        function showModalMessage(message, type) {
+            const messageBox = document.getElementById("predictionAjaxMessage");
+
+            if (!messageBox) {
+                showCustomToast(message, type === "danger" ? "error" : "success");
+                return;
+            }
+
+            messageBox.className = "alert alert-" + type;
+            messageBox.innerText = message;
+        }
+
+        function showCustomToast(message, type = "success") {
+            const toast = document.getElementById("customToast");
+            const toastMessage = document.getElementById("customToastMessage");
+            const toastIcon = document.getElementById("customToastIcon");
+
+            if (!toast || !toastMessage) {
+                console.log(message);
+                return;
+            }
+
+            toastMessage.innerText = message;
+
+            toast.classList.remove("success", "error", "d-none", "show");
+            toast.classList.add(type === "error" ? "error" : "success");
+
+            if (toastIcon) {
+                toastIcon.className = type === "error"
+                    ? "bi bi-x-circle-fill"
+                    : "bi bi-check-circle-fill";
+            }
+
+            setTimeout(function () {
+                toast.classList.add("show");
+            }, 20);
+
+            setTimeout(function () {
+                hideCustomToast();
+            }, 2000);
+        }
+
+        function hideCustomToast() {
+            const toast = document.getElementById("customToast");
+
+            if (!toast) {
+                return;
+            }
+
+            toast.classList.remove("show");
+
+            setTimeout(function () {
+                toast.classList.add("d-none");
+            }, 250);
+        }
+
+        function resetSaveButton() {
+            const saveBtn = document.getElementById("modalSavePredictionBtn");
+
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bi bi-send"></i> Save Prediction';
+            }
+        }
+
+        function setText(id, value) {
+            const element = document.getElementById(id);
+
+            if (element) {
+                element.innerText = value;
+            }
+        }
+
+        function getText(id) {
+            const element = document.getElementById(id);
+            return element ? element.innerText : "";
+        }
+
+        function setValue(id, value) {
+            const element = document.getElementById(id);
+
+            if (element) {
+                element.value = value;
+            }
+        }
+
+        function setImage(id, value) {
+            const element = document.getElementById(id);
+
+            if (element) {
+                element.src = value;
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
         }
     </script>
 }

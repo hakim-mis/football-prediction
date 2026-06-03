@@ -1,0 +1,87 @@
+﻿@{
+    ViewData["Title"] = "Game Rules";
+}
+
+<div class="dashboard-card p-4 mb-4 game-rule-card">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2 class="h3 fw-bold mb-1">
+                <i class="bi bi-journal-check text-primary"></i>
+                Game Rules
+            </h2>
+
+            <p class="text-muted mb-0">
+                Transtec 360° Football Prediction game rules in English and Bangla.
+            </p>
+        </div>
+
+        <a asp-controller="Dashboard"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-6">
+            <div class="rule-language-box">
+                <h4 class="fw-bold mb-3">
+                    <i class="bi bi-translate"></i>
+                    English Rules
+                </h4>
+
+                <ol class="rule-list mb-0">
+                    <li>Only registered, email-verified, and admin-approved users can participate.</li>
+                    <li>Users can submit predictions only for fixtures with <strong>Upcoming</strong> status.</li>
+                    <li>Prediction will be locked once the match becomes <strong>Live</strong> or <strong>Finished</strong>.</li>
+                    <li>Each user can submit only one prediction per fixture.</li>
+                    <li>Users can update their prediction before the fixture is locked.</li>
+                    <li>Exact score prediction will earn <strong>3 points</strong>.</li>
+                    <li>Correct winner or correct match result prediction will earn <strong>1 point</strong>.</li>
+                    <li>Wrong prediction will earn <strong>0 points</strong>.</li>
+                    <li>If the match result is a draw, the user must also predict a draw to earn result points.</li>
+                    <li>After the match ends, admin will enter the actual score and process the result.</li>
+                    <li>Once the result is processed, user points and ranking will be updated automatically.</li>
+                    <li>If admin enters a wrong score, admin may undo the process, correct the score, and process again.</li>
+                    <li>Users with the same score will share the same rank.</li>
+                    <li>Users with zero score will show as <strong>No rank</strong>.</li>
+                    <li>Any unfair activity, misuse, or violation of game rules may cause account deactivation.</li>
+                    <li>The admin decision will be final for score processing, user approval, and rule violation matters.</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="rule-language-box">
+                <h4 class="fw-bold mb-3">
+                    <i class="bi bi-translate"></i>
+                    বাংলা নিয়ম
+                </h4>
+
+                <ol class="rule-list bangla-rule mb-0">
+                    <li>শুধুমাত্র নিবন্ধিত, ইমেইল ভেরিফাইড এবং অ্যাডমিন অনুমোদিত ব্যবহারকারী অংশগ্রহণ করতে পারবেন।</li>
+                    <li>শুধুমাত্র <strong>Upcoming</strong> স্ট্যাটাসের ম্যাচে প্রেডিকশন দেওয়া যাবে।</li>
+                    <li>ম্যাচ <strong>Live</strong> অথবা <strong>Finished</strong> হলে প্রেডিকশন লক হয়ে যাবে।</li>
+                    <li>প্রতি ম্যাচে একজন ব্যবহারকারী মাত্র একটি প্রেডিকশন দিতে পারবেন।</li>
+                    <li>ম্যাচ লক হওয়ার আগে ব্যবহারকারী তার প্রেডিকশন আপডেট করতে পারবেন।</li>
+                    <li>সঠিক স্কোর মিললে <strong>৩ পয়েন্ট</strong> পাওয়া যাবে।</li>
+                    <li>সঠিক বিজয়ী বা সঠিক ম্যাচ রেজাল্ট মিললে <strong>১ পয়েন্ট</strong> পাওয়া যাবে।</li>
+                    <li>ভুল প্রেডিকশনের জন্য <strong>০ পয়েন্ট</strong> পাওয়া যাবে।</li>
+                    <li>ম্যাচ ড্র হলে পয়েন্ট পেতে ব্যবহারকারীকে ড্র প্রেডিক্ট করতে হবে।</li>
+                    <li>ম্যাচ শেষে অ্যাডমিন আসল স্কোর দিয়ে রেজাল্ট প্রসেস করবেন।</li>
+                    <li>রেজাল্ট প্রসেস হওয়ার পর ব্যবহারকারীর পয়েন্ট ও র‌্যাংক স্বয়ংক্রিয়ভাবে আপডেট হবে।</li>
+                    <li>অ্যাডমিন ভুল স্কোর দিলে প্রসেস আনডু করে স্কোর সংশোধন করে আবার প্রসেস করতে পারবেন।</li>
+                    <li>একই পয়েন্ট হলে ব্যবহারকারীরা একই র‌্যাংক পাবেন।</li>
+                    <li>যাদের পয়েন্ট শূন্য, তাদের র‌্যাংক <strong>No rank</strong> হিসেবে দেখাবে।</li>
+                    <li>কোনো অনিয়ম, অপব্যবহার বা নিয়ম ভঙ্গ করলে অ্যাকাউন্ট ডিঅ্যাক্টিভ করা হতে পারে।</li>
+                    <li>স্কোর প্রসেসিং, ইউজার অনুমোদন এবং নিয়ম ভঙ্গ সংক্রান্ত বিষয়ে অ্যাডমিনের সিদ্ধান্ত চূড়ান্ত।</li>
+                </ol>
+            </div>
+        </div>
+
+    </div>
+
+</div>

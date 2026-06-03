@@ -1,23 +1,227 @@
 ﻿@{
     ViewData["Title"] = "Registration Submitted";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["HideNavbar"] = true;
 }
 
-<div class="auth-wrapper">
-    <div class="auth-card text-center">
-        <h3 class="mb-3">Check Your Email</h3>
+<style>
+    .forgot-wrapper {
+        min-height: 100vh;
+        padding: 24px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        <p>
-            Your registration has been submitted successfully.
-            We sent a verification link to your email address.
-        </p>
+    .forgot-card {
+        width: 100%;
+        max-width: 650px;
+        overflow: hidden;
+    }
 
-        <p>
-            After email verification, admin will review and approve your account.
-        </p>
+    .forgot-header {
+        width: 100%;
+    }
 
-        <a asp-controller="Account" asp-action="Login" class="btn btn-primary mt-3">
-            Back to Login
-        </a>
+    .forgot-logo-box {
+        flex: 0 0 auto;
+    }
+
+    .forgot-logo {
+        width: 180px;
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .forgot-title-box {
+        flex: 1;
+        min-width: 0;
+    }
+
+        .forgot-title-box h1 {
+            line-height: 1.2;
+        }
+
+        .forgot-title-box p {
+            line-height: 1.5;
+        }
+
+    .registration-status-box {
+        background: rgba(255, 255, 255, .08);
+        border: 1px solid rgba(255, 255, 255, .18);
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 20px;
+    }
+
+    .registration-status-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+        .registration-status-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .registration-status-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #ffc107;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        font-size: 17px;
+    }
+
+    .registration-status-text strong {
+        display: block;
+        color: #ffffff;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+
+    .registration-status-text span {
+        color: rgba(255, 255, 255, .65);
+        font-size: .92rem;
+        line-height: 1.45;
+    }
+
+    @@media (max-width: 767.98px) {
+
+        .forgot-wrapper {
+            padding: 12px 8px;
+        }
+
+        .forgot-logo {
+            width: 220px;
+        }
+
+        .forgot-title-box h1 {
+            font-size: 1.6rem;
+        }
+
+        .forgot-title-box p {
+            font-size: .95rem;
+        }
+
+        .forgot-card {
+            border-radius: 14px;
+        }
+
+        .d-grid.d-md-flex .btn {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 420px) {
+
+        .forgot-logo {
+            width: 190px;
+        }
+
+        .forgot-title-box h1 {
+            font-size: 1.4rem;
+        }
+
+        .forgot-title-box p {
+            font-size: .9rem;
+        }
+    }
+</style>
+
+<div class="forgot-wrapper">
+
+    <div class="col-12 col-sm-11 col-md-8 col-lg-6">
+
+        <div class="glass-card forgot-card p-3 p-sm-4 p-lg-5">
+
+            <div class="forgot-header d-flex flex-column flex-md-row align-items-center text-center text-md-start gap-3 gap-md-4 mb-4">
+
+                <div class="forgot-logo-box">
+                    <img src="~/img/logo2.png" alt="Logo" class="forgot-logo" />
+                </div>
+
+                <div class="forgot-title-box">
+                    <h1 class="h3 fw-bold mb-1">
+                        Check Your Email
+                    </h1>
+
+                    <p class="text-white-50 mb-0">
+                        Your registration has been submitted successfully. Please verify your email address to continue.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="registration-status-box">
+
+                <div class="registration-status-item">
+                    <div class="registration-status-icon">
+                        <i class="bi bi-envelope-check"></i>
+                    </div>
+
+                    <div class="registration-status-text">
+                        <strong>Email verification required</strong>
+                        <span>
+                            We sent a verification link to your registered email address.
+                            Please open your inbox and click the verification link.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="registration-status-item">
+                    <div class="registration-status-icon">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+
+                    <div class="registration-status-text">
+                        <strong>Admin approval required</strong>
+                        <span>
+                            After email verification, admin will review and approve your account.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="registration-status-item">
+                    <div class="registration-status-icon">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+
+                    <div class="registration-status-text">
+                        <strong>Start prediction after approval</strong>
+                        <span>
+                            Once approved, you can log in, predict fixtures, earn points, and compete on the leaderboard.
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="d-grid d-md-flex gap-2">
+
+                <a asp-controller="Account"
+                   asp-action="Login"
+                   class="btn btn-warning btn-lg fw-bold flex-fill">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    Back to Login
+                </a>
+
+                <a asp-controller="Account"
+                   asp-action="ResendEmailVerification"
+                   class="btn btn-outline-light btn-lg flex-fill">
+                    <i class="bi bi-send"></i>
+                    Resend Link
+                </a>
+
+            </div>
+
+        </div>
+
     </div>
+
 </div>

@@ -1,265 +1,670 @@
 @model DashboardViewModel
 @using FootballPredictionGame.Models
+@using FootballPredictionGame.Helpers
 @using System.Text.Json
+
 @{
     ViewData["Title"] = "Dashboard";
-    var avatar = string.IsNullOrWhiteSpace(Model.ProfilePhotoPath) ? "../img/default-avatar.svg" : Model.ProfilePhotoPath;
-    var groupedFixtures = Model.PredictionFixtures.GroupBy(x => x.Stage).OrderBy(x => (int)x.Key).ToList();
+
+    var avatarPath = string.IsNullOrWhiteSpace(Model.ProfilePhotoPath)
+        ? "~/img/default-avatar.svg"
+        : "~/" + Model.ProfilePhotoPath.TrimStart('/', '~');
+
+    var selectedStatus = Model.FilterStatus ?? "";
+    var selectedGroupMode = string.IsNullOrWhiteSpace(Model.GroupMode) ? "date-status" : Model.GroupMode;
+    var selectedQuickFilter = Model.QuickFilter ?? "";
+
     var segmentLabels = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.SegmentName));
     var segmentPoints = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.Points));
+
+    var displayGroups = new List<(string Title, string Subtitle, List<Fixture> Fixtures, MatchStatus? Status)>();
+
+    if (Model.PredictionFixtures != null && Model.PredictionFixtures.Any())
+    {
+        if (selectedGroupMode == "stage")
+        {
+            var stageGroups = Model.PredictionFixtures
+                .GroupBy(x => x.Stage)
+                .OrderBy(x => (int)x.Key);
+
+            foreach (var group in stageGroups)
+            {
+                displayGroups.Add((
+                    group.Key.GetDisplayName(),
+                    $"{group.Count()} match(es)",
+                    group.OrderBy(x => x.MatchDateTime).ToList(),
+                    null
+                ));
+            }
+        }
+        else if (selectedGroupMode == "stage-date")
+        {
+            var stageDateGroups = Model.PredictionFixtures
+                .GroupBy(x => new { x.Stage, MatchDate = x.MatchDateTime.Date })
+                .OrderBy(x => (int)x.Key.Stage)
+                .ThenBy(x => x.Key.MatchDate);
+
+            foreach (var group in stageDateGroups)
+            {
+                displayGroups.Add((
+                    group.Key.Stage.GetDisplayName(),
+                    $"{group.Key.MatchDate:dddd, dd MMM yyyy} | {group.Count()} match(es)",
+                    group.OrderBy(x => StatusOrder(x.Status)).ThenBy(x => x.MatchDateTime).ToList(),
+                    null
+                ));
+            }
+        }
+        else
+        {
+            var dateStatusGroups = Model.PredictionFixtures
+                .GroupBy(x => new { MatchDate = x.MatchDateTime.Date, x.Status })
+                .OrderBy(x => x.Key.MatchDate)
+                .ThenBy(x => StatusOrder(x.Key.Status));
+
+            foreach (var group in dateStatusGroups)
+            {
+                displayGroups.Add((
+                    group.Key.MatchDate.ToString("dddd, dd MMM yyyy"),
+                    $"{group.Key.Status} | {group.Count()} match(es)",
+                    group.OrderBy(x => x.MatchDateTime).ToList(),
+                    group.Key.Status
+                ));
+            }
+        }
+    }
 }
 
-@* <div class="row g-4 mb-4">
-    <div class="col-xl-3 col-md-6">
-        <div class="stat-card">
-            <div class="stat-left"><span class="stat-icon blue"><i class="bi bi-check2-square"></i></span><div><div class="stat-title">Task Completed</div><div class="stat-value">@Model.TotalScore pts</div></div></div>
-            <i class="bi bi-three-dots-vertical stat-menu"></i>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="stat-card">
-            <div class="stat-left"><span class="stat-icon orange"><i class="bi bi-trophy"></i></span><div><div class="stat-title">Current Position</div><div class="stat-value">@Model.RankText</div></div></div>
-            <i class="bi bi-three-dots-vertical stat-menu"></i>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="stat-card">
-            <div class="stat-left"><span class="stat-icon pink"><i class="bi bi-emoji-smile"></i></span><div><div class="stat-title">Exact Matches</div><div class="stat-value">@Model.ExactPredictionCount</div></div></div>
-            <i class="bi bi-three-dots-vertical stat-menu"></i>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="stat-card">
-            <div class="stat-left"><span class="stat-icon green"><i class="bi bi-calendar-event"></i></span><div><div class="stat-title">Open Fixtures</div><div class="stat-value">@Model.PredictionFixtures.Count</div></div></div>
-            <i class="bi bi-three-dots-vertical stat-menu"></i>
-        </div>
-    </div>
-</div> *@
+@functions {
+    private int StatusOrder(MatchStatus status)
+    {
+        return status == MatchStatus.Live ? 1 :
+               status == MatchStatus.Upcoming ? 2 :
+               status == MatchStatus.Finished ? 3 : 4;
+    }
 
+    private string StatusCss(MatchStatus status)
+    {
+        return status == MatchStatus.Live ? "status-live blink-live" :
+               status == MatchStatus.Finished ? "status-finished" :
+               "status-upcoming";
+    }
+
+    private string ToImageUrl(IUrlHelper url, string? path, string fallback)
+    {
+        var finalPath = string.IsNullOrWhiteSpace(path) ? fallback : path;
+        return url.Content("~/" + finalPath.TrimStart('/', '~'));
+    }
+}
+
+<!-- TOP SECTION -->
 <div class="row g-4 mb-4">
-    <div class="col-lg-4">
-        <div class="dashboard-card p-4 h-100 text-center">
-            <img src=".@avatar" class="avatar-xl mb-3" alt="Profile" />
-            <h2 class="h4 fw-bold mb-1">@Model.FullName</h2>
-            <p class="text-muted mb-3">Current position: <strong class="text-primary">@Model.RankText</strong></p>
-            <div class="row g-2">
-                <div class="col-6"><div class="metric-card"><div class="metric-value">@Model.TotalScore</div><div class="metric-label">Points</div></div></div>
-                <div class="col-6"><div class="metric-card"><div class="metric-value">@Model.ExactPredictionCount</div><div class="metric-label">Exact</div></div></div>
+
+    <!-- PROFILE AND QUICK FILTER CARD -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="dashboard-card p-4 h-100 profile-summary-card">
+
+            <div class="profile-sketch-box">
+
+                <div class="profile-photo-square">
+                    <img src="@Url.Content(avatarPath)" alt="@Model.FullName" />
+                </div>
+
+                <div class="profile-main-info">
+                    <h2 class="h5 fw-bold mb-1">@Model.FullName</h2>
+
+                    <div class="small text-muted">
+                        Rank:
+                        <strong class="text-primary">@Model.RankText</strong>
+                    </div>
+
+                    <div class="small text-muted">
+                        Top Score:
+                        <strong>@Model.TopScore</strong>
+                    </div>
+
+                    <div class="total-point-label mt-2">
+                        Total Point:
+                        <strong>@Model.TotalScore</strong>
+                    </div>
+                </div>
+
             </div>
-        </div>
-    </div>
-    <div class="col-lg-8">
-        <div class="dashboard-card p-4">
-            <h2 class="h4 fw-bold mb-3"><i class="bi bi-hourglass-split text-primary"></i> Rules</h2>
-            @* <div class="table-responsive">
-                <table class="table table-clean table-hover align-middle mb-0">
-                    <thead><tr><th>Segment</th><th>Match</th><th>Prediction</th><th>Actual</th><th>Point</th></tr></thead>
-                    <tbody>
-                        @if (!Model.RecentPredictions.Any())
-                        {
-                            <tr><td colspan="5" class="text-center text-muted">No prediction submitted yet.</td></tr>
-                        }
-                        else
-                        {
-                            @foreach (var item in Model.RecentPredictions)
-                            {
-                                <tr>
-                                    <td><span class="segment-chip">@item.Fixture.Stage.GetDisplayName()</span></td>
-                                    <td>@item.Fixture.TeamOneName vs @item.Fixture.TeamTwoName</td>
-                                    <td>@item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal</td>
-                                    <td>@(item.Fixture.TeamOneActualGoal.HasValue && item.Fixture.TeamTwoActualGoal.HasValue ? $"{item.Fixture.TeamOneActualGoal} - {item.Fixture.TeamTwoActualGoal}" : "Pending")</td>
-                                    <td><span class="badge text-bg-warning">@item.EarnedPoint</span></td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-              </table>
-          </div> *@
-      </div>
-        @* <div class="dashboard-card p-4 h-100 chart-box">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <span class="pill"><i class="bi bi-bar-chart"></i> Segment Performance</span>
-                    <h1 class="h4 fw-bold mt-2 mb-0">Points by Group / Knockout Segment</h1>
+
+            <div class="row g-2 mt-3">
+
+                <div class="col-6">
+                    <a asp-action="Index"
+                       asp-route-quickFilter="pending"
+                       asp-route-groupMode="date-status"
+                       class="text-decoration-none">
+                        <div class="mini-filter-card @(selectedQuickFilter == "pending" ? "active-mini-card" : "")">
+                            <div class="mini-filter-value">@Model.PendingPredictionCount</div>
+                            <div class="mini-filter-label">Pending Prediction</div>
+                            <div class="mini-filter-detail">Detail <i class="bi bi-arrow-right"></i></div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-6">
+                    <a asp-action="Index"
+                       asp-route-quickFilter="predicted"
+                       asp-route-groupMode="date-status"
+                       class="text-decoration-none">
+                        <div class="mini-filter-card @(selectedQuickFilter == "predicted" ? "active-mini-card" : "")">
+                            <div class="mini-filter-value">@Model.PredictedCount</div>
+                            <div class="mini-filter-label">Predicted</div>
+                            <div class="mini-filter-detail">Detail <i class="bi bi-arrow-right"></i></div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-6">
+                    <a asp-action="Index"
+                       asp-route-quickFilter="notparticipate"
+                       asp-route-groupMode="date-status"
+                       class="text-decoration-none">
+                        <div class="mini-filter-card @(selectedQuickFilter == "notparticipate" ? "active-mini-card" : "")">
+                            <div class="mini-filter-value">@Model.NotParticipateCount</div>
+                            <div class="mini-filter-label">Not Participate</div>
+                            <div class="mini-filter-detail">Detail <i class="bi bi-arrow-right"></i></div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-6">
+                    <a asp-action="Index"
+                       asp-route-quickFilter="finished"
+                       asp-route-groupMode="date-status"
+                       class="text-decoration-none">
+                        <div class="mini-filter-card @(selectedQuickFilter == "finished" ? "active-mini-card" : "")">
+                            <div class="mini-filter-value">@Model.FinishedFixtureCount</div>
+                            <div class="mini-filter-label">Finished</div>
+                            <div class="mini-filter-detail">Detail <i class="bi bi-arrow-right"></i></div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-6">
+                    <a asp-action="Index"
+                       asp-route-quickFilter="today"
+                       asp-route-groupMode="date-status"
+                       class="text-decoration-none">
+                        <div class="mini-filter-card @(selectedQuickFilter == "today" ? "active-mini-card" : "")">
+                            <div class="mini-filter-value">@Model.TodaysMatchCount</div>
+                            <div class="mini-filter-label">Today's Match</div>
+                            <div class="mini-filter-detail">Detail <i class="bi bi-arrow-right"></i></div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-6">
+                    <a asp-action="Index"
+                       asp-route-quickFilter="tomorrow"
+                       asp-route-groupMode="date-status"
+                       class="text-decoration-none">
+                        <div class="mini-filter-card @(selectedQuickFilter == "tomorrow" ? "active-mini-card" : "")">
+                            <div class="mini-filter-value">@Model.TomorrowMatchCount</div>
+                            <div class="mini-filter-label">Tomorrow's Match</div>
+                            <div class="mini-filter-detail">Detail <i class="bi bi-arrow-right"></i></div>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="row g-2 mt-3">
+                <div class="col-4">
+                    <a asp-controller="Leaderboard"
+                       asp-action="Index"
+                       class="btn btn-outline-primary w-100">
+                        <i class="bi bi-trophy"></i>
+                        <span class="d-none d-md-inline">Leaderboard</span>
+                    </a>
+                </div>
+
+                <div class="col-4">
+                    <a asp-controller="Account"
+                       asp-action="Profile"
+                       class="btn btn-outline-primary w-100">
+                        <i class="bi bi-person"></i>
+                        <span class="d-none d-md-inline">Profile</span>
+                    </a>
+                </div>
+
+                <div class="col-4">
+                    <a asp-controller="Dashboard"
+                       asp-action="Rules"
+                       class="btn btn-outline-primary w-100">
+                        <i class="bi bi-journal-check"></i>
+                        <span class="d-none d-md-inline">Rules</span>
+                    </a>
                 </div>
             </div>
-            @if (Model.SegmentPoints.Any())
-            {
-                <canvas id="segmentChart" height="110"></canvas>
-            }
-            else
-            {
-                <div class="empty-state">No processed points yet. Your segment graph will appear after results are processed.</div>
-            }
-        </div> *@
+
+        </div>
     </div>
-   
-</div>
 
-<div class="row g-4">
-    <div class="col-xl-12">
-        <div class="dashboard-card p-4 mb-4">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <h2 class="h4 fw-bold mb-0"><i class="bi bi-calendar-check text-primary"></i> Fixtures & Predictions</h2>
-                <span class="text-muted small">Exact score = 3 pts, correct result = 1 pt</span>
-            </div>
-            @if (!groupedFixtures.Any())
+    <!-- BANNER SLIDER -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="dashboard-card p-0 h-100 overflow-hidden banner-card">
+
+            @if (Model.Banners != null && Model.Banners.Any())
             {
-                <div class="empty-state">No fixture found for the selected range.</div>
-            }
-            else
-            {
-                @foreach (var group in groupedFixtures)
-                {
-                    <div class="d-flex align-items-center justify-content-between mt-3 mb-2">
-                        <span class="segment-chip">@group.Key.GetDisplayName()</span>
-                        <span class="small text-muted">@group.Count() match(es)</span>
-                    </div>
-                    <div class="row g-3">
-                        @foreach (var fixture in group)
+                <div id="dashboardBannerCarousel"
+                     class="carousel slide h-100"
+                     data-bs-ride="carousel"
+                     data-bs-interval="4500">
+
+                    <div class="carousel-indicators">
+                        @for (int i = 0; i < Model.Banners.Count; i++)
                         {
-                            var hasPrediction = Model.UserPredictionLookup.TryGetValue(fixture.Id, out var prediction);
-                            var canPredict = fixture.Status == MatchStatus.Upcoming && !fixture.IsProcessed && DateTime.Now < fixture.MatchDateTime;
-                            var statusClass = fixture.Status == MatchStatus.Live ? "status-live blink-live" : fixture.Status == MatchStatus.Finished ? "status-finished" : "status-upcoming";
-                            var cardClass = canPredict ? "fixture-open" : "fixture-locked";
+                            <button type="button"
+                                    data-bs-target="#dashboardBannerCarousel"
+                                    data-bs-slide-to="@i"
+                                    class="@(i == 0 ? "active" : "")"
+                                    aria-label="Slide @(i + 1)">
+                            </button>
+                        }
+                    </div>
 
-                            //var isPredict = Model.RecentPredictions.Where(x => x.FixtureId == fixture.Id).Count();
-                            
-   @*  var isPredict = Model.RecentPredictions
-        .Count(x => x.FixtureId == fixture.Id); *@
+                    <div class="carousel-inner h-100">
+                        @for (int i = 0; i < Model.Banners.Count; i++)
+                        {
+                            var banner = Model.Banners[i];
 
+                            <div class="carousel-item h-100 @(i == 0 ? "active" : "")">
+                                <div class="dashboard-banner-slide"
+                                     style="background-image:url('@Url.Content(banner.ImageUrl)')">
 
-                            <div class="col-lg-4 col-xxl-4">
-                                <div class="fixture-card fixture-card-compact h-100 @cardClass">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge text-bg-primary">@fixture.Stage.GetDisplayName()</span>
-                                       @*  @if(isPredict!=0)
-                                        {
-                                        <span class="fixture-status status-finished">YES</span>
-                                        }
-                                        else
-                                        {
-                                        <span class="fixture-status status-live blink-live">NO</span>
-                                        } *@
-                                        
-                                        <span class="fixture-status @statusClass">@fixture.Status</span>
+                                    <div class="dashboard-banner-overlay">
+                                        <span class="banner-badge">
+                                            <i class="bi bi-stars"></i>
+                                            Transtec 360°
+                                        </span>
+
+                                        <h2>@banner.Title</h2>
+                                        <p>@banner.Subtitle</p>
+
+                                        <a href="@banner.RedirectUrl"
+                                           target="_blank"
+                                           class="btn btn-warning fw-bold banner-more-btn">
+                                            @banner.ButtonText
+                                            <i class="bi bi-arrow-right"></i>
+                                        </a>
                                     </div>
-                                    <div class="small text-muted mb-2"><i class="bi bi-clock"></i> @fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")</div>
-                                    <div class="teams-row compact mb-2">
-                                        <div class="team-block compact-team">
-                                            <img src=".@(fixture.TeamOneFlagPath ?? "/img/default-flag.svg")" class="flag flag-compact" alt="@fixture.TeamOneName" />
-                                            <strong>@fixture.TeamOneName</strong>
-                                        </div>
-                                        <span class="vs-badge vs-small">VS</span>
-                                        <div class="team-block compact-team text-end" style="align-items: end;">
-                                            <img src=".@(fixture.TeamTwoFlagPath ?? "/img/default-flag.svg")" class="flag flag-compact" alt="@fixture.TeamTwoName" />
-                                            <strong>@fixture.TeamTwoName</strong>
-                                        </div>
-                                    </div>
-                                    <form asp-controller="Prediction" asp-action="Save" method="post">
-                                        <input type="hidden" name="fixtureId" value="@fixture.Id" />
-                                        <div class="row g-2 align-items-end">
-                                            <div class="col-5">
-                                                @* <label class="form-label small text-muted mb-1">@fixture.TeamOneName</label> *@
-                                                <input type="number" min="0" max="99" name="teamOneGoal" class="form-control prediction-input prediction-input-sm" value="@(hasPrediction ? prediction!.TeamOnePredictedGoal : 0)" disabled="@(!canPredict)" />
-                                            </div>
-                                            <div class="col-2 text-center pb-2 fw-bold">-</div>
-                                            <div class="col-5">
-                                                @* <label class="form-label small text-muted mb-1">@fixture.TeamTwoName</label> *@
-                                                <input type="number" min="0" max="99" name="teamTwoGoal" class="form-control prediction-input prediction-input-sm" value="@(hasPrediction ? prediction!.TeamTwoPredictedGoal : 0)" disabled="@(!canPredict)" />
-                                            </div>
-                                        </div>
-                                        @if (canPredict)
-                                        {
-                                            <button type="submit" class="btn btn-@(hasPrediction ? "primary" : "warning") w-100 mt-3"><i class="bi bi-send"></i> @(hasPrediction ? "Update Prediction" : "Submit Prediction")</button>
-                                        }
-                                        else
-                                        {
-                                            <button type="button" class="btn btn-secondary w-100 mt-3" disabled><i class="bi bi-lock-fill"></i> Locked - @fixture.Status</button>
-                                            @if (hasPrediction)
-                                            {
-                                                <div class="small text-muted text-center mt-2">Your prediction: @prediction!.TeamOnePredictedGoal - @prediction.TeamTwoPredictedGoal</div>
-                                            }
-                                        }
-                                    </form>
+
                                 </div>
                             </div>
                         }
                     </div>
-                }
-            }
-        </div>
 
-        
-    </div>
+                    <button class="carousel-control-prev"
+                            type="button"
+                            data-bs-target="#dashboardBannerCarousel"
+                            data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
 
-    @* <div class="col-xl-4">
-        <div class="dashboard-card p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="h4 fw-bold mb-0"><i class="bi bi-trophy text-primary"></i> Top 10</h2>
-                <a asp-controller="Leaderboard" asp-action="Index" class="small text-decoration-none">View all</a>
-            </div>
-            @foreach (var user in Model.TopUsers)
-            {
-                <div class="leaderboard-row">
-                    <span class="rank-circle">@user.RankText</span>
-                    <img src=".@(user.PhotoPath ?? "/img/default-avatar.svg")" class="avatar-sm" alt="@user.FullName" />
-                    <div class="flex-grow-1"><div class="fw-semibold">@user.FullName</div><div class="small text-muted">Exact: @user.ExactPredictionCount</div></div>
-                    <span class="score-pill">@user.TotalScore pts</span>
+                    <button class="carousel-control-next"
+                            type="button"
+                            data-bs-target="#dashboardBannerCarousel"
+                            data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+
                 </div>
             }
-        </div>
-
-        <div class="dashboard-card p-4 mb-4">
-            <h2 class="h4 fw-bold mb-3"><i class="bi bi-pie-chart text-primary"></i> Segment Points</h2>
-            @if (!Model.SegmentPoints.Any())
-            {
-                <div class="empty-state">No segment points yet.</div>
-            }
             else
             {
-                @foreach (var segment in Model.SegmentPoints)
-                {
-                    <div class="d-flex justify-content-between border-bottom py-2">
-                        <span>@segment.SegmentName</span>
-                        <strong>@segment.Points pts</strong>
-                    </div>
-                }
+                <div class="empty-state m-4">
+                    No banner configured.
+                </div>
             }
-        </div>
 
-        <div class="dashboard-card p-4">
-            <h2 class="h4 fw-bold mb-3"><i class="bi bi-calendar-event text-primary"></i> Today</h2>
-            @if (!Model.TodayFixtures.Any())
-            {
-                <div class="empty-state">No fixture today.</div>
-            }
-            else
-            {
-                @foreach (var fixture in Model.TodayFixtures)
-                {
-                    <div class="mini-fixture">
-                        <span class="segment-chip">@fixture.Stage.GetDisplayName()</span>
-                        <img src=".@(fixture.TeamOneFlagPath ?? "/img/default-flag.svg")" class="flag-sm" />
-                        <span>@fixture.TeamOneName</span><strong>vs</strong><span>@fixture.TeamTwoName</span>
-                        <img src=".@(fixture.TeamTwoFlagPath ?? "/img/default-flag.svg")" class="flag-sm" />
-                    </div>
-                }
-            }
         </div>
-    </div> *@
+    </div>
+
 </div>
+
+<!-- FIXTURE FILTER BAR -->
+<div class="dashboard-card p-3 p-md-4 mb-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="h4 fw-bold mb-1">
+                <i class="bi bi-calendar-check text-primary"></i>
+                Fixtures & Predictions
+            </h2>
+
+            <div class="text-muted small">
+                Exact score = 3 points, correct winner/result = 1 point
+            </div>
+        </div>
+
+        <a asp-action="Index"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-arrow-clockwise"></i>
+            Reset Filter
+        </a>
+    </div>
+
+    <div class="fixture-filter-bar mb-3">
+
+        <a asp-action="Index"
+           asp-route-status="Live"
+           asp-route-groupMode="@selectedGroupMode"
+           asp-route-quickFilter="@selectedQuickFilter"
+           class="fixture-filter-btn @(selectedStatus == "Live" ? "active live" : "")">
+            <i class="bi bi-broadcast"></i>
+            Live
+        </a>
+
+        <a asp-action="Index"
+           asp-route-status="Upcoming"
+           asp-route-groupMode="@selectedGroupMode"
+           asp-route-quickFilter="@selectedQuickFilter"
+           class="fixture-filter-btn @(selectedStatus == "Upcoming" ? "active" : "")">
+            <i class="bi bi-clock"></i>
+            Upcoming
+        </a>
+
+        <a asp-action="Index"
+           asp-route-status="Finished"
+           asp-route-groupMode="@selectedGroupMode"
+           asp-route-quickFilter="@selectedQuickFilter"
+           class="fixture-filter-btn @(selectedStatus == "Finished" ? "active" : "")">
+            <i class="bi bi-check-circle"></i>
+            Finished
+        </a>
+
+        <a asp-action="Index"
+           asp-route-groupMode="date-status"
+           asp-route-status="@selectedStatus"
+           asp-route-quickFilter="@selectedQuickFilter"
+           class="fixture-filter-btn @(selectedGroupMode == "date-status" ? "active" : "")">
+            <i class="bi bi-calendar-date"></i>
+            Date Wise
+        </a>
+
+        <a asp-action="Index"
+           asp-route-groupMode="stage"
+           asp-route-status="@selectedStatus"
+           asp-route-quickFilter="@selectedQuickFilter"
+           class="fixture-filter-btn @(selectedGroupMode == "stage" ? "active" : "")">
+            <i class="bi bi-diagram-3"></i>
+            Group Wise
+        </a>
+
+        <a asp-action="Index"
+           asp-route-groupMode="stage-date"
+           asp-route-status="@selectedStatus"
+           asp-route-quickFilter="@selectedQuickFilter"
+           class="fixture-filter-btn @(selectedGroupMode == "stage-date" ? "active" : "")">
+            <i class="bi bi-grid-3x3-gap"></i>
+            Group + Date
+        </a>
+
+    </div>
+
+    <form asp-action="Index" method="get" class="row g-2 align-items-end">
+        <input type="hidden" name="status" value="@selectedStatus" />
+        <input type="hidden" name="groupMode" value="@selectedGroupMode" />
+        <input type="hidden" name="quickFilter" value="@selectedQuickFilter" />
+
+        <div class="col-md-4">
+            <label class="form-label small text-muted">Filter by Match Date</label>
+            <input type="date"
+                   name="matchDate"
+                   value="@(Model.FilterDate?.ToString("yyyy-MM-dd"))"
+                   class="form-control" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label small text-muted">Filter by Group / Stage</label>
+            <select name="stage" class="form-select">
+                <option value="">All Groups / Stages</option>
+
+                @foreach (FixtureStage stageItem in Enum.GetValues(typeof(FixtureStage)))
+                {
+                    <option value="@stageItem" selected="@(Model.FilterStage == stageItem.ToString())">
+                        @stageItem.GetDisplayName()
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-funnel"></i>
+                Apply Filter
+            </button>
+        </div>
+    </form>
+
+</div>
+
+<!-- FIXTURE LIST -->
+<div class="dashboard-card p-3 p-md-4 mb-4">
+
+    @if (!displayGroups.Any())
+    {
+        <div class="empty-state">
+            No fixture found for the selected filter.
+        </div>
+    }
+    else
+    {
+        foreach (var displayGroup in displayGroups)
+        {
+            <div class="fixture-section-title">
+                <div>
+                    @if (displayGroup.Status.HasValue)
+                    {
+                        <span class="fixture-status @StatusCss(displayGroup.Status.Value)">
+                            @displayGroup.Status.Value
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="segment-chip">@displayGroup.Title</span>
+                    }
+
+                    @if (displayGroup.Status.HasValue)
+                    {
+                        <span class="ms-2 fw-bold text-primary">@displayGroup.Title</span>
+                    }
+                </div>
+
+                <span class="small text-muted">@displayGroup.Subtitle</span>
+            </div>
+
+            <div class="row g-3 mb-4">
+                @foreach (var fixture in displayGroup.Fixtures)
+                {
+                    Prediction? prediction = null;
+
+                    var hasPrediction = Model.UserPredictionLookup != null &&
+                    Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
+
+                    var canPredict = fixture.Status == MatchStatus.Upcoming &&
+                    !fixture.IsProcessed &&
+                    DateTime.Now < fixture.MatchDateTime;
+
+                    var statusClass = StatusCss(fixture.Status);
+                    var cardClass = canPredict ? "fixture-open" : "fixture-locked";
+
+                    var teamOneFlag = ToImageUrl(Url, fixture.TeamOneFlagPath, "/img/default-flag.svg");
+                    var teamTwoFlag = ToImageUrl(Url, fixture.TeamTwoFlagPath, "/img/default-flag.svg");
+
+                    <div class="col-md-6 col-xl-4">
+                        <div class="fixture-card fixture-card-compact smart-fixture-card h-100 @cardClass">
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-primary">
+                                    @fixture.Stage.GetDisplayName()
+                                </span>
+
+                                <span class="fixture-status @statusClass">
+                                    @fixture.Status
+                                </span>
+                            </div>
+
+                            <div class="small text-muted mb-2">
+                                <i class="bi bi-clock"></i>
+                                @fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")
+                            </div>
+
+                            <div class="teams-row compact mb-3">
+                                <div class="team-block compact-team">
+                                    <img src="@teamOneFlag"
+                                         class="flag flag-compact"
+                                         alt="@fixture.TeamOneName" />
+
+                                    <strong>@fixture.TeamOneName</strong>
+                                </div>
+
+                                <span class="vs-badge vs-small">VS</span>
+
+                                <div class="team-block compact-team text-end" style="align-items:end;">
+                                    <img src="@teamTwoFlag"
+                                         class="flag flag-compact"
+                                         alt="@fixture.TeamTwoName" />
+
+                                    <strong>@fixture.TeamTwoName</strong>
+                                </div>
+                            </div>
+
+                            @if (canPredict)
+                            {
+                                <form asp-controller="Prediction" asp-action="Save" method="post">
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden" name="fixtureId" value="@fixture.Id" />
+
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-5">
+                                            <input type="number"
+                                                   min="0"
+                                                   max="99"
+                                                   name="teamOneGoal"
+                                                   class="form-control prediction-input prediction-input-sm"
+                                                   value="@(hasPrediction && prediction != null ? prediction.TeamOnePredictedGoal : 0)" />
+                                        </div>
+
+                                        <div class="col-2 text-center pb-2 fw-bold">-</div>
+
+                                        <div class="col-5">
+                                            <input type="number"
+                                                   min="0"
+                                                   max="99"
+                                                   name="teamTwoGoal"
+                                                   class="form-control prediction-input prediction-input-sm"
+                                                   value="@(hasPrediction && prediction != null ? prediction.TeamTwoPredictedGoal : 0)" />
+                                        </div>
+                                    </div>
+
+                                    <button type="submit"
+                                            class="btn btn-@(hasPrediction ? "primary" : "warning") w-100 mt-3">
+                                        <i class="bi bi-send"></i>
+                                        @(hasPrediction ? "Update Prediction" : "Submit Prediction")
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                        class="btn btn-secondary w-100 mt-2"
+                                        disabled>
+                                    <i class="bi bi-lock-fill"></i>
+                                    Locked - @fixture.Status
+                                </button>
+
+                                @if (hasPrediction && prediction != null)
+                                {
+                                    <div class="small text-muted text-center mt-2">
+                                        Your prediction:
+                                        <strong>
+                                            @prediction.TeamOnePredictedGoal - @prediction.TeamTwoPredictedGoal
+                                        </strong>
+                                    </div>
+                                }
+
+                                @if (fixture.Status == MatchStatus.Live || fixture.Status == MatchStatus.Finished)
+                                {
+                                    <a asp-controller="Dashboard"
+                                       asp-action="PredictionDetail"
+                                       asp-route-fixtureId="@fixture.Id"
+                                       class="btn btn-outline-primary w-100 mt-2">
+                                        <i class="bi bi-list-check"></i>
+                                        Prediction Detail
+                                    </a>
+                                }
+                            }
+
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+
+</div>
+
+@if (Model.SegmentPoints.Any())
+{
+    <div class="dashboard-card p-4 mb-4 chart-box">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <span class="pill">
+                    <i class="bi bi-bar-chart"></i>
+                    Segment Performance
+                </span>
+
+                <h2 class="h4 fw-bold mt-2 mb-0">
+                    Points by Group / Knockout Segment
+                </h2>
+            </div>
+        </div>
+
+        <canvas id="segmentChart" height="100"></canvas>
+    </div>
+}
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         const labels = @Html.Raw(segmentLabels);
         const points = @Html.Raw(segmentPoints);
+
         if (document.getElementById('segmentChart') && labels.length > 0) {
             new Chart(document.getElementById('segmentChart'), {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Points', data: points }] },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Points',
+                            data: points
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
             });
         }
     </script>
