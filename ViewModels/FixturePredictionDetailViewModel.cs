@@ -21,9 +21,14 @@
 
     public class FixturePredictionUserDetailViewModel
     {
+        public string UserId { get; set; } = string.Empty;
+
         public string UserName { get; set; } = string.Empty;
         public string PhotoPath { get; set; } = string.Empty;
         public string RankText { get; set; } = string.Empty;
+
+        public string? Designation { get; set; }
+        public string? Department { get; set; }
 
         public int TeamOnePredictedGoal { get; set; }
         public int TeamTwoPredictedGoal { get; set; }

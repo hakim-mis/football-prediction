@@ -1,15 +1,42 @@
 @model List<LeaderboardUserViewModel>
+
 @{
     ViewData["Title"] = "Leaderboard";
+
+    string UserPhoto(string? path)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? Url.Content("~/img/default-avatar.svg")
+            : Url.Content("~/" + path.TrimStart('/', '~'));
+    }
 }
+
 <div class="dashboard-card p-4 p-lg-5">
+
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <span class="pill"><i class="bi bi-trophy"></i> Ranking Table</span>
-            <h1 class="h2 fw-bold mt-3 mb-0">Leaderboard (Top 100)</h1>
-            <p class="text-muted mb-0">Users with the same score share the same rank. Users with zero score show No rank.</p>
+            <span class="pill">
+                <i class="bi bi-trophy"></i>
+                Ranking Table
+            </span>
+
+            <h1 class="h2 fw-bold mt-3 mb-0">
+                Leaderboard Top 100
+            </h1>
+
+            <p class="text-muted mb-0">
+                Users with the same score share the same rank. Users with zero score show No rank.
+            </p>
         </div>
+
+        <a asp-controller="Dashboard"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Dashboard
+        </a>
     </div>
+
     <div class="table-responsive">
         <table class="table table-clean table-hover align-middle mb-0">
             <thead>
@@ -20,35 +47,72 @@
                     <th>Department</th>
                     <th>Total Score</th>
                     <th>Exact Predictions</th>
-                    
+                    <th>Detail</th>
                 </tr>
             </thead>
+
             <tbody>
-                @if (!Model.Any())
+                @if (Model == null || !Model.Any())
                 {
-                    <tr><td colspan="5" class="text-center text-muted">No active user found.</td></tr>
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No active user found.
+                        </td>
+                    </tr>
                 }
                 else
                 {
-                    @foreach (var user in Model)
+                    foreach (var user in Model)
                     {
                         <tr>
-                            <td><span class="rank-circle">@user.RankText</span></td>
+                            <td>
+                                <span class="rank-circle">
+                                    @user.RankText
+                                </span>
+                            </td>
+
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <img src=".@(user.PhotoPath ?? "../img/default-avatar.svg")" class="avatar-sm" />
+                                    <img src="@UserPhoto(user.PhotoPath)"
+                                         class="avatar-sm"
+                                         alt="@user.FullName" />
+
                                     <strong>@user.FullName</strong>
                                 </div>
                             </td>
-                            <td>@user.Designation</td>
-                            <td>@user.Department</td>
-                            <td><span class="score-pill">@user.TotalScore pts</span></td>
-                            <td>@user.ExactPredictionCount</td>
-                            @* <td>@user.CreatedAt.ToString("dd MMM yyyy")</td> *@
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(user.Designation) ? "-" : user.Designation)
+                            </td>
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(user.Department) ? "-" : user.Department)
+                            </td>
+
+                            <td>
+                                <span class="score-pill">
+                                    @user.TotalScore pts
+                                </span>
+                            </td>
+
+                            <td>
+                                @user.ExactPredictionCount
+                            </td>
+
+                            <td>
+                                <a asp-controller="Dashboard"
+                                   asp-action="UserPredictionDetail"
+                                   asp-route-userId="@user.UserId"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-list-check"></i>
+                                    Detail
+                                </a>
+                            </td>
                         </tr>
                     }
                 }
             </tbody>
         </table>
     </div>
+
 </div>

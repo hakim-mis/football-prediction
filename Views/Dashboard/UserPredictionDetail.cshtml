@@ -1,0 +1,208 @@
+﻿@model FootballPredictionGame.ViewModels.UserPredictionHistoryViewModel
+@using FootballPredictionGame.Models
+
+@{
+    ViewData["Title"] = "User Prediction Detail";
+
+    string ImageUrl(string? path, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? Url.Content(fallback)
+            : Url.Content("~/" + path.TrimStart('/', '~'));
+    }
+
+    string StatusClass(MatchStatus status)
+    {
+        return status == MatchStatus.Live ? "status-live blink-live" : "status-finished";
+    }
+}
+
+<div class="dashboard-card user-history-page p-3 p-md-4 mb-4">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2 class="h4 fw-bold mb-1">
+                <i class="bi bi-person-lines-fill text-primary"></i>
+                User Prediction Detail
+            </h2>
+
+            <div class="text-muted small">
+                Showing only Live and Finished fixtures. Upcoming match predictions are hidden.
+            </div>
+        </div>
+
+        <a asp-action="PredictionScore"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </a>
+    </div>
+
+    <div class="user-history-profile-card mb-4">
+
+        <img src="@ImageUrl(Model.PhotoPath, "~/img/default-avatar.svg")"
+             class="user-history-photo"
+             alt="@Model.FullName" />
+
+        <div class="user-history-info">
+            <h3>@Model.FullName</h3>
+
+            <div class="text-muted small">
+                @if (!string.IsNullOrWhiteSpace(Model.Designation))
+                {
+                    <span>@Model.Designation</span>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.Department))
+                {
+                    <span> • @Model.Department</span>
+                }
+            </div>
+
+            <div class="user-history-meta mt-2">
+                <span>
+                    Rank:
+                    <strong>@Model.RankText</strong>
+                </span>
+
+                <span>
+                    Total Score:
+                    <strong>@Model.TotalScore</strong>
+                </span>
+
+                <span>
+                    Exact:
+                    <strong>@Model.ExactPredictionCount</strong>
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="user-history-table-wrap">
+        <table class="table table-clean table-hover align-middle mb-0 user-history-table">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Segment</th>
+                    <th>Match</th>
+                    <th>Status</th>
+                    <th>Prediction</th>
+                    <th>Actual</th>
+                    <th>Point</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (!Model.Items.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No live or finished fixture found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model.Items)
+                    {
+                        var actualText = item.TeamOneActualGoal.HasValue && item.TeamTwoActualGoal.HasValue
+                        ? $"{item.TeamOneActualGoal} - {item.TeamTwoActualGoal}"
+                        : "Pending";
+
+                        var predictionText = item.HasPrediction
+                        ? $"{item.TeamOnePredictedGoal} - {item.TeamTwoPredictedGoal}"
+                        : "Not Participated";
+
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">
+                                    @item.MatchDateTime.ToString("dd MMM yyyy")
+                                </div>
+                                <div class="small text-muted">
+                                    @item.MatchDateTime.ToString("hh:mm tt")
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="segment-chip">
+                                    @item.StageName
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="user-history-match-cell">
+
+                                    <div class="user-history-team-inline">
+                                        <img src="@ImageUrl(item.TeamOneFlagPath, "~/img/default-flag.svg")"
+                                             alt="@item.TeamOneName" />
+
+                                        <strong>@item.TeamOneName</strong>
+                                    </div>
+
+                                    <span class="user-history-vs-inline">vs</span>
+
+                                    <div class="user-history-team-inline">
+                                        <img src="@ImageUrl(item.TeamTwoFlagPath, "~/img/default-flag.svg")"
+                                             alt="@item.TeamTwoName" />
+
+                                        <strong>@item.TeamTwoName</strong>
+                                    </div>
+
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="fixture-status @StatusClass(item.Status)">
+                                    @item.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (item.HasPrediction)
+                                {
+                                    <span class="prediction-text-success">
+                                        @predictionText
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="prediction-text-muted">
+                                        Not Participated
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (actualText == "Pending")
+                                {
+                                    <span class="text-muted">Pending</span>
+                                }
+                                else
+                                {
+                                    <strong>@actualText</strong>
+                                }
+                            </td>
+
+                            <td>
+                                @if (item.HasPrediction)
+                                {
+                                    <span class="badge text-bg-warning">
+                                        @item.EarnedPoint
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-light text-muted">
+                                        -
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

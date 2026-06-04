@@ -2,11 +2,32 @@
 
 @{
     ViewData["Title"] = "Prediction Detail";
+
+    string TeamFlag(string? path)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? Url.Content("~/img/default-flag.svg")
+            : Url.Content("~/" + path.TrimStart('/', '~'));
+    }
+
+    string UserPhoto(string? path)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? Url.Content("~/img/default-avatar.svg")
+            : Url.Content("~/" + path.TrimStart('/', '~'));
+    }
+
+    var actualScore = Model.TeamOneActualGoal.HasValue && Model.TeamTwoActualGoal.HasValue
+        ? $"{Model.TeamOneActualGoal} - {Model.TeamTwoActualGoal}"
+        : "Pending";
+
+    var statusClass = Model.StatusName == "Live" ? "status-live blink-live" : "status-finished";
 }
 
-<div class="dashboard-card p-4 mb-4">
+<div class="dashboard-card prediction-detail-page p-3 p-md-4 mb-4">
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div class="prediction-detail-topbar mb-3">
+
         <div>
             <span class="segment-chip">@Model.StageName</span>
 
@@ -14,60 +35,57 @@
                 Prediction Detail
             </h2>
 
-            <div class="text-muted">
+            <div class="text-muted small">
                 <i class="bi bi-clock"></i>
                 @Model.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")
             </div>
         </div>
 
-        <a asp-action="Index" class="btn btn-outline-primary">
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-arrow-left"></i>
             Back to Dashboard
         </a>
+
     </div>
 
-    <div class="fixture-detail-header mb-4">
+    <div class="prediction-match-summary mb-4">
 
-        <div class="text-center">
-            <img src="..@Model.TeamOneFlagPath"
-                 class="detail-flag"
+        <div class="prediction-match-team">
+            <img src="@TeamFlag(Model.TeamOneFlagPath)"
+                 class="prediction-detail-flag"
                  alt="@Model.TeamOneName" />
 
-            <h4 class="mt-2">@Model.TeamOneName</h4>
+            <h4>@Model.TeamOneName</h4>
         </div>
 
-        <div class="text-center">
-            <div class="detail-score">
-                @(Model.TeamOneActualGoal.HasValue? Model.TeamOneActualGoal.ToString() : "-")
-                :
-                @(Model.TeamTwoActualGoal.HasValue? Model.TeamTwoActualGoal.ToString() : "-")
-            </div>
+        <div class="prediction-match-score">
+            <div class="actual-score">@actualScore</div>
 
-            <div class="fixture-status @(Model.StatusName == "Live" ? "status-live blink-live" : "status-finished")">
+            <div class="fixture-status @statusClass">
                 @Model.StatusName
             </div>
         </div>
 
-        <div class="text-center">
-            <img src="..@Model.TeamTwoFlagPath"
-                 class="detail-flag"
+        <div class="prediction-match-team">
+            <img src="@TeamFlag(Model.TeamTwoFlagPath)"
+                 class="prediction-detail-flag"
                  alt="@Model.TeamTwoName" />
 
-            <h4 class="mt-2">@Model.TeamTwoName</h4>
+            <h4>@Model.TeamTwoName</h4>
         </div>
 
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-clean table-hover align-middle mb-0">
+    <div class="prediction-detail-table-wrap d-none d-md-block">
+        <table class="table table-clean table-hover align-middle mb-0 prediction-detail-table">
             <thead>
                 <tr>
                     <th>User</th>
                     <th>Rank</th>
                     <th>Prediction</th>
-                    <th>Actual</th>
                     <th>Point</th>
                     <th>Total Score</th>
+                    <th>Detail</th>
                 </tr>
             </thead>
 
@@ -86,12 +104,19 @@
                     {
                         <tr>
                             <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <img src="..@item.PhotoPath"
-                                         class="avatar-sm"
+                                <div class="prediction-user-cell">
+                                    <img src="@UserPhoto(item.PhotoPath)"
+                                         class="prediction-user-avatar"
                                          alt="@item.UserName" />
 
-                                    <strong>@item.UserName</strong>
+                                    <div>
+                                        <strong>@item.UserName</strong>
+
+                                        @if (!string.IsNullOrWhiteSpace(item.Designation))
+                                        {
+                                            <div class="small text-muted">@item.Designation</div>
+                                        }
+                                    </div>
                                 </div>
                             </td>
 
@@ -102,16 +127,10 @@
                             </td>
 
                             <td>
-                                <strong>
+                                <span class="prediction-score-pill">
                                     @item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal
-                                </strong>
+                                </span>
                             </td>
-
-                            <td>
-                                @(Model.TeamOneActualGoal.HasValue
-                                                        ? $"{Model.TeamOneActualGoal} - {Model.TeamTwoActualGoal}"
-                                                        : "Pending")
-                    </td>
 
                             <td>
                                 <span class="badge text-bg-warning">
@@ -124,11 +143,79 @@
                                     @item.TotalScore pts
                                 </span>
                             </td>
+
+                            <td>
+                                <a asp-action="UserPredictionDetail"
+                                   asp-route-userId="@item.UserId"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-list-check"></i>
+                                    Detail
+                                </a>
+                            </td>
                         </tr>
-                                }
+                    }
                 }
             </tbody>
         </table>
+    </div>
+
+    <div class="prediction-detail-mobile-list d-md-none">
+
+        @if (!Model.Predictions.Any())
+        {
+            <div class="empty-state">
+                No prediction submitted for this fixture.
+            </div>
+        }
+        else
+        {
+            foreach (var item in Model.Predictions)
+            {
+                <div class="prediction-user-card">
+
+                    <div class="prediction-user-card-top">
+                        <img src="@UserPhoto(item.PhotoPath)"
+                             class="prediction-user-card-photo"
+                             alt="@item.UserName" />
+
+                        <div class="prediction-user-card-info">
+                            <h5>@item.UserName</h5>
+
+                            @if (!string.IsNullOrWhiteSpace(item.Designation))
+                            {
+                                <div class="small text-muted">@item.Designation</div>
+                            }
+
+                            <div class="mobile-rank-score">
+                                <span>@item.RankText</span>
+                                <span>@item.TotalScore pts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-user-card-stats">
+                        <div>
+                            <span>Prediction</span>
+                            <strong>@item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal</strong>
+                        </div>
+
+                        <div>
+                            <span>Point</span>
+                            <strong>@item.EarnedPoint</strong>
+                        </div>
+                    </div>
+
+                    <a asp-action="UserPredictionDetail"
+                       asp-route-userId="@item.UserId"
+                       class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-list-check"></i>
+                        Detail
+                    </a>
+
+                </div>
+            }
+        }
+
     </div>
 
 </div>

@@ -64,10 +64,24 @@ using (var scope = app.Services.CreateScope())
     await DbInitializer.InitializeAsync(scope.ServiceProvider);
 }
 
+// Area route
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
 
+// This makes https://fifa26.transtec360.com open Football/Index
+app.MapControllerRoute(
+    name: "root",
+    pattern: "",
+    defaults: new { controller = "Football", action = "Index" });
+
+// This makes https://fifa26.transtec360.com/t360football also open Football/Index
+app.MapControllerRoute(
+    name: "t360football",
+    pattern: "t360football",
+    defaults: new { controller = "Football", action = "Index" });
+
+// Default route for all other pages
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
