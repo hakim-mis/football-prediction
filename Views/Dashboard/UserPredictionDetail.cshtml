@@ -84,7 +84,6 @@
             <thead>
                 <tr>
                     <th>Date & Time</th>
-                    <th>Segment</th>
                     <th>Match</th>
                     <th>Status</th>
                     <th>Prediction</th>
@@ -97,7 +96,7 @@
                 @if (!Model.Items.Any())
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             No live or finished fixture found.
                         </td>
                     </tr>
@@ -114,6 +113,12 @@
                         ? $"{item.TeamOnePredictedGoal} - {item.TeamTwoPredictedGoal}"
                         : "Not Participated";
 
+                        var pointBadgeClass = item.EarnedPoint == 0
+                        ? "text-bg-secondary"
+                        : item.EarnedPoint == 3
+                        ? "text-bg-primary"
+                        : "text-bg-warning";
+
                         <tr>
                             <td>
                                 <div class="fw-semibold">
@@ -122,12 +127,6 @@
                                 <div class="small text-muted">
                                     @item.MatchDateTime.ToString("hh:mm tt")
                                 </div>
-                            </td>
-
-                            <td>
-                                <span class="segment-chip">
-                                    @item.StageName
-                                </span>
                             </td>
 
                             <td>
@@ -149,6 +148,10 @@
                                         <strong>@item.TeamTwoName</strong>
                                     </div>
 
+                                    <span class="segment-chip">
+                                        @item.StageName
+                                    </span>
+
                                 </div>
                             </td>
 
@@ -168,7 +171,7 @@
                                 else
                                 {
                                     <span class="prediction-text-muted">
-                                        Not Participated
+                                        -
                                     </span>
                                 }
                             </td>
@@ -187,7 +190,7 @@
                             <td>
                                 @if (item.HasPrediction)
                                 {
-                                    <span class="badge text-bg-warning">
+                                    <span class="badge @pointBadgeClass">
                                         @item.EarnedPoint
                                     </span>
                                 }

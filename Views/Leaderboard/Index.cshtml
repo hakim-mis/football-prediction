@@ -9,44 +9,61 @@
             ? Url.Content("~/img/default-avatar.svg")
             : Url.Content("~/" + path.TrimStart('/', '~'));
     }
+
+    string BuildMobileInfo(string? designation, string? department)
+    {
+        var parts = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(designation))
+        {
+            parts.Add(designation);
+        }
+
+        if (!string.IsNullOrWhiteSpace(department))
+        {
+            parts.Add(department);
+        }
+
+        return parts.Any() ? string.Join(" • ", parts) : "-";
+    }
 }
 
-<div class="dashboard-card p-4 p-lg-5">
+<div class="dashboard-card leaderboard-page p-3 p-md-4 mb-4">
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="leaderboard-topbar mb-4">
         <div>
             <span class="pill">
                 <i class="bi bi-trophy"></i>
                 Ranking Table
             </span>
 
-            <h1 class="h2 fw-bold mt-3 mb-0">
+            <h1 class="h3 fw-bold mt-3 mb-1">
                 Leaderboard Top 100
             </h1>
 
-            <p class="text-muted mb-0">
+            <p class="text-muted mb-0 small">
                 Users with the same score share the same rank. Users with zero score show No rank.
             </p>
         </div>
 
         <a asp-controller="Dashboard"
            asp-action="Index"
-           class="btn btn-outline-primary">
+           class="btn btn-outline-primary btn-sm">
             <i class="bi bi-arrow-left"></i>
             Back to Dashboard
         </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-clean table-hover align-middle mb-0">
+    <div class="leaderboard-table-wrap">
+        <table class="table table-clean table-hover align-middle mb-0 leaderboard-table">
             <thead>
                 <tr>
                     <th>Rank</th>
                     <th>Player</th>
-                    <th>Designation</th>
-                    <th>Department</th>
+                    <th class="leaderboard-designation-col">Designation</th>
+                    <th class="leaderboard-department-col">Department</th>
                     <th>Total Score</th>
-                    <th>Exact Predictions</th>
+                    <th>Exact</th>
                     <th>Detail</th>
                 </tr>
             </thead>
@@ -72,20 +89,26 @@
                             </td>
 
                             <td>
-                                <div class="d-flex align-items-center gap-2">
+                                <div class="leaderboard-player-cell">
                                     <img src="@UserPhoto(user.PhotoPath)"
-                                         class="avatar-sm"
+                                         class="leaderboard-avatar"
                                          alt="@user.FullName" />
 
-                                    <strong>@user.FullName</strong>
+                                    <div class="leaderboard-player-info">
+                                        <strong>@user.FullName</strong>
+
+                                        <div class="small text-muted d-md-none leaderboard-mobile-subtitle">
+                                            @BuildMobileInfo(user.Designation, user.Department)
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
 
-                            <td>
+                            <td class="leaderboard-designation-col">
                                 @(string.IsNullOrWhiteSpace(user.Designation) ? "-" : user.Designation)
                             </td>
 
-                            <td>
+                            <td class="leaderboard-department-col">
                                 @(string.IsNullOrWhiteSpace(user.Department) ? "-" : user.Department)
                             </td>
 
@@ -96,7 +119,9 @@
                             </td>
 
                             <td>
-                                @user.ExactPredictionCount
+                                <span class="badge @(user.ExactPredictionCount == 0 ? "text-bg-secondary" : "text-bg-primary")">
+                                    @user.ExactPredictionCount
+                                </span>
                             </td>
 
                             <td>

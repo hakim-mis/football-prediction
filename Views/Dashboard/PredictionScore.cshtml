@@ -65,11 +65,17 @@
 
         return "notparticipate";
     }
+
+    private string PointBadgeClass(int point)
+    {
+        return point == 0 ? "text-bg-secondary" :
+               point == 3 ? "text-bg-primary" :
+               "text-bg-warning";
+    }
 }
 
 <div class="dashboard-card prediction-score-page-card p-3 p-md-4 mb-4" id="predictionScoreCard">
 
-    <!-- Header -->
     <div class="prediction-score-header mb-3">
         <div>
             <h2 class="h4 fw-bold mb-1">
@@ -85,14 +91,13 @@
         <a asp-controller="Dashboard"
            asp-action="Index"
            class="btn btn-outline-primary btn-sm">
-           <i class="bi bi-arrow-left"></i>
+            <i class="bi bi-arrow-left"></i>
             Back to Dashboard
         </a>
     </div>
 
     <div id="predictionPageAlert" class="alert d-none mb-3"></div>
 
-    <!-- Compact Profile + Stats -->
     <div class="prediction-score-summary mb-3">
 
         <div class="prediction-score-user">
@@ -183,13 +188,11 @@
 
     </div>
 
-    <!-- Desktop Table -->
-    <div class="prediction-table-wrap d-none d-lg-block">
+    <div class="prediction-table-wrap">
         <table class="table table-clean table-hover align-middle mb-0 prediction-table">
             <thead>
                 <tr>
                     <th>Date & Time</th>
-                    <th>Segment</th>
                     <th>Match</th>
                     <th>Status</th>
                     <th>Prediction</th>
@@ -203,7 +206,7 @@
                 @if (Model.PredictionFixtures == null || !Model.PredictionFixtures.Any())
                 {
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
+                        <td colspan="7" class="text-center text-muted py-4">
                             No fixture found.
                         </td>
                     </tr>
@@ -248,12 +251,6 @@
                             </td>
 
                             <td>
-                                <span class="segment-chip">
-                                    @fixture.Stage.GetDisplayName()
-                                </span>
-                            </td>
-
-                            <td>
                                 <div class="prediction-score-team-row">
 
                                     <div class="prediction-score-team">
@@ -274,6 +271,10 @@
                                         <span>@fixture.TeamTwoName</span>
                                     </div>
 
+                                    <span class="segment-chip">
+                                        @fixture.Stage.GetDisplayName()
+                                    </span>
+
                                 </div>
                             </td>
 
@@ -293,13 +294,13 @@
                                 else if (canPredict)
                                 {
                                     <span class="prediction-text-danger">
-                                        No Prediction
+                                        Not Predict
                                     </span>
                                 }
                                 else
                                 {
                                     <span class="prediction-text-muted">
-                                        Not Participated
+                                        - @* Not Participated *@
                                     </span>
                                 }
                             </td>
@@ -318,7 +319,7 @@
                             <td class="prediction-point-cell" data-fixture-id="@fixture.Id">
                                 @if (hasPrediction && prediction != null && prediction.IsProcessed)
                                 {
-                                    <span class="badge text-bg-warning">
+                                    <span class="badge @PointBadgeClass(prediction.EarnedPoint)">
                                         @prediction.EarnedPoint
                                     </span>
                                 }
@@ -378,7 +379,7 @@
                                        asp-route-fixtureId="@fixture.Id"
                                        class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-list-check"></i>
-                                        Detail
+                                        Match Predictions
                                     </a>
                                 }
                                 else
@@ -393,191 +394,8 @@
         </table>
     </div>
 
-    <!-- Mobile Card List -->
-    <div class="prediction-mobile-list d-lg-none" id="predictionMobileList">
-
-        @if (Model.PredictionFixtures == null || !Model.PredictionFixtures.Any())
-        {
-            <div class="empty-state">
-                No fixture found.
-            </div>
-        }
-        else
-        {
-            foreach (var fixture in Model.PredictionFixtures.OrderBy(x => x.MatchDateTime))
-            {
-                Prediction? prediction = null;
-
-                var hasPrediction = Model.UserPredictionLookup != null &&
-                                    Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
-
-                var canPredict = fixture.Status == MatchStatus.Upcoming &&
-                                 !fixture.IsProcessed &&
-                                 DateTime.Now < fixture.MatchDateTime;
-
-                var participation = ParticipationText(hasPrediction, canPredict);
-
-                var teamOneFlag = ToImageUrl(Url, fixture.TeamOneFlagPath, "/img/default-flag.svg");
-                var teamTwoFlag = ToImageUrl(Url, fixture.TeamTwoFlagPath, "/img/default-flag.svg");
-
-                var actualText = fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue
-                    ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
-                    : "Pending";
-
-                <div id="fixture-card-@fixture.Id"
-                     class="mobile-fixture-card prediction-fixture-card"
-                     data-fixture-id="@fixture.Id"
-                     data-status="@fixture.Status"
-                     data-can-predict="@(canPredict ? "true" : "false")"
-                     data-has-prediction="@(hasPrediction ? "true" : "false")"
-                     data-participation="@participation">
-
-                    <div class="mobile-fixture-top">
-                        <span class="segment-chip">
-                            @fixture.Stage.GetDisplayName()
-                        </span>
-
-                        <span class="fixture-status @StatusClass(fixture.Status)">
-                            @fixture.Status
-                        </span>
-                    </div>
-
-                    <div class="mobile-fixture-time">
-                        <i class="bi bi-calendar-event"></i>
-                        @fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")
-                    </div>
-
-                    <div class="mobile-fixture-teams">
-                        <div class="mobile-team">
-                            <img src="@teamOneFlag" alt="@fixture.TeamOneName" />
-                            <span>@fixture.TeamOneName</span>
-                        </div>
-
-                        <div class="mobile-vs">VS</div>
-
-                        <div class="mobile-team">
-                            <img src="@teamTwoFlag" alt="@fixture.TeamTwoName" />
-                            <span>@fixture.TeamTwoName</span>
-                        </div>
-                    </div>
-
-                    <div class="mobile-fixture-mini-summary">
-                        <div class="mini-summary-item prediction-mini" data-fixture-id="@fixture.Id">
-                            <span>Prediction</span>
-
-                            <strong class="mobile-prediction-value" data-fixture-id="@fixture.Id">
-                                @if (hasPrediction && prediction != null)
-                                {
-                                    <span class="prediction-text-success">
-                                        @prediction.TeamOnePredictedGoal - @prediction.TeamTwoPredictedGoal
-                                    </span>
-                                }
-                                else if (canPredict)
-                                {
-                                    <span class="prediction-text-danger">
-                                        No Prediction
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="prediction-text-muted">
-                                        Not Participated
-                                    </span>
-                                }
-                            </strong>
-                        </div>
-
-                        <div class="mini-summary-item actual-mini">
-                            <span>Actual</span>
-                            <strong>@actualText</strong>
-                        </div>
-
-                        <div class="mini-summary-item point-mini">
-                            <span>Point</span>
-
-                            <strong class="mobile-point-value" data-fixture-id="@fixture.Id">
-                                @if (hasPrediction && prediction != null && prediction.IsProcessed)
-                                {
-                                    <span class="badge text-bg-warning">
-                                        @prediction.EarnedPoint
-                                    </span>
-                                }
-                                else if (hasPrediction && prediction != null)
-                                {
-                                    <span class="badge text-bg-secondary">
-                                        Pending
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge text-bg-light text-muted">
-                                        -
-                                    </span>
-                                }
-                            </strong>
-                        </div>
-                    </div>
-
-                    <div class="mobile-action-cell" data-fixture-id="@fixture.Id">
-                        @if (!hasPrediction && canPredict)
-                        {
-                            <button type="button"
-                                    class="btn btn-warning btn-sm fw-bold w-100 js-open-prediction-modal"
-                                    data-fixture-id="@fixture.Id"
-                                    data-team-one="@fixture.TeamOneName"
-                                    data-team-two="@fixture.TeamTwoName"
-                                    data-team-one-flag="@teamOneFlag"
-                                    data-team-two-flag="@teamTwoFlag"
-                                    data-team-one-goal="0"
-                                    data-team-two-goal="0"
-                                    data-match-time="@fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")"
-                                    data-mode="Predict">
-                                <i class="bi bi-send"></i>
-                                Predict
-                            </button>
-                        }
-                        else if (hasPrediction && canPredict && prediction != null)
-                        {
-                            <button type="button"
-                                    class="btn btn-primary btn-sm fw-bold w-100 js-open-prediction-modal"
-                                    data-fixture-id="@fixture.Id"
-                                    data-team-one="@fixture.TeamOneName"
-                                    data-team-two="@fixture.TeamTwoName"
-                                    data-team-one-flag="@teamOneFlag"
-                                    data-team-two-flag="@teamTwoFlag"
-                                    data-team-one-goal="@prediction.TeamOnePredictedGoal"
-                                    data-team-two-goal="@prediction.TeamTwoPredictedGoal"
-                                    data-match-time="@fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")"
-                                    data-mode="Update">
-                                <i class="bi bi-pencil-square"></i>
-                                Update
-                            </button>
-                        }
-                        else if (fixture.Status == MatchStatus.Live || fixture.Status == MatchStatus.Finished)
-                        {
-                            <a asp-controller="Dashboard"
-                               asp-action="PredictionDetail"
-                               asp-route-fixtureId="@fixture.Id"
-                               class="btn btn-outline-primary btn-sm w-100">
-                                <i class="bi bi-list-check"></i>
-                                Detail
-                            </a>
-                        }
-                        else
-                        {
-                            <span class="text-muted small d-block text-center">Locked</span>
-                        }
-                    </div>
-
-                </div>
-            }
-        }
-
-    </div>
-
 </div>
 
-<!-- Prediction Modal -->
 <div class="modal fade" id="predictionModal" tabindex="-1" aria-labelledby="predictionModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content prediction-modal-content">
@@ -685,7 +503,6 @@
     </div>
 </div>
 
-<!-- Toast -->
 <div id="customToast" class="custom-toast d-none">
     <div class="custom-toast-icon">
         <i id="customToastIcon" class="bi bi-check-circle-fill"></i>
@@ -794,7 +611,7 @@
         }
 
         function filterPredictionItems(filter) {
-            const allItems = document.querySelectorAll(".prediction-fixture-row, .prediction-fixture-card");
+            const allItems = document.querySelectorAll(".prediction-fixture-row");
 
             allItems.forEach(function (item) {
                 const status = item.getAttribute("data-status");
@@ -851,12 +668,14 @@
             setValue("modalTeamTwoGoal", teamTwoGoal);
 
             const messageBox = document.getElementById("predictionAjaxMessage");
+
             if (messageBox) {
                 messageBox.className = "alert d-none";
                 messageBox.innerText = "";
             }
 
             const saveBtn = document.getElementById("modalSavePredictionBtn");
+
             if (saveBtn) {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = '<i class="bi bi-send"></i> Save Prediction';
@@ -949,7 +768,6 @@
             const canPredict = row ? row.getAttribute("data-can-predict") === "true" : false;
 
             updatePredictionTableRow(data);
-            updatePredictionMobileCard(data);
 
             if (!wasPredictedBefore && canPredict) {
                 updatePredictionCountersAfterSave();
@@ -975,7 +793,7 @@
             }
 
             if (actionCell) {
-                actionCell.innerHTML = buildUpdateButtonHtml(fixtureId, false);
+                actionCell.innerHTML = buildUpdateButtonHtml(fixtureId);
                 bindPredictionButtons();
             }
 
@@ -986,37 +804,7 @@
             }
         }
 
-        function updatePredictionMobileCard(data) {
-            const fixtureId = data.fixtureId;
-
-            const card = document.getElementById("fixture-card-" + fixtureId);
-            const predictionValue = document.querySelector('.mobile-prediction-value[data-fixture-id="' + fixtureId + '"]');
-            const pointValue = document.querySelector('.mobile-point-value[data-fixture-id="' + fixtureId + '"]');
-            const actionCell = document.querySelector('.mobile-action-cell[data-fixture-id="' + fixtureId + '"]');
-
-            if (predictionValue) {
-                predictionValue.innerHTML =
-                    '<span class="prediction-text-success">' + escapeHtml(data.predictionText) + '</span>';
-            }
-
-            if (pointValue) {
-                pointValue.innerHTML =
-                    '<span class="badge text-bg-secondary">' + escapeHtml(data.pointText || "Pending") + '</span>';
-            }
-
-            if (actionCell) {
-                actionCell.innerHTML = buildUpdateButtonHtml(fixtureId, true);
-                bindPredictionButtons();
-            }
-
-            if (card) {
-                card.setAttribute("data-has-prediction", "true");
-                card.setAttribute("data-participation", "predicted");
-                flashUpdatedItem(card);
-            }
-        }
-
-        function buildUpdateButtonHtml(fixtureId, isMobile) {
+        function buildUpdateButtonHtml(fixtureId) {
             const teamOne = getText("modalTeamOneName");
             const teamTwo = getText("modalTeamTwoName");
             const teamOneFlag = document.getElementById("modalTeamOneFlag")?.src || "";
@@ -1025,10 +813,8 @@
             const teamTwoGoal = document.getElementById("modalTeamTwoGoal")?.value || "0";
             const matchTime = document.getElementById("modalMatchDateTime")?.innerText || "";
 
-            const fullWidth = isMobile ? " w-100" : "";
-
             return '<button type="button" ' +
-                'class="btn btn-primary btn-sm fw-bold js-open-prediction-modal' + fullWidth + '" ' +
+                'class="btn btn-primary btn-sm fw-bold js-open-prediction-modal" ' +
                 'data-fixture-id="' + escapeHtml(fixtureId) + '" ' +
                 'data-team-one="' + escapeHtml(teamOne) + '" ' +
                 'data-team-two="' + escapeHtml(teamTwo) + '" ' +

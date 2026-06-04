@@ -75,9 +75,17 @@
 
         return "notparticipated";
     }
+
+    private string PointBadgeClass(int point)
+    {
+        return point == 0
+            ? "text-bg-secondary"
+            : point == 3
+                ? "text-bg-primary"
+                : "text-bg-warning";
+    }
 }
 
-<!-- DASHBOARD SUMMARY -->
 <!-- TOP SECTION: PROFILE LEFT + BANNER RIGHT -->
 <div class="row g-4 mb-4 dashboard-top-layout">
 
@@ -99,10 +107,10 @@
                             <strong>@Model.RankText</strong>
                         </span>
 
-                        <span>
+                        @* <span>
                             Top Score:
                             <strong>@Model.TopScore</strong>
-                        </span>
+                        </span> *@
 
                         <span class="total-point-smart">
                             Total Point:
@@ -227,15 +235,9 @@
                                      style="background-image:url('.@Url.Content(banner.ImageUrl)')">
 
                                     <div class="dashboard-banner-side-overlay">
-                                        @* <span class="banner-badge">
-                                            <i class="bi bi-stars"></i>
-                                            Transtec 360°
-                                        </span>
+                                        <h2></h2>
+                                        <p></p>
 
-                                        <h2>@banner.Title</h2>
-
-                                        <p>@banner.Subtitle</p> *@
-                                        <h2></h2><p></p>
                                         <a href="@banner.RedirectUrl"
                                            target="_blank"
                                            class="btn btn-warning btn-sm fw-bold banner-action-btn">
@@ -468,7 +470,7 @@
                             <strong>
                                 @if (hasPrediction && prediction != null && prediction.IsProcessed)
                                 {
-                                    <span class="badge text-bg-warning">
+                                    <span class="badge @PointBadgeClass(prediction.EarnedPoint)">
                                         @prediction.EarnedPoint
                                     </span>
                                 }
@@ -491,7 +493,13 @@
                     <div class="fixture-card-action">
                         @if (canPredict)
                         {
-                            <form asp-controller="Prediction" asp-action="Save" method="post">
+                            <form class="dashboard-prediction-form"
+                                  asp-controller="Dashboard"
+                                  asp-action="SavePredictionAjax"
+                                  method="post"
+                                  data-fixture-id="@fixture.Id"
+                                  data-was-predicted="@(hasPrediction ? "true" : "false")">
+
                                 @Html.AntiForgeryToken()
 
                                 <input type="hidden" name="fixtureId" value="@fixture.Id" />
@@ -503,7 +511,8 @@
                                                max="99"
                                                name="teamOneGoal"
                                                class="form-control prediction-input prediction-input-sm"
-                                               value="@(hasPrediction && prediction != null ? prediction.TeamOnePredictedGoal : 0)" />
+                                               value="@(hasPrediction && prediction != null ? prediction.TeamOnePredictedGoal : 0)"
+                                               required />
                                     </div>
 
                                     <div class="col-2 text-center pb-2 fw-bold">-</div>
@@ -514,25 +523,26 @@
                                                max="99"
                                                name="teamTwoGoal"
                                                class="form-control prediction-input prediction-input-sm"
-                                               value="@(hasPrediction && prediction != null ? prediction.TeamTwoPredictedGoal : 0)" />
+                                               value="@(hasPrediction && prediction != null ? prediction.TeamTwoPredictedGoal : 0)"
+                                               required />
                                     </div>
                                 </div>
 
                                 <button type="submit"
-                                        class="btn btn-@(hasPrediction ? "primary" : "warning") w-100 mt-2 fw-bold">
-                                    <i class="bi bi-send"></i>
+                                        class="btn btn-@(hasPrediction ? "primary" : "warning") w-100 mt-2 fw-bold dashboard-prediction-save-btn">
+                                    <i class="bi @(hasPrediction ? "bi-pencil-square" : "bi-send")"></i>
                                     @(hasPrediction ? "Update Prediction" : "Submit Prediction")
                                 </button>
                             </form>
                         }
-                        else if (fixture.Status == MatchStatus.Live || fixture.Status == MatchStatus.Finished)
+                        else if (fixture.Status == MatchStatus.Live || fixture.Status == MatchStatus.Finished || DateTime.Now >= fixture.MatchDateTime)
                         {
                             <a asp-controller="Dashboard"
                                asp-action="PredictionDetail"
                                asp-route-fixtureId="@fixture.Id"
                                class="btn btn-outline-primary w-100">
                                 <i class="bi bi-list-check"></i>
-                                Prediction Detail
+                                Match Predictions
                             </a>
                         }
                         else
@@ -574,6 +584,21 @@
     </div>
 }
 
+<!-- AJAX Toast -->
+<div id="dashboardAjaxToast" class="custom-toast d-none">
+    <div class="custom-toast-icon">
+        <i id="dashboardAjaxToastIcon" class="bi bi-check-circle-fill"></i>
+    </div>
+
+    <div id="dashboardAjaxToastMessage" class="custom-toast-message">
+        Prediction saved successfully.
+    </div>
+
+    <button type="button" class="custom-toast-close" onclick="hideDashboardAjaxToast()">
+        <i class="bi bi-x-lg"></i>
+    </button>
+</div>
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -614,6 +639,7 @@
 
         document.addEventListener("DOMContentLoaded", function () {
             bindDashboardFixtureFilters();
+            bindDashboardPredictionAjaxForms();
         });
 
         function bindDashboardFixtureFilters() {
@@ -666,6 +692,218 @@
                     card.classList.add("d-none");
                 }
             });
+        }
+
+        function bindDashboardPredictionAjaxForms() {
+            document.querySelectorAll(".dashboard-prediction-form").forEach(function (form) {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    submitDashboardPrediction(form);
+                });
+            });
+        }
+
+        async function submitDashboardPrediction(form) {
+            const fixtureId = form.getAttribute("data-fixture-id");
+            const card = document.querySelector('.dashboard-fixture-card[data-fixture-id="' + fixtureId + '"]');
+            const saveBtn = form.querySelector(".dashboard-prediction-save-btn");
+
+            const teamOneInput = form.querySelector('input[name="teamOneGoal"]');
+            const teamTwoInput = form.querySelector('input[name="teamTwoGoal"]');
+
+            if (!teamOneInput || !teamTwoInput) {
+                showDashboardAjaxToast("Prediction input not found.", "error");
+                return;
+            }
+
+            if (teamOneInput.value === "" || teamTwoInput.value === "") {
+                showDashboardAjaxToast("Please enter both team goals.", "error");
+                return;
+            }
+
+            const teamOneGoal = parseInt(teamOneInput.value);
+            const teamTwoGoal = parseInt(teamTwoInput.value);
+
+            if (teamOneGoal < 0 || teamTwoGoal < 0 || teamOneGoal > 99 || teamTwoGoal > 99) {
+                showDashboardAjaxToast("Goal value must be between 0 and 99.", "error");
+                return;
+            }
+
+            const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenInput ? tokenInput.value : "";
+            const formData = new FormData(form);
+
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+            }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "RequestVerificationToken": token,
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                });
+
+                const contentType = response.headers.get("content-type") || "";
+
+                if (!response.ok) {
+                    throw new Error("Server returned " + response.status);
+                }
+
+                if (!contentType.includes("application/json")) {
+                    throw new Error("Server did not return JSON. Please check login/session.");
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showDashboardAjaxToast(data.message || "Prediction could not be saved.", "error");
+                    resetDashboardPredictionButton(saveBtn, form);
+                    return;
+                }
+
+                updateDashboardPredictionCard(card, form, data);
+                showDashboardAjaxToast(data.message || "Prediction saved successfully.", "success");
+            }
+            catch (error) {
+                console.error(error);
+                showDashboardAjaxToast("Unexpected error occurred. Please try again.", "error");
+                resetDashboardPredictionButton(saveBtn, form);
+            }
+        }
+
+        function updateDashboardPredictionCard(card, form, data) {
+            const predictionCell = card ? card.querySelector(".prediction-info strong") : null;
+            const pointCell = card ? card.querySelector(".point-info strong") : null;
+            const saveBtn = form.querySelector(".dashboard-prediction-save-btn");
+
+            const wasPredictedBefore = form.getAttribute("data-was-predicted") === "true";
+
+            if (predictionCell) {
+                predictionCell.innerHTML =
+                    '<span class="prediction-text-success">' + escapeDashboardHtml(data.predictionText) + '</span>';
+            }
+
+            if (pointCell) {
+                pointCell.innerHTML =
+                    '<span class="badge text-bg-secondary">' + escapeDashboardHtml(data.pointText || "Pending") + '</span>';
+            }
+
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.classList.remove("btn-warning", "btn-secondary");
+                saveBtn.classList.add("btn-primary");
+                saveBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Update Prediction';
+            }
+
+            form.setAttribute("data-was-predicted", "true");
+
+            if (card) {
+                card.setAttribute("data-has-prediction", "true");
+                card.setAttribute("data-participation", "predicted");
+                card.classList.add("prediction-row-updated");
+
+                setTimeout(function () {
+                    card.classList.remove("prediction-row-updated");
+                }, 1600);
+            }
+
+            if (!wasPredictedBefore && data.wasNewPrediction) {
+                incrementDashboardCounter("dashboardPredictedCount", 1);
+                incrementDashboardCounter("fixturePredictedCount", 1);
+
+                incrementDashboardCounter("dashboardNoPredictionCount", -1);
+                incrementDashboardCounter("fixtureNoPredictionCount", -1);
+            }
+        }
+
+        function resetDashboardPredictionButton(saveBtn, form) {
+            if (!saveBtn) {
+                return;
+            }
+
+            const wasPredicted = form.getAttribute("data-was-predicted") === "true";
+
+            saveBtn.disabled = false;
+
+            if (wasPredicted) {
+                saveBtn.classList.remove("btn-warning");
+                saveBtn.classList.add("btn-primary");
+                saveBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Update Prediction';
+            } else {
+                saveBtn.classList.remove("btn-primary");
+                saveBtn.classList.add("btn-warning");
+                saveBtn.innerHTML = '<i class="bi bi-send"></i> Submit Prediction';
+            }
+        }
+
+        function incrementDashboardCounter(id, amount) {
+            const element = document.getElementById(id);
+
+            if (!element) {
+                return;
+            }
+
+            const currentValue = parseInt(element.innerText || "0");
+            const nextValue = Math.max(currentValue + amount, 0);
+
+            element.innerText = nextValue;
+        }
+
+        function showDashboardAjaxToast(message, type) {
+            const toast = document.getElementById("dashboardAjaxToast");
+            const toastMessage = document.getElementById("dashboardAjaxToastMessage");
+            const toastIcon = document.getElementById("dashboardAjaxToastIcon");
+
+            if (!toast || !toastMessage) {
+                return;
+            }
+
+            toastMessage.innerText = message;
+
+            toast.classList.remove("success", "error", "d-none", "show");
+            toast.classList.add(type === "error" ? "error" : "success");
+
+            if (toastIcon) {
+                toastIcon.className = type === "error"
+                    ? "bi bi-x-circle-fill"
+                    : "bi bi-check-circle-fill";
+            }
+
+            setTimeout(function () {
+                toast.classList.add("show");
+            }, 20);
+
+            setTimeout(function () {
+                hideDashboardAjaxToast();
+            }, 2200);
+        }
+
+        function hideDashboardAjaxToast() {
+            const toast = document.getElementById("dashboardAjaxToast");
+
+            if (!toast) {
+                return;
+            }
+
+            toast.classList.remove("show");
+
+            setTimeout(function () {
+                toast.classList.add("d-none");
+            }, 250);
+        }
+
+        function escapeDashboardHtml(value) {
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
         }
     </script>
 }
