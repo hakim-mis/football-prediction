@@ -1,102 +1,528 @@
 @model List<Fixture>
+@using FootballPredictionGame.Models
+@using FootballPredictionGame.Helpers
+
 @{
     ViewData["Title"] = "Fixtures";
-    var groups = Model.GroupBy(x => x.Stage).OrderBy(x => (int)x.Key).ToList();
+
+    var totalCount = Model?.Count ?? 0;
+    var upcomingCount = Model?.Count(x => x.Status == MatchStatus.Upcoming) ?? 0;
+    var finishedCount = Model?.Count(x => x.Status == MatchStatus.Finished) ?? 0;
+    var publishedYesCount = Model?.Count(x => x.IsPublished) ?? 0;
+    var publishedNoCount = Model?.Count(x => !x.IsPublished) ?? 0;
+    var processedCount = Model?.Count(x => x.IsProcessed) ?? 0;
+    var pendingCount = Model?.Count(x => !x.IsProcessed) ?? 0;
+
+    string ImageUrl(string? path, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? Url.Content(fallback)
+            : Url.Content("~/" + path.TrimStart('/', '~'));
+    }
+
+    string StatusBadgeClass(MatchStatus status)
+    {
+        return status switch
+        {
+            MatchStatus.Upcoming => "fixture-status-admin status-admin-upcoming",
+            MatchStatus.Live => "fixture-status-admin status-admin-live blink-live",
+            MatchStatus.Finished => "fixture-status-admin status-admin-finished",
+            _ => "fixture-status-admin status-admin-default"
+        };
+    }
+
+    string ActualScore(Fixture fixture)
+    {
+        return fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue
+            ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
+            : "Not set";
+    }
 }
-<div class="dashboard-card p-4 p-lg-5">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+<div class="dashboard-card admin-fixture-page p-3 p-md-4 mb-4">
+
+    <div class="admin-fixture-topbar mb-4">
         <div>
-            <span class="pill"><i class="bi bi-calendar-event"></i> Match Center</span>
-            <h1 class="h2 fw-bold mt-3 mb-0">Fixture Management</h1>
-            <p class="text-muted mb-0">Create fixtures by segment, update actual goals and process results.</p>
+            <span class="pill">
+                <i class="bi bi-calendar-event"></i>
+                Match Center
+            </span>
+
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                Fixture Management
+            </h1>
+
+            <p class="text-muted mb-0 small">
+                Search, filter, publish, process and manage all fixtures date-wise.
+            </p>
         </div>
-        <a asp-action="Create" class="btn btn-primary btn-lg"><i class="bi bi-plus-circle"></i> Add Fixture</a>
+
+        <a asp-action="Create"
+           class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i>
+            Add Fixture
+        </a>
     </div>
 
-    @if (!groups.Any())
+    <!-- Search + Filters -->
+    <div class="admin-fixture-toolbar mb-3">
+
+        <div class="admin-fixture-search-box">
+            <span>
+                <i class="bi bi-search"></i>
+            </span>
+
+            <input type="search"
+                   id="adminFixtureSearch"
+                   class="form-control"
+                   placeholder="Search team, group, status, score, publish, process..." />
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm"
+                id="adminFixtureClearSearch">
+            <i class="bi bi-x-circle"></i>
+            Clear
+        </button>
+
+    </div>
+
+    <div class="admin-fixture-filter-bar mb-4">
+
+        <button type="button"
+                class="admin-fixture-filter-btn filter-all active"
+                data-filter="all">
+            <i class="bi bi-grid"></i>
+            All
+            <span>@totalCount</span>
+        </button>
+
+        <button type="button"
+                class="admin-fixture-filter-btn filter-upcoming"
+                data-filter="Upcoming">
+            <i class="bi bi-calendar-event"></i>
+            Upcoming
+            <span>@upcomingCount</span>
+        </button>
+
+        <button type="button"
+                class="admin-fixture-filter-btn filter-finished"
+                data-filter="Finished">
+            <i class="bi bi-check-circle"></i>
+            Finished
+            <span>@finishedCount</span>
+        </button>
+
+        <button type="button"
+                class="admin-fixture-filter-btn filter-published-yes"
+                data-filter="published-yes">
+            <i class="bi bi-eye"></i>
+            Publish: Yes
+            <span>@publishedYesCount</span>
+        </button>
+
+        <button type="button"
+                class="admin-fixture-filter-btn filter-published-no"
+                data-filter="published-no">
+            <i class="bi bi-eye-slash"></i>
+            Publish: No
+            <span>@publishedNoCount</span>
+        </button>
+
+        <button type="button"
+                class="admin-fixture-filter-btn filter-processed"
+                data-filter="processed">
+            <i class="bi bi-check2-square"></i>
+            Processed
+            <span>@processedCount</span>
+        </button>
+
+        <button type="button"
+                class="admin-fixture-filter-btn filter-pending"
+                data-filter="pending">
+            <i class="bi bi-hourglass-split"></i>
+            Pending
+            <span>@pendingCount</span>
+        </button>
+
+    </div>
+
+    @if (Model == null || !Model.Any())
     {
-        <div class="empty-state">No fixture created yet.</div>
+        <div class="empty-state">
+            No fixture created yet.
+        </div>
     }
     else
     {
-        @foreach (var group in groups)
-        {
-            <div class="d-flex align-items-center justify-content-between mt-4 mb-2">
-                <span class="segment-chip">@group.Key.GetDisplayName()</span>
-                <span class="small text-muted">@group.Count() match(es)</span>
-            </div>
-            <div class="table-responsive mb-3">
-                <table class="table table-clean table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Match</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Actual Score</th>
-                            <th>Published</th>
-                            <th>Processed</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var fixture in group.OrderBy(x => x.MatchDateTime))
-                        {
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        <img src="..@(fixture.TeamOneFlagPath ?? "../img/default-flag.svg")" class="flag-sm" />
-                                        <strong>@fixture.TeamOneName</strong>
-                                        <span class="text-muted">vs</span>
-                                        <strong>@fixture.TeamTwoName</strong>
-                                        <img src="..@(fixture.TeamTwoFlagPath ?? "../img/default-flag.svg")" class="flag-sm" />
+        <div class="admin-fixture-table-wrap">
+
+            <table class="table table-clean table-hover align-middle mb-0 admin-fixture-table" id="adminFixtureTable">
+
+                <thead>
+                    <tr>
+                        <th>
+                            <button type="button"
+                                    id="fixtureDateSortBtn"
+                                    class="admin-date-sort-btn"
+                                    data-sort-direction="asc">
+                                Date & Time
+                                <i class="bi bi-arrow-up-short" id="fixtureDateSortIcon"></i>
+                            </button>
+                        </th>
+
+                        <th>Match</th>
+                        <th>Status</th>
+                        <th>Actual Score</th>
+                        <th>Published</th>
+                        <th>Processed</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="adminFixtureTableBody">
+                    @foreach (var fixture in Model.OrderBy(x => x.MatchDateTime).ThenBy(x => x.Stage))
+                    {
+                        var teamOneFlag = ImageUrl(fixture.TeamOneFlagPath, "~/img/default-flag.svg");
+                        var teamTwoFlag = ImageUrl(fixture.TeamTwoFlagPath, "~/img/default-flag.svg");
+
+                        var publishFilter = fixture.IsPublished ? "published-yes" : "published-no";
+                        var processFilter = fixture.IsProcessed ? "processed" : "pending";
+
+                        var publishText = fixture.IsPublished ? "Publish Yes" : "Publish No";
+                        var processText = fixture.IsProcessed ? "Processed" : "Pending";
+                        var actualScore = ActualScore(fixture);
+                        var searchText = $"{fixture.TeamOneName} {fixture.TeamTwoName} {fixture.Stage.GetDisplayName()} {fixture.Status} {actualScore} {publishText} {processText} {fixture.MatchDateTime:dd MMM yyyy hh:mm tt}".ToLowerInvariant();
+
+                        <tr class="admin-fixture-row"
+                            data-status="@fixture.Status"
+                            data-published="@publishFilter"
+                            data-processed="@processFilter"
+                            data-match-time="@fixture.MatchDateTime.ToString("yyyy-MM-ddTHH:mm:ss")"
+                            data-search="@searchText">
+
+                            <td>
+                                <div class="fw-semibold">
+                                    @fixture.MatchDateTime.ToString("dd MMM yyyy")
+                                </div>
+
+                                <div class="small text-muted">
+                                    @fixture.MatchDateTime.ToString("hh:mm tt")
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="admin-fixture-match-cell">
+
+                                    <div class="admin-fixture-team-inline">
+                                        <img src="@teamOneFlag"
+                                             alt="@fixture.TeamOneName" />
+
+                                        <span>@fixture.TeamOneName</span>
                                     </div>
-                                </td>
-                                <td>@fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")</td>
-                                <td><span class="badge text-bg-info">@fixture.Status</span></td>
-                                <td>
-                                    @if (fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue)
+
+                                    <span class="admin-fixture-vs-inline">vs</span>
+
+                                    <div class="admin-fixture-team-inline">
+                                        <img src="@teamTwoFlag"
+                                             alt="@fixture.TeamTwoName" />
+
+                                        <span>@fixture.TeamTwoName</span>
+                                    </div>
+
+                                    <span class="admin-fixture-stage-inline">
+                                        @fixture.Stage.GetDisplayName()
+                                    </span>
+
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="@StatusBadgeClass(fixture.Status)">
+                                    @fixture.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue)
+                                {
+                                    <span class="admin-score-pill">
+                                        @actualScore
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small fw-bold">
+                                        Not set
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (fixture.IsPublished)
+                                {
+                                    <span class="admin-publish-badge publish-yes">
+                                        <i class="bi bi-check-circle"></i>
+                                        Yes
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="admin-publish-badge publish-no">
+                                        <i class="bi bi-x-circle"></i>
+                                        No
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (fixture.IsProcessed)
+                                {
+                                    <span class="admin-process-badge process-done">
+                                        <i class="bi bi-check2-circle"></i>
+                                        Processed
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="admin-process-badge process-pending">
+                                        <i class="bi bi-hourglass-split"></i>
+                                        Pending
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                <div class="admin-fixture-action-row">
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@fixture.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                        Edit
+                                    </a>
+
+                                    @if (!fixture.IsProcessed &&
+                                                                fixture.TeamOneActualGoal.HasValue &&
+                                                                fixture.TeamTwoActualGoal.HasValue)
                                     {
-                                        <strong>@fixture.TeamOneActualGoal - @fixture.TeamTwoActualGoal</strong>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Not set</span>
-                                    }
-                                </td>
-                                <td>@(fixture.IsPublished ? "Yes" : "No")</td>
-                                <td>
-                                    @if (fixture.IsProcessed)
-                                    {
-                                        <span class="badge text-bg-success">Processed</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge text-bg-secondary">Pending</span>
-                                    }
-                                </td>
-                                <td class="text-end">
-                                    <a asp-action="Edit" asp-route-id="@fixture.Id" class="btn btn-sm btn-outline-light"><i class="bi bi-pencil"></i> Edit</a>
-                                    @if (!fixture.IsProcessed && fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue)
-                                    {
-                                        <form asp-area="Admin" asp-controller="ResultProcessing" asp-action="Process" asp-route-id="@fixture.Id" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Process this result now?')"><i class="bi bi-play-circle"></i> Process</button>
+                                        <form asp-area="Admin"
+                                              asp-controller="ResultProcessing"
+                                              asp-action="Process"
+                                              asp-route-id="@fixture.Id"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-primary"
+                                                    onclick="return confirm('Process this result now?')">
+                                                <i class="bi bi-play-circle"></i>
+                                                Process
+                                            </button>
                                         </form>
                                     }
+
                                     @if (fixture.IsProcessed)
                                     {
-                                        <form asp-area="Admin" asp-controller="ResultProcessing" asp-action="Undo" asp-route-id="@fixture.Id" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Undo this processed result? User points from this fixture will be reverted. Then you can edit the actual goals and process again.')"><i class="bi bi-arrow-counterclockwise"></i> Undo</button>
+                                        <form asp-area="Admin"
+                                              asp-controller="ResultProcessing"
+                                              asp-action="Undo"
+                                              asp-route-id="@fixture.Id"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-warning"
+                                                    onclick="return confirm('Undo this processed result? User points from this fixture will be reverted. Then you can edit the actual goals and process again.')">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                                Undo
+                                            </button>
                                         </form>
                                     }
-                                    <form asp-action="Delete" asp-route-id="@fixture.Id" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this fixture?')"><i class="bi bi-trash"></i></button>
+
+                                    <form asp-action="Delete"
+                                          asp-route-id="@fixture.Id"
+                                          method="post"
+                                          class="d-inline">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Delete this fixture?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
+
+                                </div>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div id="adminFixtureNoResult" class="empty-state mt-3 d-none">
+            No fixture matched your search/filter.
+        </div>
     }
+
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            bindAdminFixtureFilters();
+            bindAdminFixtureSearch();
+            bindAdminFixtureDateSort();
+            applyAdminFixtureSearchAndFilter();
+        });
+
+        let activeAdminFixtureFilter = "all";
+
+        function bindAdminFixtureFilters() {
+            document.querySelectorAll(".admin-fixture-filter-btn").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    activeAdminFixtureFilter = button.getAttribute("data-filter") || "all";
+
+                    document.querySelectorAll(".admin-fixture-filter-btn").forEach(function (btn) {
+                        btn.classList.remove("active");
+                    });
+
+                    button.classList.add("active");
+
+                    applyAdminFixtureSearchAndFilter();
+                });
+            });
+        }
+
+        function bindAdminFixtureSearch() {
+            const searchInput = document.getElementById("adminFixtureSearch");
+            const clearButton = document.getElementById("adminFixtureClearSearch");
+
+            if (searchInput) {
+                searchInput.addEventListener("input", function () {
+                    applyAdminFixtureSearchAndFilter();
+                });
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener("click", function () {
+                    if (searchInput) {
+                        searchInput.value = "";
+                    }
+
+                    applyAdminFixtureSearchAndFilter();
+                    searchInput?.focus();
+                });
+            }
+        }
+
+        function bindAdminFixtureDateSort() {
+            const sortButton = document.getElementById("fixtureDateSortBtn");
+
+            if (!sortButton) {
+                return;
+            }
+
+            sortButton.addEventListener("click", function () {
+                const currentDirection = sortButton.getAttribute("data-sort-direction") || "asc";
+                const nextDirection = currentDirection === "asc" ? "desc" : "asc";
+
+                sortButton.setAttribute("data-sort-direction", nextDirection);
+
+                const icon = document.getElementById("fixtureDateSortIcon");
+
+                if (icon) {
+                    icon.className = nextDirection === "asc"
+                        ? "bi bi-arrow-up-short"
+                        : "bi bi-arrow-down-short";
+                }
+
+                sortAdminFixtureRows(nextDirection);
+                applyAdminFixtureSearchAndFilter();
+            });
+        }
+
+        function sortAdminFixtureRows(direction) {
+            const tbody = document.getElementById("adminFixtureTableBody");
+
+            if (!tbody) {
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll(".admin-fixture-row"));
+
+            rows.sort(function (a, b) {
+                const aTime = new Date(a.getAttribute("data-match-time")).getTime();
+                const bTime = new Date(b.getAttribute("data-match-time")).getTime();
+
+                if (direction === "asc") {
+                    return aTime - bTime;
+                }
+
+                return bTime - aTime;
+            });
+
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+        }
+
+        function applyAdminFixtureSearchAndFilter() {
+            const searchInput = document.getElementById("adminFixtureSearch");
+            const searchText = searchInput ? searchInput.value.trim().toLowerCase() : "";
+            const noResult = document.getElementById("adminFixtureNoResult");
+
+            let visibleCount = 0;
+
+            document.querySelectorAll(".admin-fixture-row").forEach(function (row) {
+                const status = row.getAttribute("data-status");
+                const published = row.getAttribute("data-published");
+                const processed = row.getAttribute("data-processed");
+                const searchable = row.getAttribute("data-search") || "";
+
+                let matchesFilter = false;
+
+                if (activeAdminFixtureFilter === "all") {
+                    matchesFilter = true;
+                } else if (activeAdminFixtureFilter === "Upcoming" ||
+                           activeAdminFixtureFilter === "Live" ||
+                           activeAdminFixtureFilter === "Finished") {
+                    matchesFilter = status === activeAdminFixtureFilter;
+                } else if (activeAdminFixtureFilter === "published-yes" ||
+                           activeAdminFixtureFilter === "published-no") {
+                    matchesFilter = published === activeAdminFixtureFilter;
+                } else if (activeAdminFixtureFilter === "processed" ||
+                           activeAdminFixtureFilter === "pending") {
+                    matchesFilter = processed === activeAdminFixtureFilter;
+                }
+
+                const matchesSearch = searchText === "" || searchable.includes(searchText);
+                const shouldShow = matchesFilter && matchesSearch;
+
+                if (shouldShow) {
+                    row.classList.remove("d-none");
+                    visibleCount++;
+                } else {
+                    row.classList.add("d-none");
+                }
+            });
+
+            if (noResult) {
+                if (visibleCount === 0) {
+                    noResult.classList.remove("d-none");
+                } else {
+                    noResult.classList.add("d-none");
+                }
+            }
+        }
+    </script>
+}

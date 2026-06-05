@@ -15,11 +15,20 @@
     {
         return status == MatchStatus.Live ? "status-live blink-live" : "status-finished";
     }
+
+    string PointBadgeClass(int point)
+    {
+        return point == 0
+            ? "text-bg-secondary"
+            : point == 3
+                ? "text-bg-primary"
+                : "text-bg-warning";
+    }
 }
 
 <div class="dashboard-card user-history-page p-3 p-md-4 mb-4">
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div class="user-history-topbar mb-4">
         <div>
             <h2 class="h4 fw-bold mb-1">
                 <i class="bi bi-person-lines-fill text-primary"></i>
@@ -31,11 +40,22 @@
             </div>
         </div>
 
-        <a asp-action="PredictionScore"
-           class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-arrow-left"></i>
-            Back
-        </a>
+        <div class="d-flex flex-wrap gap-2 user-history-action-buttons">
+
+            <a asp-action="DownloadUserPredictionDetailExcel"
+               asp-route-userId="@Model.UserId"
+               class="btn btn-success btn-sm">
+                <i class="bi bi-file-earmark-excel"></i>
+                Download Excel
+            </a>
+
+            <a asp-action="PredictionScore"
+               class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </a>
+
+        </div>
     </div>
 
     <div class="user-history-profile-card mb-4">
@@ -79,20 +99,60 @@
 
     </div>
 
+    <div class="user-history-search-toolbar mb-3">
+
+        <div class="user-history-search-box">
+            <span>
+                <i class="bi bi-search"></i>
+            </span>
+
+            <input type="search"
+                   id="userHistorySearch"
+                   class="form-control"
+                   placeholder="Search team, group, status, prediction, actual, point..." />
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm"
+                id="userHistoryClearSearch">
+            <i class="bi bi-x-circle"></i>
+            Clear
+        </button>
+
+    </div>
+
     <div class="user-history-table-wrap">
         <table class="table table-clean table-hover align-middle mb-0 user-history-table">
             <thead>
                 <tr>
-                    <th>Date & Time</th>
+                    <th>
+                        <button type="button"
+                                id="userHistoryDateSortBtn"
+                                class="user-history-sort-btn"
+                                data-sort-direction="desc">
+                            Date & Time
+                            <i id="userHistoryDateSortIcon" class="bi bi-arrow-down-short"></i>
+                        </button>
+                    </th>
+
                     <th>Match</th>
                     <th>Status</th>
                     <th>Prediction</th>
                     <th>Actual</th>
-                    <th>Point</th>
+
+                    <th>
+                        <button type="button"
+                                id="userHistoryPointSortBtn"
+                                class="user-history-sort-btn"
+                                data-sort-direction="desc">
+                            Point
+                            <i id="userHistoryPointSortIcon" class="bi bi-arrow-down-short"></i>
+                        </button>
+                    </th>
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody id="userHistoryTableBody">
                 @if (!Model.Items.Any())
                 {
                     <tr>
@@ -106,24 +166,29 @@
                     foreach (var item in Model.Items)
                     {
                         var actualText = item.TeamOneActualGoal.HasValue && item.TeamTwoActualGoal.HasValue
-                        ? $"{item.TeamOneActualGoal} - {item.TeamTwoActualGoal}"
-                        : "Pending";
+                            ? $"{item.TeamOneActualGoal} - {item.TeamTwoActualGoal}"
+                            : "Pending";
 
                         var predictionText = item.HasPrediction
-                        ? $"{item.TeamOnePredictedGoal} - {item.TeamTwoPredictedGoal}"
-                        : "Not Participated";
+                            ? $"{item.TeamOnePredictedGoal} - {item.TeamTwoPredictedGoal}"
+                            : "Not Participated";
 
-                        var pointBadgeClass = item.EarnedPoint == 0
-                        ? "text-bg-secondary"
-                        : item.EarnedPoint == 3
-                        ? "text-bg-primary"
-                        : "text-bg-warning";
+                        var pointValue = item.HasPrediction ? item.EarnedPoint : -1;
 
-                        <tr>
+                        var searchableText =
+                            $"{item.TeamOneName} {item.TeamTwoName} {item.StageName} {item.Status} {predictionText} {actualText} {pointValue} {item.MatchDateTime:dd MMM yyyy hh:mm tt}"
+                            .ToLowerInvariant();
+
+                        <tr class="user-history-row"
+                            data-search="@searchableText"
+                            data-match-time="@item.MatchDateTime.ToString("yyyy-MM-ddTHH:mm:ss")"
+                            data-point="@pointValue">
+
                             <td>
                                 <div class="fw-semibold">
                                     @item.MatchDateTime.ToString("dd MMM yyyy")
                                 </div>
+
                                 <div class="small text-muted">
                                     @item.MatchDateTime.ToString("hh:mm tt")
                                 </div>
@@ -148,7 +213,7 @@
                                         <strong>@item.TeamTwoName</strong>
                                     </div>
 
-                                    <span class="segment-chip">
+                                    <span class="user-history-stage-small">
                                         @item.StageName
                                     </span>
 
@@ -171,7 +236,7 @@
                                 else
                                 {
                                     <span class="prediction-text-muted">
-                                        -
+                                        Not Participated
                                     </span>
                                 }
                             </td>
@@ -190,7 +255,7 @@
                             <td>
                                 @if (item.HasPrediction)
                                 {
-                                    <span class="badge @pointBadgeClass">
+                                    <span class="badge @PointBadgeClass(item.EarnedPoint)">
                                         @item.EarnedPoint
                                     </span>
                                 }
@@ -208,4 +273,158 @@
         </table>
     </div>
 
+    <div id="userHistoryNoResult" class="empty-state mt-3 d-none">
+        No fixture matched your search.
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            bindUserHistorySearch();
+            bindUserHistoryDateSort();
+            bindUserHistoryPointSort();
+        });
+
+        function bindUserHistorySearch() {
+            const searchInput = document.getElementById("userHistorySearch");
+            const clearButton = document.getElementById("userHistoryClearSearch");
+
+            if (searchInput) {
+                searchInput.addEventListener("input", function () {
+                    applyUserHistorySearch();
+                });
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener("click", function () {
+                    if (searchInput) {
+                        searchInput.value = "";
+                        searchInput.focus();
+                    }
+
+                    applyUserHistorySearch();
+                });
+            }
+        }
+
+        function bindUserHistoryDateSort() {
+            const sortButton = document.getElementById("userHistoryDateSortBtn");
+
+            if (!sortButton) {
+                return;
+            }
+
+            sortButton.addEventListener("click", function () {
+                const currentDirection = sortButton.getAttribute("data-sort-direction") || "desc";
+                const nextDirection = currentDirection === "desc" ? "asc" : "desc";
+
+                sortButton.setAttribute("data-sort-direction", nextDirection);
+
+                const icon = document.getElementById("userHistoryDateSortIcon");
+
+                if (icon) {
+                    icon.className = nextDirection === "asc"
+                        ? "bi bi-arrow-up-short"
+                        : "bi bi-arrow-down-short";
+                }
+
+                sortUserHistoryRows("date", nextDirection);
+                applyUserHistorySearch();
+            });
+        }
+
+        function bindUserHistoryPointSort() {
+            const sortButton = document.getElementById("userHistoryPointSortBtn");
+
+            if (!sortButton) {
+                return;
+            }
+
+            sortButton.addEventListener("click", function () {
+                const currentDirection = sortButton.getAttribute("data-sort-direction") || "desc";
+                const nextDirection = currentDirection === "desc" ? "asc" : "desc";
+
+                sortButton.setAttribute("data-sort-direction", nextDirection);
+
+                const icon = document.getElementById("userHistoryPointSortIcon");
+
+                if (icon) {
+                    icon.className = nextDirection === "asc"
+                        ? "bi bi-arrow-up-short"
+                        : "bi bi-arrow-down-short";
+                }
+
+                sortUserHistoryRows("point", nextDirection);
+                applyUserHistorySearch();
+            });
+        }
+
+        function sortUserHistoryRows(sortBy, direction) {
+            const tbody = document.getElementById("userHistoryTableBody");
+
+            if (!tbody) {
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll(".user-history-row"));
+
+            rows.sort(function (a, b) {
+                let aValue = 0;
+                let bValue = 0;
+
+                if (sortBy === "date") {
+                    aValue = new Date(a.getAttribute("data-match-time")).getTime();
+                    bValue = new Date(b.getAttribute("data-match-time")).getTime();
+                }
+
+                if (sortBy === "point") {
+                    aValue = parseInt(a.getAttribute("data-point") || "-1");
+                    bValue = parseInt(b.getAttribute("data-point") || "-1");
+                }
+
+                if (direction === "asc") {
+                    return aValue - bValue;
+                }
+
+                return bValue - aValue;
+            });
+
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+        }
+
+        function applyUserHistorySearch() {
+            const searchInput = document.getElementById("userHistorySearch");
+            const noResult = document.getElementById("userHistoryNoResult");
+
+            const searchText = searchInput
+                ? searchInput.value.trim().toLowerCase()
+                : "";
+
+            let visibleCount = 0;
+
+            document.querySelectorAll(".user-history-row").forEach(function (row) {
+                const searchable = row.getAttribute("data-search") || "";
+                const shouldShow = searchText === "" || searchable.includes(searchText);
+
+                if (shouldShow) {
+                    row.classList.remove("d-none");
+                    visibleCount++;
+                } else {
+                    row.classList.add("d-none");
+                }
+            });
+
+            if (noResult) {
+                if (visibleCount === 0 && document.querySelectorAll(".user-history-row").length > 0) {
+                    noResult.classList.remove("d-none");
+                } else {
+                    noResult.classList.add("d-none");
+                }
+            }
+        }
+    </script>
+}

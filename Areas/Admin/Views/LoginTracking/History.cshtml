@@ -1,0 +1,152 @@
+﻿@model List<FootballPredictionGame.ViewModels.UserLoginHistoryViewModel>
+
+@{
+    ViewData["Title"] = "Login History";
+    string? search = ViewBag.Search as string;
+    bool? successOnly = ViewBag.SuccessOnly as bool?;
+    string? fromDate = ViewBag.FromDate as string;
+    string? toDate = ViewBag.ToDate as string;
+}
+
+<div class="dashboard-card p-3 p-md-4 mb-4">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+            <span class="pill">
+                <i class="bi bi-clock-history"></i>
+                Login Audit
+            </span>
+
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                Login History
+            </h1>
+
+            <p class="text-muted small mb-0">
+                Showing latest 500 login records.
+            </p>
+        </div>
+
+        <a asp-area="Admin"
+           asp-controller="LoginTracking"
+           asp-action="ActiveUsers"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-person-check-fill"></i>
+            Active Users
+        </a>
+    </div>
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-lg-4">
+            <input type="search"
+                   name="search"
+                   value="@search"
+                   class="form-control"
+                   placeholder="Search name, email, IP..." />
+        </div>
+
+        <div class="col-lg-2">
+            <input type="date"
+                   name="fromDate"
+                   value="@fromDate"
+                   class="form-control" />
+        </div>
+
+        <div class="col-lg-2">
+            <input type="date"
+                   name="toDate"
+                   value="@toDate"
+                   class="form-control" />
+        </div>
+
+        <div class="col-lg-2">
+            <select name="successOnly" class="form-select">
+                <option value="">All Status</option>
+                <option value="true" selected="@(successOnly == true)">Success</option>
+                <option value="false" selected="@(successOnly == false)">Failed</option>
+            </select>
+        </div>
+
+        <div class="col-lg-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-search"></i>
+                Search
+            </button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-clean table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Login At</th>
+                    <th>Logout At</th>
+                    <th>Duration</th>
+                    <th>IP Address</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No login history found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@(string.IsNullOrWhiteSpace(item.FullName) ? "-" : item.FullName)</strong>
+                                <div class="small text-muted">@item.Email</div>
+                            </td>
+
+                            <td>
+                                @if (item.IsSuccess)
+                                {
+                                    <span class="badge text-bg-success">Success</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-danger">Failed</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div>@item.LoginAt.ToString("dd MMM yyyy")</div>
+                                <div class="small text-muted">@item.LoginAt.ToString("hh:mm tt")</div>
+                            </td>
+
+                            <td>
+                                @if (item.LogoutAt.HasValue)
+                                {
+                                    <div>@item.LogoutAt.Value.ToString("dd MMM yyyy")</div>
+                                    <div class="small text-muted">@item.LogoutAt.Value.ToString("hh:mm tt")</div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+
+                            <td>@item.DurationText</td>
+
+                            <td>@(item.IpAddress ?? "-")</td>
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(item.FailureReason) ? "-" : item.FailureReason)
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

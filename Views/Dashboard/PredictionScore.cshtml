@@ -98,93 +98,135 @@
 
     <div id="predictionPageAlert" class="alert d-none mb-3"></div>
 
-    <div class="prediction-score-summary mb-3">
+    <div class="prediction-score-profile-panel mb-3">
 
-        <div class="prediction-score-user">
+        <div class="prediction-score-profile-main">
+
             <img src="@avatarPath"
                  alt="@Model.FullName"
-                 class="prediction-score-avatar" />
+                 class="prediction-score-profile-photo" />
 
-            <div class="prediction-score-user-info">
+            <div class="prediction-score-profile-info">
+                <h5>@Model.FullName</h5>
 
-                <div class="prediction-user-title-row">
-                    <h5 class="fw-bold mb-0">@Model.FullName</h5>
-
-                    <div class="prediction-basic-info">
-                        <span class="basic-rank">
-                            Rank:
-                            <strong>@Model.RankText</strong>
-                        </span>
-
-                        <span class="basic-point">
-                            Total Point:
-                            <strong id="summaryTotalPoint">@Model.TotalScore</strong>
-                        </span>
-                    </div>
+                <div class="prediction-score-designation">
+                    @(string.IsNullOrWhiteSpace(Model.Designation) ? "-" : Model.Designation)
                 </div>
 
-                <div class="prediction-score-stat-row mt-2">
-
-                    <button type="button"
-                            class="prediction-stat-chip stat-predicted"
-                            data-filter="predicted">
-                        Total Prediction:
-                        <strong id="summaryTotalPrediction">@totalPredictionCount</strong>
-                    </button>
-
-                    <button type="button"
-                            class="prediction-stat-chip stat-notpredict"
-                            data-filter="notpredict">
-                        Not Predict:
-                        <strong id="summaryNotPredict">@notPredictCount</strong>
-                    </button>
-
-                    <button type="button"
-                            class="prediction-stat-chip stat-notparticipate"
-                            data-filter="notparticipate">
-                        Not Participate:
-                        <strong id="summaryNotParticipate">@notParticipateCount</strong>
-                    </button>
-
+                <div class="prediction-score-department">
+                    @(string.IsNullOrWhiteSpace(Model.Department) ? "-" : Model.Department)
                 </div>
             </div>
-        </div>
-
-        <div class="prediction-filter-buttons">
-
-            <button type="button"
-                    class="prediction-filter-btn filter-all active"
-                    data-filter="all">
-                <i class="bi bi-grid"></i>
-                All
-                <span id="countAll">@totalFixtureCount</span>
-            </button>
-
-            <button type="button"
-                    class="prediction-filter-btn filter-upcoming"
-                    data-filter="Upcoming">
-                <i class="bi bi-calendar-event"></i>
-                Upcoming
-                <span id="countUpcoming">@upcomingCount</span>
-            </button>
-
-            <button type="button"
-                    class="prediction-filter-btn filter-live"
-                    data-filter="Live">
-                <i class="bi bi-broadcast"></i>
-                Live
-                <span id="countLive">@liveCount</span>
-            </button>
-
-            <button type="button"
-                    class="prediction-filter-btn filter-finished"
-                    data-filter="Finished">
-                <i class="bi bi-check-circle"></i>
-                Finished
-                <span id="countFinished">@finishedCount</span>
-            </button>
 
         </div>
+
+        <div class="prediction-score-highlight-area">
+
+            <div class="prediction-score-highlight-card rank-highlight">
+                <div class="highlight-icon">
+                    <i class="bi bi-trophy"></i>
+                </div>
+
+                <div>
+                    <span>Rank</span>
+                    <strong>@Model.RankText</strong>
+                </div>
+            </div>
+
+            <div class="prediction-score-highlight-card point-highlight">
+                <div class="highlight-icon">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+
+                <div>
+                    <span>Total Score</span>
+                    <strong id="summaryTotalPoint">@Model.TotalScore</strong>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="prediction-filter-buttons prediction-filter-buttons-smart mb-3">
+
+        <button type="button"
+                class="prediction-filter-btn-smart filter-smart-all active"
+                data-filter="all">
+            <i class="bi bi-grid"></i>
+            All
+            <span id="countAll">@totalFixtureCount</span>
+        </button>
+
+        <button type="button"
+                class="prediction-filter-btn-smart filter-smart-upcoming"
+                data-filter="Upcoming">
+            <i class="bi bi-calendar-event"></i>
+            Upcoming
+            <span id="countUpcoming">@upcomingCount</span>
+        </button>
+
+        <button type="button"
+                class="prediction-filter-btn-smart filter-smart-live"
+                data-filter="Live">
+            <i class="bi bi-broadcast"></i>
+            Live
+            <span id="countLive">@liveCount</span>
+        </button>
+
+        <button type="button"
+                class="prediction-filter-btn-smart filter-smart-finished"
+                data-filter="Finished">
+            <i class="bi bi-check-circle"></i>
+            Finished
+            <span id="countFinished">@finishedCount</span>
+        </button>
+
+        <button type="button"
+                class="prediction-filter-btn-smart filter-smart-predicted"
+                data-filter="predicted">
+            <i class="bi bi-check2-square"></i>
+            Predicted
+            <span id="summaryTotalPrediction">@totalPredictionCount</span>
+        </button>
+
+        <button type="button"
+                class="prediction-filter-btn-smart filter-smart-notpredict"
+                data-filter="notpredict">
+            <i class="bi bi-pencil"></i>
+            No Prediction
+            <span id="summaryNotPredict">@notPredictCount</span>
+        </button>
+
+        <button type="button"
+                class="prediction-filter-btn-smart filter-smart-notparticipate"
+                data-filter="notparticipate">
+            <i class="bi bi-slash-circle"></i>
+            Not Participated
+            <span id="summaryNotParticipate">@notParticipateCount</span>
+        </button>
+
+    </div>
+
+    <div class="prediction-score-toolbar mb-3">
+
+        <div class="prediction-score-search-box">
+            <span>
+                <i class="bi bi-search"></i>
+            </span>
+
+            <input type="search"
+                   id="predictionScoreSearch"
+                   class="form-control"
+                   placeholder="Search team, group, status, prediction, actual, point..." />
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm"
+                id="predictionScoreClearSearch">
+            <i class="bi bi-x-circle"></i>
+            Clear
+        </button>
 
     </div>
 
@@ -192,12 +234,41 @@
         <table class="table table-clean table-hover align-middle mb-0 prediction-table">
             <thead>
                 <tr>
-                    <th>Date & Time</th>
+                    <th>
+                        <button type="button"
+                                id="predictionDateSortBtn"
+                                class="prediction-score-sort-btn"
+                                data-sort-direction="asc">
+                            Date & Time
+                            <i id="predictionDateSortIcon" class="bi bi-arrow-up-short"></i>
+                        </button>
+                    </th>
+
                     <th>Match</th>
-                    <th>Status</th>
+
+                    <th>
+                        <button type="button"
+                                id="predictionStatusSortBtn"
+                                class="prediction-score-sort-btn"
+                                data-sort-direction="asc">
+                            Status
+                            <i id="predictionStatusSortIcon" class="bi bi-arrow-up-short"></i>
+                        </button>
+                    </th>
+
                     <th>Prediction</th>
                     <th>Actual</th>
-                    <th>Point</th>
+
+                    <th>
+                        <button type="button"
+                                id="predictionPointSortBtn"
+                                class="prediction-score-sort-btn"
+                                data-sort-direction="desc">
+                            Point
+                            <i id="predictionPointSortIcon" class="bi bi-arrow-down-short"></i>
+                        </button>
+                    </th>
+
                     <th>Action</th>
                 </tr>
             </thead>
@@ -233,13 +304,36 @@
                             ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
                             : "Pending";
 
+                        var pointSortValue = hasPrediction && prediction != null && prediction.IsProcessed
+                            ? prediction.EarnedPoint
+                            : -1;
+
+                        var predictionTextForSearch = hasPrediction && prediction != null
+                            ? $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}"
+                            : canPredict
+                                ? "Not Predict"
+                                : "Not Participated";
+
+                        var pointTextForSearch = hasPrediction && prediction != null && prediction.IsProcessed
+                            ? prediction.EarnedPoint.ToString()
+                            : hasPrediction
+                                ? "Pending"
+                                : "-";
+
+                        var searchText = $"{fixture.TeamOneName} {fixture.TeamTwoName} {fixture.Stage.GetDisplayName()} {fixture.Status} {predictionTextForSearch} {actualText} {pointTextForSearch} {fixture.MatchDateTime:dd MMM yyyy hh:mm tt}"
+                            .ToLowerInvariant();
+
                         <tr id="fixture-row-@fixture.Id"
                             class="prediction-fixture-row"
                             data-fixture-id="@fixture.Id"
                             data-status="@fixture.Status"
+                            data-status-sort="@fixture.Status.ToString()"
                             data-can-predict="@(canPredict ? "true" : "false")"
                             data-has-prediction="@(hasPrediction ? "true" : "false")"
-                            data-participation="@participation">
+                            data-participation="@participation"
+                            data-match-time="@fixture.MatchDateTime.ToString("yyyy-MM-ddTHH:mm:ss")"
+                            data-point="@pointSortValue"
+                            data-search="@searchText">
 
                             <td>
                                 <div class="fw-semibold">
@@ -255,7 +349,7 @@
 
                                     <div class="prediction-score-team">
                                         <img src="@teamOneFlag"
-                                             class="flag-sm"
+                                             class="prediction-score-flag"
                                              alt="@fixture.TeamOneName" />
 
                                         <span>@fixture.TeamOneName</span>
@@ -265,13 +359,13 @@
 
                                     <div class="prediction-score-team">
                                         <img src="@teamTwoFlag"
-                                             class="flag-sm"
+                                             class="prediction-score-flag"
                                              alt="@fixture.TeamTwoName" />
 
                                         <span>@fixture.TeamTwoName</span>
                                     </div>
 
-                                    <span class="segment-chip">
+                                    <span class="prediction-score-stage-pill">
                                         @fixture.Stage.GetDisplayName()
                                     </span>
 
@@ -300,7 +394,7 @@
                                 else
                                 {
                                     <span class="prediction-text-muted">
-                                        - @* Not Participated *@
+                                        -
                                     </span>
                                 }
                             </td>
@@ -372,7 +466,9 @@
                                         Update
                                     </button>
                                 }
-                                else if (fixture.Status == MatchStatus.Live || fixture.Status == MatchStatus.Finished)
+                                else if (fixture.Status == MatchStatus.Live ||
+                                         fixture.Status == MatchStatus.Finished ||
+                                         DateTime.Now >= fixture.MatchDateTime)
                                 {
                                     <a asp-controller="Dashboard"
                                        asp-action="PredictionDetail"
@@ -392,6 +488,10 @@
                 }
             </tbody>
         </table>
+    </div>
+
+    <div id="predictionScoreNoResult" class="empty-state mt-3 d-none">
+        No fixture matched your search/filter.
     </div>
 
 </div>
@@ -529,28 +629,12 @@
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'Points',
-                            data: points
-                        }
-                    ]
+                    datasets: [{ label: 'Points', data: points }]
                 },
                 options: {
                     responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            }
-                        }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
         }
@@ -558,6 +642,7 @@
 
     <script>
         let predictionModal;
+        let activePredictionScoreFilter = "all";
 
         document.addEventListener("DOMContentLoaded", function () {
             const modalElement = document.getElementById("predictionModal");
@@ -568,6 +653,8 @@
 
             bindPredictionButtons();
             bindPredictionFilterButtons();
+            bindPredictionScoreSearch();
+            bindPredictionScoreSort();
 
             const form = document.getElementById("predictionAjaxForm");
 
@@ -577,6 +664,8 @@
                     savePredictionAjax();
                 });
             }
+
+            applyPredictionScoreSearchAndFilter();
         });
 
         function bindPredictionButtons() {
@@ -591,48 +680,168 @@
         }
 
         function bindPredictionFilterButtons() {
-            document.querySelectorAll(".prediction-filter-btn, .prediction-stat-chip").forEach(function (button) {
+            document.querySelectorAll(".prediction-filter-btn-smart").forEach(function (button) {
                 button.addEventListener("click", function () {
                     const filter = button.getAttribute("data-filter") || "all";
 
-                    document.querySelectorAll(".prediction-filter-btn").forEach(function (btn) {
+                    activePredictionScoreFilter = filter;
+
+                    document.querySelectorAll(".prediction-filter-btn-smart").forEach(function (btn) {
                         btn.classList.remove("active");
                     });
 
-                    const matchingFilterButton = document.querySelector('.prediction-filter-btn[data-filter="' + filter + '"]');
+                    button.classList.add("active");
 
-                    if (matchingFilterButton) {
-                        matchingFilterButton.classList.add("active");
-                    }
-
-                    filterPredictionItems(filter);
+                    applyPredictionScoreSearchAndFilter();
                 });
             });
         }
 
-        function filterPredictionItems(filter) {
-            const allItems = document.querySelectorAll(".prediction-fixture-row");
+        function bindPredictionScoreSearch() {
+            const searchInput = document.getElementById("predictionScoreSearch");
+            const clearButton = document.getElementById("predictionScoreClearSearch");
 
-            allItems.forEach(function (item) {
+            if (searchInput) {
+                searchInput.addEventListener("input", function () {
+                    applyPredictionScoreSearchAndFilter();
+                });
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener("click", function () {
+                    if (searchInput) {
+                        searchInput.value = "";
+                        searchInput.focus();
+                    }
+
+                    applyPredictionScoreSearchAndFilter();
+                });
+            }
+        }
+
+        function bindPredictionScoreSort() {
+            bindSinglePredictionSort("predictionDateSortBtn", "predictionDateSortIcon", "date");
+            bindSinglePredictionSort("predictionStatusSortBtn", "predictionStatusSortIcon", "status");
+            bindSinglePredictionSort("predictionPointSortBtn", "predictionPointSortIcon", "point");
+        }
+
+        function bindSinglePredictionSort(buttonId, iconId, sortBy) {
+            const sortButton = document.getElementById(buttonId);
+
+            if (!sortButton) {
+                return;
+            }
+
+            sortButton.addEventListener("click", function () {
+                const currentDirection = sortButton.getAttribute("data-sort-direction") || "asc";
+                const nextDirection = currentDirection === "asc" ? "desc" : "asc";
+
+                sortButton.setAttribute("data-sort-direction", nextDirection);
+
+                const icon = document.getElementById(iconId);
+
+                if (icon) {
+                    icon.className = nextDirection === "asc"
+                        ? "bi bi-arrow-up-short"
+                        : "bi bi-arrow-down-short";
+                }
+
+                sortPredictionScoreRows(sortBy, nextDirection);
+                applyPredictionScoreSearchAndFilter();
+            });
+        }
+
+        function sortPredictionScoreRows(sortBy, direction) {
+            const tbody = document.getElementById("predictionTableBody");
+
+            if (!tbody) {
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll(".prediction-fixture-row"));
+
+            rows.sort(function (a, b) {
+                let aValue;
+                let bValue;
+
+                if (sortBy === "date") {
+                    aValue = new Date(a.getAttribute("data-match-time")).getTime();
+                    bValue = new Date(b.getAttribute("data-match-time")).getTime();
+                } else if (sortBy === "point") {
+                    aValue = parseInt(a.getAttribute("data-point") || "-1");
+                    bValue = parseInt(b.getAttribute("data-point") || "-1");
+                } else if (sortBy === "status") {
+                    aValue = a.getAttribute("data-status-sort") || "";
+                    bValue = b.getAttribute("data-status-sort") || "";
+                }
+
+                if (aValue < bValue) {
+                    return direction === "asc" ? -1 : 1;
+                }
+
+                if (aValue > bValue) {
+                    return direction === "asc" ? 1 : -1;
+                }
+
+                return 0;
+            });
+
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+        }
+
+        function applyPredictionScoreSearchAndFilter() {
+            const searchInput = document.getElementById("predictionScoreSearch");
+            const noResult = document.getElementById("predictionScoreNoResult");
+
+            const searchText = searchInput
+                ? searchInput.value.trim().toLowerCase()
+                : "";
+
+            let visibleCount = 0;
+
+            document.querySelectorAll(".prediction-fixture-row").forEach(function (item) {
                 const status = item.getAttribute("data-status");
                 const participation = item.getAttribute("data-participation");
+                const searchable = item.getAttribute("data-search") || "";
 
-                let shouldShow = false;
+                let matchesFilter = false;
 
-                if (filter === "all") {
-                    shouldShow = true;
-                } else if (filter === "Upcoming" || filter === "Live" || filter === "Finished") {
-                    shouldShow = status === filter;
-                } else if (filter === "predicted" || filter === "notpredict" || filter === "notparticipate") {
-                    shouldShow = participation === filter;
+                if (activePredictionScoreFilter === "all") {
+                    matchesFilter = true;
+                } else if (
+                    activePredictionScoreFilter === "Upcoming" ||
+                    activePredictionScoreFilter === "Live" ||
+                    activePredictionScoreFilter === "Finished"
+                ) {
+                    matchesFilter = status === activePredictionScoreFilter;
+                } else if (
+                    activePredictionScoreFilter === "predicted" ||
+                    activePredictionScoreFilter === "notpredict" ||
+                    activePredictionScoreFilter === "notparticipate"
+                ) {
+                    matchesFilter = participation === activePredictionScoreFilter;
                 }
+
+                const matchesSearch = searchText === "" || searchable.includes(searchText);
+                const shouldShow = matchesFilter && matchesSearch;
 
                 if (shouldShow) {
                     item.classList.remove("d-none");
+                    visibleCount++;
                 } else {
                     item.classList.add("d-none");
                 }
             });
+
+            if (noResult) {
+                if (visibleCount === 0 && document.querySelectorAll(".prediction-fixture-row").length > 0) {
+                    noResult.classList.remove("d-none");
+                } else {
+                    noResult.classList.add("d-none");
+                }
+            }
         }
 
         function openPredictionModal(button) {
@@ -800,7 +1009,14 @@
             if (row) {
                 row.setAttribute("data-has-prediction", "true");
                 row.setAttribute("data-participation", "predicted");
+                row.setAttribute("data-point", "-1");
+
+                const oldSearch = row.getAttribute("data-search") || "";
+                const updatedSearch = oldSearch + " " + String(data.predictionText || "").toLowerCase() + " pending predicted";
+                row.setAttribute("data-search", updatedSearch);
+
                 flashUpdatedItem(row);
+                applyPredictionScoreSearchAndFilter();
             }
         }
 
@@ -831,7 +1047,6 @@
         function updatePredictionCountersAfterSave() {
             incrementNumber("summaryTotalPrediction", 1);
             incrementNumber("summaryNotPredict", -1);
-            incrementNumber("countNotPredict", -1);
         }
 
         function incrementNumber(id, amount) {

@@ -5,6 +5,8 @@ namespace FootballPredictionGame.ViewModels;
 public class DashboardViewModel
 {
     public string FullName { get; set; } = string.Empty;
+    public string? Designation { get; set; }
+    public string? Department { get; set; }
     public string? ProfilePhotoPath { get; set; }
     public int TotalScore { get; set; }
     public int ExactPredictionCount { get; set; }

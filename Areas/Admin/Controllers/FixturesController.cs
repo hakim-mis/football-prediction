@@ -14,17 +14,23 @@ public class FixturesController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly IFileUploadService _fileUploadService;
+    private readonly IResultProcessingService _resultProcessingService;
 
-    public FixturesController(ApplicationDbContext context, IFileUploadService fileUploadService)
+    public FixturesController(
+        ApplicationDbContext context,
+        IFileUploadService fileUploadService,
+        IResultProcessingService resultProcessingService)
     {
         _context = context;
         _fileUploadService = fileUploadService;
+        _resultProcessingService = resultProcessingService;
     }
 
     public async Task<IActionResult> Index()
     {
         var fixtures = await _context.Fixtures
-            .OrderByDescending(x => x.MatchDateTime)
+            .OrderBy(x => x.MatchDateTime)
+            .ThenBy(x => x.Stage)
             .ToListAsync();
 
         return View(fixtures);
@@ -74,8 +80,10 @@ public class FixturesController : Controller
         catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
+
             _fileUploadService.DeleteFileIfExists(teamOneFlag);
             _fileUploadService.DeleteFileIfExists(teamTwoFlag);
+
             return View(model);
         }
 
@@ -83,12 +91,16 @@ public class FixturesController : Controller
         {
             TeamOneName = model.TeamOneName.Trim(),
             TeamOneFlagPath = teamOneFlag,
+
             TeamTwoName = model.TeamTwoName.Trim(),
             TeamTwoFlagPath = teamTwoFlag,
+
             Stage = model.Stage,
             MatchDateTime = model.MatchDateTime,
+
             TeamOneActualGoal = model.TeamOneActualGoal,
             TeamTwoActualGoal = model.TeamTwoActualGoal,
+
             Status = model.Status,
             IsPublished = model.IsPublished,
             CreatedAt = DateTime.Now
@@ -105,6 +117,7 @@ public class FixturesController : Controller
     public async Task<IActionResult> Edit(int id)
     {
         var fixture = await _context.Fixtures.FindAsync(id);
+
         if (fixture == null)
         {
             return NotFound();
@@ -123,6 +136,7 @@ public class FixturesController : Controller
         }
 
         var fixture = await _context.Fixtures.FindAsync(id);
+
         if (fixture == null)
         {
             return NotFound();
@@ -135,6 +149,7 @@ public class FixturesController : Controller
             model.ExistingTeamOneFlagPath = fixture.TeamOneFlagPath;
             model.ExistingTeamTwoFlagPath = fixture.TeamTwoFlagPath;
             model.IsProcessed = fixture.IsProcessed;
+
             return View(model);
         }
 
@@ -171,13 +186,16 @@ public class FixturesController : Controller
         catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
+
             model.ExistingTeamOneFlagPath = fixture.TeamOneFlagPath;
             model.ExistingTeamTwoFlagPath = fixture.TeamTwoFlagPath;
             model.IsProcessed = fixture.IsProcessed;
+
             return View(model);
         }
 
         await _context.SaveChangesAsync();
+
         TempData["Success"] = "Fixture updated successfully.";
         return RedirectToAction(nameof(Index));
     }
@@ -203,6 +221,7 @@ public class FixturesController : Controller
 
         _fileUploadService.DeleteFileIfExists(fixture.TeamOneFlagPath);
         _fileUploadService.DeleteFileIfExists(fixture.TeamTwoFlagPath);
+
         _context.Fixtures.Remove(fixture);
         await _context.SaveChangesAsync();
 
@@ -215,14 +234,19 @@ public class FixturesController : Controller
         return new FixtureFormViewModel
         {
             Id = fixture.Id,
+
             TeamOneName = fixture.TeamOneName,
             ExistingTeamOneFlagPath = fixture.TeamOneFlagPath,
+
             TeamTwoName = fixture.TeamTwoName,
             ExistingTeamTwoFlagPath = fixture.TeamTwoFlagPath,
+
             Stage = fixture.Stage,
             MatchDateTime = fixture.MatchDateTime,
+
             TeamOneActualGoal = fixture.TeamOneActualGoal,
             TeamTwoActualGoal = fixture.TeamTwoActualGoal,
+
             Status = fixture.Status,
             IsPublished = fixture.IsPublished,
             IsProcessed = fixture.IsProcessed
@@ -231,9 +255,13 @@ public class FixturesController : Controller
 
     private void ValidateFinishedScore(FixtureFormViewModel model)
     {
-        if (model.Status == MatchStatus.Finished && (model.TeamOneActualGoal == null || model.TeamTwoActualGoal == null))
+        if (model.Status == MatchStatus.Finished &&
+            (model.TeamOneActualGoal == null || model.TeamTwoActualGoal == null))
         {
-            ModelState.AddModelError(string.Empty, "Actual goals are required when match status is Finished.");
+            ModelState.AddModelError(
+                string.Empty,
+                "Actual goals are required when match status is Finished."
+            );
         }
     }
 }

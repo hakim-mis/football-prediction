@@ -1,4 +1,5 @@
-﻿using FootballPredictionGame.Models;
+﻿using FootballPredictionGame.Data;
+using FootballPredictionGame.Models;
 using FootballPredictionGame.Services;
 using FootballPredictionGame.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -15,12 +16,15 @@ public class UsersController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
     private readonly IEmailService _emailService;
+    private readonly ApplicationDbContext _context;
 
-    public UsersController(UserManager<ApplicationUser> userManager, IConfiguration configuration, IEmailService emailService)
+    public UsersController(UserManager<ApplicationUser> userManager, IConfiguration configuration, 
+        IEmailService emailService, ApplicationDbContext context)
     {
         _userManager = userManager;
         _configuration = configuration;
         _emailService = emailService;
+        _context = context;
     }
 
     public async Task<IActionResult> Index(string status = "all")
@@ -30,6 +34,7 @@ public class UsersController : Controller
             .ToListAsync();
 
         var nonAdminUsers = new List<ApplicationUser>();
+
         foreach (var user in users)
         {
             if (!await _userManager.IsInRoleAsync(user, "Admin"))
@@ -40,28 +45,102 @@ public class UsersController : Controller
 
         if (status == "pending")
         {
-            nonAdminUsers = nonAdminUsers.Where(x => x.EmailConfirmed && !x.IsActive).ToList();
+            nonAdminUsers = nonAdminUsers
+                .Where(x => x.EmailConfirmed && !x.IsActive)
+                .ToList();
         }
         else if (status == "active")
         {
-            nonAdminUsers = nonAdminUsers.Where(x => x.IsActive).ToList();
+            nonAdminUsers = nonAdminUsers
+                .Where(x => x.IsActive)
+                .ToList();
         }
 
         ViewBag.Status = status;
 
-        var model = nonAdminUsers.Select(x => new UserManagementItemViewModel
+        var now = DateTime.Now;
+
+        var publishedFixtures = await _context.Fixtures
+            .Where(x => x.IsPublished)
+            .Select(x => new
+            {
+                x.Id,
+                x.Status,
+                x.MatchDateTime,
+                x.IsProcessed
+            })
+            .ToListAsync();
+
+        var publishedFixtureIds = publishedFixtures
+            .Select(x => x.Id)
+            .ToList();
+
+        var userIds = nonAdminUsers
+            .Select(x => x.Id)
+            .ToList();
+
+        var predictions = await _context.Predictions
+            .Where(x =>
+                userIds.Contains(x.UserId) &&
+                publishedFixtureIds.Contains(x.FixtureId))
+            .Select(x => new
+            {
+                x.UserId,
+                x.FixtureId
+            })
+            .ToListAsync();
+
+        var predictionLookup = predictions
+            .GroupBy(x => x.UserId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(x => x.FixtureId).ToHashSet()
+            );
+
+        var model = nonAdminUsers.Select(user =>
         {
-            Id = x.Id,
-            FullName = x.FullName,
-            Designation = x.Designation,
-            Department = x.Department,
-            Email = x.Email ?? string.Empty,
-            MobileNo = x.MobileNo,
-            PhotoPath = x.ProfilePhotoPath,
-            IsActive = x.IsActive,
-            TotalScore = x.TotalScore,
-            ExactPredictionCount = x.ExactPredictionCount,
-            CreatedAt = x.CreatedAt
+            var userPredictionFixtureIds = predictionLookup.ContainsKey(user.Id)
+                ? predictionLookup[user.Id]
+                : new HashSet<int>();
+
+            var totalPredictionCount = userPredictionFixtureIds.Count;
+
+            var notPredictCount = publishedFixtures.Count(fixture =>
+                fixture.Status == MatchStatus.Upcoming &&
+                !fixture.IsProcessed &&
+                fixture.MatchDateTime > now &&
+                !userPredictionFixtureIds.Contains(fixture.Id));
+
+            var notParticipateCount = publishedFixtures.Count(fixture =>
+                (fixture.Status == MatchStatus.Live ||
+                 fixture.Status == MatchStatus.Finished ||
+                 fixture.MatchDateTime <= now) &&
+                !userPredictionFixtureIds.Contains(fixture.Id));
+
+            return new UserManagementItemViewModel
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Designation = user.Designation,
+                Department = user.Department,
+
+                Email = user.Email ?? string.Empty,
+                MobileNo = user.MobileNo,
+
+                PhotoPath = user.ProfilePhotoPath,
+
+                IsActive = user.IsActive,
+                EmailConfirmed = user.EmailConfirmed,
+
+                TotalScore = user.TotalScore,
+                ExactPredictionCount = user.ExactPredictionCount,
+
+                TotalPredictionCount = totalPredictionCount,
+                NotPredictCount = notPredictCount,
+                NotParticipateCount = notParticipateCount,
+
+                CreatedAt = user.CreatedAt
+            };
         }).ToList();
 
         return View(model);

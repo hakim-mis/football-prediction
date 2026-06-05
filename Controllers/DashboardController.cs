@@ -10,7 +10,7 @@ using ClosedXML.Excel;
 
 namespace FootballPredictionGame.Controllers;
 
-[Authorize(Roles = "User")]
+[Authorize(Roles = "User,Admin")]
 public class DashboardController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -399,7 +399,8 @@ public class DashboardController : Controller
         {
             FullName = currentUser.FullName,
             ProfilePhotoPath = currentUser.ProfilePhotoPath,
-
+            Designation = currentUser.Designation,
+            Department = currentUser.Department,
             FixtureId = fixtureId,
 
             TotalScore = currentUser.TotalScore,
@@ -716,6 +717,227 @@ public class DashboardController : Controller
         var safeTeamTwo = fixture.TeamTwoName.Replace(" ", "_");
 
         var fileName = $"Match_Predictions_{safeTeamOne}_vs_{safeTeamTwo}_{fixture.MatchDateTime:yyyyMMdd_HHmm}.xlsx";
+
+        return File(
+            stream.ToArray(),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName
+        );
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DownloadUserPredictionDetailExcel(string userId)
+    {
+        var currentUser = await GetCurrentValidUserAsync();
+
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return BadRequest();
+        }
+
+        var targetUser = await _userManager.Users
+            .FirstOrDefaultAsync(x => x.Id == userId);
+
+        if (targetUser == null)
+        {
+            return NotFound();
+        }
+
+        var rankedUsers = await GetRankedUsersAsync();
+
+        var rankText = rankedUsers
+            .FirstOrDefault(x => x.UserId == targetUser.Id)?
+            .RankText ?? "No rank";
+
+        var liveAndFinishedFixtures = await _context.Fixtures
+            .Where(x =>
+                x.IsPublished &&
+                (x.Status == MatchStatus.Live || x.Status == MatchStatus.Finished))
+            .OrderByDescending(x => x.MatchDateTime)
+            .ToListAsync();
+
+        var fixtureIds = liveAndFinishedFixtures
+            .Select(x => x.Id)
+            .ToList();
+
+        var userPredictions = await _context.Predictions
+            .Where(x => x.UserId == userId && fixtureIds.Contains(x.FixtureId))
+            .ToListAsync();
+
+        var predictionLookup = userPredictions
+            .ToDictionary(x => x.FixtureId, x => x);
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Prediction Detail");
+
+        worksheet.Cell(1, 1).Value = "Transtec 360° Football Prediction";
+        worksheet.Range(1, 1, 1, 11).Merge();
+        worksheet.Cell(1, 1).Style.Font.Bold = true;
+        worksheet.Cell(1, 1).Style.Font.FontSize = 16;
+        worksheet.Cell(1, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+        worksheet.Cell(2, 1).Value = "User Prediction Detail";
+        worksheet.Range(2, 1, 2, 11).Merge();
+        worksheet.Cell(2, 1).Style.Font.Bold = true;
+        worksheet.Cell(2, 1).Style.Font.FontSize = 13;
+        worksheet.Cell(2, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+        worksheet.Cell(4, 1).Value = "User Info";
+        worksheet.Range(4, 1, 4, 11).Merge();
+        worksheet.Cell(4, 1).Style.Font.Bold = true;
+        worksheet.Cell(4, 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
+
+        worksheet.Cell(5, 1).Value = "Name";
+        worksheet.Cell(5, 2).Value = targetUser.FullName;
+
+        worksheet.Cell(5, 4).Value = "Rank";
+        worksheet.Cell(5, 5).Value = rankText;
+
+        worksheet.Cell(6, 1).Value = "Designation";
+        worksheet.Cell(6, 2).Value = targetUser.Designation ?? "-";
+
+        worksheet.Cell(6, 4).Value = "Department";
+        worksheet.Cell(6, 5).Value = targetUser.Department ?? "-";
+
+        worksheet.Cell(7, 1).Value = "Total Score";
+        worksheet.Cell(7, 2).Value = targetUser.TotalScore;
+
+        worksheet.Cell(7, 4).Value = "Exact Predictions";
+        worksheet.Cell(7, 5).Value = targetUser.ExactPredictionCount;
+
+        worksheet.Cell(8, 1).Value = "Generated On";
+        worksheet.Cell(8, 2).Value = DateTime.Now.ToString("dd-MMM-yyyy hh:mm tt");
+
+        worksheet.Range(5, 1, 8, 5).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+        worksheet.Range(5, 1, 8, 5).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+        worksheet.Range(5, 1, 8, 1).Style.Font.Bold = true;
+        worksheet.Range(5, 4, 8, 4).Style.Font.Bold = true;
+
+        var headerRow = 11;
+
+        worksheet.Cell(headerRow, 1).Value = "SL";
+        worksheet.Cell(headerRow, 2).Value = "Match Date";
+        worksheet.Cell(headerRow, 3).Value = "Match Time";
+        worksheet.Cell(headerRow, 4).Value = "Group";
+        worksheet.Cell(headerRow, 5).Value = "Team One";
+        worksheet.Cell(headerRow, 6).Value = "Team Two";
+        worksheet.Cell(headerRow, 7).Value = "Status";
+        worksheet.Cell(headerRow, 8).Value = "Prediction";
+        worksheet.Cell(headerRow, 9).Value = "Actual Score";
+        worksheet.Cell(headerRow, 10).Value = "Point";
+        worksheet.Cell(headerRow, 11).Value = "Participation";
+        
+
+        var headerRange = worksheet.Range(headerRow, 1, headerRow, 11);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#EEF6FF");
+        headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+        headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+        var row = headerRow + 1;
+        var sl = 1;
+
+        if (!liveAndFinishedFixtures.Any())
+        {
+            worksheet.Cell(row, 1).Value = "No live or finished fixture found.";
+            worksheet.Range(row, 1, row, 11).Merge();
+            worksheet.Cell(row, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.Cell(row, 1).Style.Font.Italic = true;
+        }
+        else
+        {
+            foreach (var fixture in liveAndFinishedFixtures)
+            {
+                predictionLookup.TryGetValue(fixture.Id, out var prediction);
+
+                var actualScore = fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue
+                    ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
+                    : "Pending";
+
+                var predictionText = prediction != null
+                    ? $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}"
+                    : "-";
+
+                var participationText = prediction != null
+                    ? "Predicted"
+                    : "Not Participated";
+
+                var earnedPoint = prediction?.EarnedPoint ?? 0;
+
+                worksheet.Cell(row, 1).Value = sl;
+                worksheet.Cell(row, 2).Value = fixture.MatchDateTime.ToString("dd-MMM-yyyy");
+                worksheet.Cell(row, 3).Value = fixture.MatchDateTime.ToString("hh:mm tt");
+                worksheet.Cell(row, 4).Value = GetStageName(fixture.Stage);
+                worksheet.Cell(row, 5).Value = fixture.TeamOneName;
+                worksheet.Cell(row, 6).Value = fixture.TeamTwoName;
+                worksheet.Cell(row, 7).Value = fixture.Status.ToString();
+                worksheet.Cell(row, 8).Value = predictionText;
+                worksheet.Cell(row, 9).Value = actualScore;
+                worksheet.Cell(row, 10).Value = prediction != null ? earnedPoint : "-";
+                worksheet.Cell(row, 11).Value = participationText;
+
+                if (prediction == null)
+                {
+                    worksheet.Cell(row, 11).Style.Fill.BackgroundColor = XLColor.FromHtml("#E2E8F0");
+                    worksheet.Cell(row, 11).Style.Font.FontColor = XLColor.FromHtml("#475569");
+                }
+                else if (earnedPoint == 3)
+                {
+                    worksheet.Cell(row, 10).Style.Fill.BackgroundColor = XLColor.FromHtml("#DBEAFE");
+                    worksheet.Cell(row, 10).Style.Font.FontColor = XLColor.FromHtml("#1D4ED8");
+                }
+                else if (earnedPoint == 0)
+                {
+                    worksheet.Cell(row, 10).Style.Fill.BackgroundColor = XLColor.FromHtml("#E2E8F0");
+                    worksheet.Cell(row, 10).Style.Font.FontColor = XLColor.FromHtml("#475569");
+                }
+                else
+                {
+                    worksheet.Cell(row, 10).Style.Fill.BackgroundColor = XLColor.FromHtml("#FEF3C7");
+                    worksheet.Cell(row, 10).Style.Font.FontColor = XLColor.FromHtml("#92400E");
+                }
+
+                row++;
+                sl++;
+            }
+        }
+
+        var usedRange = worksheet.RangeUsed();
+
+        if (usedRange != null)
+        {
+            usedRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            usedRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+            usedRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        worksheet.Column(1).Width = 8;
+        worksheet.Column(2).Width = 15;
+        worksheet.Column(3).Width = 14;
+        worksheet.Column(4).Width = 18;
+        worksheet.Column(5).Width = 22;
+        worksheet.Column(6).Width = 22;
+        worksheet.Column(8).Width = 15;
+        worksheet.Column(9).Width = 15;
+        worksheet.Column(11).Width = 18;
+
+        worksheet.SheetView.FreezeRows(headerRow);
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+
+        var safeName = string.Join("_", targetUser.FullName.Split(Path.GetInvalidFileNameChars()));
+        safeName = safeName.Replace(" ", "_");
+
+        var fileName = $"User_Prediction_Detail_{safeName}_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
 
         return File(
             stream.ToArray(),

@@ -1,0 +1,351 @@
+@model FootballPredictionGame.ViewModels.AutomationSettingsViewModel
+@using FootballPredictionGame.Models
+
+@{
+    ViewData["Title"] = "Automation Settings";
+}
+
+<div class="dashboard-card automation-settings-page p-3 p-md-4 mb-4">
+
+    <div class="automation-settings-header mb-4">
+        <div>
+            <span class="pill">
+                <i class="bi bi-robot"></i>
+                AI Automation Center
+            </span>
+
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                Automation Settings
+            </h1>
+
+            <p class="text-muted mb-0 small">
+                Control all automation and AI-assisted jobs from one place. Manual admin actions will continue to work even if automation is off.
+            </p>
+        </div>
+
+        <a asp-area="Admin"
+           asp-controller="Dashboard"
+           asp-action="Index"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-arrow-left"></i>
+            Back to Admin Dashboard
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    <form asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <!-- MASTER SWITCH -->
+        <div class="automation-master-card mb-4 @(Model.MasterAutomationEnabled ? "master-on" : "master-off")">
+
+            <div class="automation-master-left">
+                <div class="automation-master-icon">
+                    <i class="bi bi-power"></i>
+                </div>
+
+                <div>
+                    <h2>Master Automation Switch</h2>
+
+                    <p>
+                        When this is OFF, all background automation and AI auto-actions will be stopped.
+                        Inner settings will be ignored until this is turned ON.
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-check form-switch automation-main-switch">
+                <input asp-for="MasterAutomationEnabled"
+                       class="form-check-input"
+                       role="switch" />
+
+                <label asp-for="MasterAutomationEnabled"
+                       class="form-check-label">
+                    @(Model.MasterAutomationEnabled ? "ON" : "OFF")
+                </label>
+            </div>
+
+        </div>
+
+        <div class="row g-4">
+
+            <!-- EXECUTION MODE -->
+            <div class="col-lg-6">
+                <div class="automation-section-card h-100">
+                    <h3>
+                        <i class="bi bi-sliders"></i>
+                        Execution Mode
+                    </h3>
+
+                    <p class="text-muted small">
+                        Manual means automation will not execute changes. Suggest Only creates review suggestions. Auto Execute performs allowed actions.
+                    </p>
+
+                    <div class="mb-3">
+                        <label asp-for="ExecutionMode" class="form-label"></label>
+                        <select asp-for="ExecutionMode"
+                                asp-items="Html.GetEnumSelectList<AutomationExecutionMode>()"
+                                class="form-select">
+                        </select>
+                        <span asp-validation-for="ExecutionMode" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTERVALS -->
+            <div class="col-lg-6">
+                <div class="automation-section-card h-100">
+                    <h3>
+                        <i class="bi bi-clock-history"></i>
+                        Job Intervals
+                    </h3>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FixtureCheckIntervalMinutes" class="form-label"></label>
+                            <input asp-for="FixtureCheckIntervalMinutes" class="form-control" />
+                            <span asp-validation-for="FixtureCheckIntervalMinutes" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ReminderCheckIntervalMinutes" class="form-label"></label>
+                            <input asp-for="ReminderCheckIntervalMinutes" class="form-control" />
+                            <span asp-validation-for="ReminderCheckIntervalMinutes" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ScoreSyncIntervalMinutes" class="form-label"></label>
+                            <input asp-for="ScoreSyncIntervalMinutes" class="form-control" />
+                            <span asp-validation-for="ScoreSyncIntervalMinutes" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="AiUserReviewIntervalMinutes" class="form-label"></label>
+                            <input asp-for="AiUserReviewIntervalMinutes" class="form-control" />
+                            <span asp-validation-for="AiUserReviewIntervalMinutes" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FIXTURE AUTOMATION -->
+            <div class="col-lg-6">
+                <div class="automation-section-card h-100">
+                    <h3>
+                        <i class="bi bi-calendar-event"></i>
+                        Fixture Automation
+                    </h3>
+
+                    <div class="automation-switch-list">
+                        <partial name="_AutomationSwitch" model='("FixtureAutomationEnabled", "Fixture Automation Enabled", Model.FixtureAutomationEnabled)' />
+                        <partial name="_AutomationSwitch" model='("AutoUpcomingToLiveEnabled", "Auto Upcoming to Live", Model.AutoUpcomingToLiveEnabled)' />
+                        <partial name="_AutomationSwitch" model='("AutoLiveToFinishedEnabled", "Auto Live to Finished", Model.AutoLiveToFinishedEnabled)' />
+                        <partial name="_AutomationSwitch" model='("AutoResultProcessingEnabled", "Auto Result Processing", Model.AutoResultProcessingEnabled)' />
+                    </div>
+                    <div class="mt-3">
+                        <label asp-for="DefaultMatchDurationMinutes" class="form-label"></label>
+                        <input asp-for="DefaultMatchDurationMinutes" class="form-control" />
+                        <span asp-validation-for="DefaultMatchDurationMinutes" class="text-danger small"></span>
+
+                        <div class="form-text">
+                            Used for suggesting or auto-changing Live fixtures to Finished when no external score API is connected.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REMINDERS -->
+            <div class="col-lg-6">
+                <div class="automation-section-card h-100">
+                    <h3>
+                        <i class="bi bi-envelope-bell"></i>
+                        Prediction Reminder
+                    </h3>
+
+                    <div class="automation-switch-list">
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="ReminderAutomationEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="ReminderAutomationEnabled" class="form-check-label"></label>
+                        </div>
+
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="Reminder24HourEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="Reminder24HourEnabled" class="form-check-label"></label>
+                        </div>
+
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="Reminder1HourEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="Reminder1HourEnabled" class="form-check-label"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WEEKLY EMAIL -->
+            <div class="col-lg-6">
+                <div class="automation-section-card h-100">
+                    <h3>
+                        <i class="bi bi-envelope-heart"></i>
+                        Weekly Performance Email
+                    </h3>
+
+                    <div class="automation-switch-list mb-3">
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="WeeklyEmailAutomationEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="WeeklyEmailAutomationEnabled" class="form-check-label"></label>
+                        </div>
+
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="WeeklyAppreciationEmailEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="WeeklyAppreciationEmailEnabled" class="form-check-label"></label>
+                        </div>
+
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="WeeklyImprovementEmailEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="WeeklyImprovementEmailEnabled" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="WeeklyGoodPerformancePointThreshold" class="form-label"></label>
+                            <input asp-for="WeeklyGoodPerformancePointThreshold" class="form-control" />
+                            <span asp-validation-for="WeeklyGoodPerformancePointThreshold" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="WeeklyPoorPerformancePointThreshold" class="form-label"></label>
+                            <input asp-for="WeeklyPoorPerformancePointThreshold" class="form-control" />
+                            <span asp-validation-for="WeeklyPoorPerformancePointThreshold" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="WeeklyMissedPredictionThreshold" class="form-label"></label>
+                            <input asp-for="WeeklyMissedPredictionThreshold" class="form-control" />
+                            <span asp-validation-for="WeeklyMissedPredictionThreshold" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="WeeklyEmailSendDay" class="form-label"></label>
+                            <select asp-for="WeeklyEmailSendDay"
+                                    asp-items="Html.GetEnumSelectList<DayOfWeek>()"
+                                    class="form-select">
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="WeeklyEmailSendTime" class="form-label"></label>
+                            <input asp-for="WeeklyEmailSendTime" class="form-control" type="time" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI USER APPROVAL -->
+            <div class="col-lg-6">
+                <div class="automation-section-card h-100">
+                    <h3>
+                        <i class="bi bi-person-check"></i>
+                        AI User Approval
+                    </h3>
+
+                    <p class="text-muted small">
+                        Recommended mode is Suggest Only first. Auto approval should be enabled only after testing.
+                    </p>
+
+                    <div class="automation-switch-list mb-3">
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="AiUserApprovalEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="AiUserApprovalEnabled" class="form-check-label"></label>
+                        </div>
+
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="AiAutoApproveEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="AiAutoApproveEnabled" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <label asp-for="AiAutoApproveRiskThreshold" class="form-label"></label>
+                    <input asp-for="AiAutoApproveRiskThreshold" class="form-control" />
+                    <span asp-validation-for="AiAutoApproveRiskThreshold" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <!-- LOGIN TRACKING -->
+            <div class="col-lg-6">
+                <div class="automation-section-card h-100">
+                    <h3>
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        Login Tracking
+                    </h3>
+
+                    <div class="automation-switch-list mb-3">
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="LoginTrackingEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="LoginTrackingEnabled" class="form-check-label"></label>
+                        </div>
+
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="ActiveSessionTrackingEnabled" class="form-check-input" role="switch" />
+                            <label asp-for="ActiveSessionTrackingEnabled" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <label asp-for="SessionTimeoutMinutes" class="form-label"></label>
+                    <input asp-for="SessionTimeoutMinutes" class="form-control" />
+                    <span asp-validation-for="SessionTimeoutMinutes" class="text-danger small"></span>
+
+                    <div class="mt-3">
+                        <label asp-for="SessionCleanupIntervalMinutes" class="form-label"></label>
+                        <input asp-for="SessionCleanupIntervalMinutes" class="form-control" />
+                        <span asp-validation-for="SessionCleanupIntervalMinutes" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="automation-save-bar mt-4">
+            <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                <i class="bi bi-save"></i>
+                Save Automation Settings
+            </button>
+        </div>
+
+        @if (Model.UpdatedAt.HasValue)
+        {
+            <div class="text-muted small mt-3">
+                Last updated: @Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+            </div>
+        }
+
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const masterSwitch = document.getElementById("MasterAutomationEnabled");
+
+            if (masterSwitch) {
+                masterSwitch.addEventListener("change", function () {
+                    const label = document.querySelector('label[for="MasterAutomationEnabled"]');
+                    if (label) {
+                        label.innerText = masterSwitch.checked ? "ON" : "OFF";
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,106 @@
+﻿CREATE TABLE AutomationSettings (
+    Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
+    MasterAutomationEnabled BIT NOT NULL DEFAULT 0,
+
+    FixtureAutomationEnabled BIT NOT NULL DEFAULT 0,
+    AutoUpcomingToLiveEnabled BIT NOT NULL DEFAULT 0,
+    AutoLiveToFinishedEnabled BIT NOT NULL DEFAULT 0,
+    AutoResultProcessingEnabled BIT NOT NULL DEFAULT 0,
+
+    ReminderAutomationEnabled BIT NOT NULL DEFAULT 0,
+    Reminder24HourEnabled BIT NOT NULL DEFAULT 0,
+    Reminder1HourEnabled BIT NOT NULL DEFAULT 0,
+
+    WeeklyEmailAutomationEnabled BIT NOT NULL DEFAULT 0,
+    WeeklyAppreciationEmailEnabled BIT NOT NULL DEFAULT 0,
+    WeeklyImprovementEmailEnabled BIT NOT NULL DEFAULT 0,
+
+    WeeklyGoodPerformancePointThreshold INT NOT NULL DEFAULT 10,
+    WeeklyPoorPerformancePointThreshold INT NOT NULL DEFAULT 2,
+    WeeklyMissedPredictionThreshold INT NOT NULL DEFAULT 5,
+
+    AiUserApprovalEnabled BIT NOT NULL DEFAULT 0,
+    AiAutoApproveEnabled BIT NOT NULL DEFAULT 0,
+    AiAutoApproveRiskThreshold INT NOT NULL DEFAULT 25,
+
+    LoginTrackingEnabled BIT NOT NULL DEFAULT 1,
+    ActiveSessionTrackingEnabled BIT NOT NULL DEFAULT 1,
+    SessionTimeoutMinutes INT NOT NULL DEFAULT 10,
+
+    ExecutionMode NVARCHAR(50) NOT NULL DEFAULT 'SuggestOnly',
+
+    FixtureCheckIntervalMinutes INT NOT NULL DEFAULT 5,
+    ReminderCheckIntervalMinutes INT NOT NULL DEFAULT 15,
+    ScoreSyncIntervalMinutes INT NOT NULL DEFAULT 5,
+    AiUserReviewIntervalMinutes INT NOT NULL DEFAULT 30,
+    SessionCleanupIntervalMinutes INT NOT NULL DEFAULT 5,
+
+    WeeklyEmailSendDay NVARCHAR(20) NOT NULL DEFAULT 'Monday',
+    WeeklyEmailSendTime TIME NOT NULL DEFAULT '09:00:00',
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    UpdatedAt DATETIME2 NULL,
+    UpdatedByUserId NVARCHAR(450) NULL
+);
+GO
+
+CREATE TABLE AutomationLogs (
+    Id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
+    AutomationType NVARCHAR(100) NOT NULL,
+    EntityType NVARCHAR(100) NOT NULL,
+    EntityId NVARCHAR(100) NULL,
+    ActionName NVARCHAR(150) NOT NULL,
+    ExecutionMode NVARCHAR(50) NOT NULL,
+
+    BeforeDataJson NVARCHAR(MAX) NULL,
+    AfterDataJson NVARCHAR(MAX) NULL,
+
+    IsExecuted BIT NOT NULL,
+    IsSuccess BIT NOT NULL,
+
+    Message NVARCHAR(500) NULL,
+    ErrorMessage NVARCHAR(MAX) NULL,
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+);
+GO
+
+CREATE INDEX IX_AutomationLogs_AutomationType ON AutomationLogs(AutomationType);
+CREATE INDEX IX_AutomationLogs_EntityType ON AutomationLogs(EntityType);
+CREATE INDEX IX_AutomationLogs_EntityId ON AutomationLogs(EntityId);
+CREATE INDEX IX_AutomationLogs_CreatedAt ON AutomationLogs(CreatedAt);
+GO
+
+CREATE TABLE AutomationSuggestions (
+    Id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
+    AutomationType NVARCHAR(100) NOT NULL,
+    EntityType NVARCHAR(100) NOT NULL,
+    EntityId NVARCHAR(100) NULL,
+    SuggestedAction NVARCHAR(150) NOT NULL,
+
+    Reason NVARCHAR(MAX) NULL,
+    ConfidenceScore INT NOT NULL,
+
+    BeforeDataJson NVARCHAR(MAX) NULL,
+    SuggestedDataJson NVARCHAR(MAX) NULL,
+
+    IsReviewed BIT NOT NULL DEFAULT 0,
+    IsApproved BIT NOT NULL DEFAULT 0,
+    IsRejected BIT NOT NULL DEFAULT 0,
+
+    ReviewedByUserId NVARCHAR(450) NULL,
+    ReviewedAt DATETIME2 NULL,
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+);
+GO
+
+CREATE INDEX IX_AutomationSuggestions_AutomationType ON AutomationSuggestions(AutomationType);
+CREATE INDEX IX_AutomationSuggestions_EntityType ON AutomationSuggestions(EntityType);
+CREATE INDEX IX_AutomationSuggestions_EntityId ON AutomationSuggestions(EntityId);
+CREATE INDEX IX_AutomationSuggestions_IsReviewed ON AutomationSuggestions(IsReviewed);
+CREATE INDEX IX_AutomationSuggestions_CreatedAt ON AutomationSuggestions(CreatedAt);
+GO

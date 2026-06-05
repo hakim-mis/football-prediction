@@ -1,0 +1,217 @@
+﻿@model List<FootballPredictionGame.ViewModels.AutomationSuggestionItemViewModel>
+
+@{
+    ViewData["Title"] = "Automation Suggestions";
+    var status = (string?)ViewBag.Status ?? "pending";
+}
+
+<div class="dashboard-card p-3 p-md-4 mb-4">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+            <span class="pill">
+                <i class="bi bi-lightbulb"></i>
+                Review Queue
+            </span>
+
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                Automation Suggestions
+            </h1>
+
+            <p class="text-muted small mb-0">
+                Suggestions created in Suggest Only mode. Admin can execute or reject them manually.
+            </p>
+        </div>
+
+        <a asp-area="Admin"
+           asp-controller="AutomationSettings"
+           asp-action="Index"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-robot"></i>
+            Automation Settings
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="automation-suggestion-tabs mb-3">
+
+        <a asp-action="Index"
+           asp-route-status="pending"
+           class="btn btn-sm @(status == "pending" ? "btn-primary" : "btn-outline-primary")">
+            <i class="bi bi-hourglass-split"></i>
+            Pending
+        </a>
+
+        <a asp-action="Index"
+           asp-route-status="executed"
+           class="btn btn-sm @(status == "executed" ? "btn-success" : "btn-outline-success")">
+            <i class="bi bi-check-circle"></i>
+            Executed
+        </a>
+
+        <a asp-action="Index"
+           asp-route-status="rejected"
+           class="btn btn-sm @(status == "rejected" ? "btn-danger" : "btn-outline-danger")">
+            <i class="bi bi-x-circle"></i>
+            Rejected
+        </a>
+
+        <a asp-action="Index"
+           asp-route-status="all"
+           class="btn btn-sm @(status == "all" ? "btn-secondary" : "btn-outline-secondary")">
+            <i class="bi bi-list"></i>
+            All
+        </a>
+
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-clean table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Suggestion</th>
+                    <th>Entity</th>
+                    <th>Confidence</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No automation suggestion found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.SuggestedAction</strong>
+                                <div class="small text-muted">
+                                    @item.AutomationType
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(item.Reason))
+                                {
+                                    <div class="small mt-1">
+                                        @item.Reason
+                                    </div>
+                                }
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-light text-muted">
+                                    @item.EntityType
+                                </span>
+
+                                <div class="small text-muted">
+                                    ID: @(item.EntityId ?? "-")
+                                </div>
+                            </td>
+
+                            <td>
+                                @{
+                                    var confidenceClass = item.ConfidenceScore >= 80
+                                    ? "text-bg-success"
+                                    : item.ConfidenceScore >= 50
+                                    ? "text-bg-warning"
+                                    : "text-bg-secondary";
+                                }
+
+                                <span class="badge @confidenceClass">
+                                    @item.ConfidenceScore%
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (item.StatusText == "Pending")
+                                {
+                                    <span class="badge text-bg-warning">Pending</span>
+                                }
+                                else if (item.StatusText == "Executed")
+                                {
+                                    <span class="badge text-bg-success">Executed</span>
+                                }
+                                else if (item.StatusText == "Rejected")
+                                {
+                                    <span class="badge text-bg-danger">Rejected</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-secondary">@item.StatusText</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div>@item.CreatedAt.ToString("dd MMM yyyy")</div>
+                                <div class="small text-muted">
+                                    @item.CreatedAt.ToString("hh:mm tt")
+                                </div>
+                            </td>
+
+                            <td class="text-end">
+                                @if (!item.IsReviewed)
+                                {
+                                    <form asp-action="Execute"
+                                          asp-route-id="@item.Id"
+                                          method="post"
+                                          class="d-inline">
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-success btn-sm"
+                                                onclick="return confirm('Execute this automation suggestion now?');">
+                                            <i class="bi bi-play-fill"></i>
+                                            Execute
+                                        </button>
+                                    </form>
+
+                                    <form asp-action="Reject"
+                                          asp-route-id="@item.Id"
+                                          method="post"
+                                          class="d-inline">
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Reject this suggestion?');">
+                                            <i class="bi bi-x-circle"></i>
+                                            Reject
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">
+                                        Reviewed
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

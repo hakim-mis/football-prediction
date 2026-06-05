@@ -1,0 +1,52 @@
+﻿CREATE TABLE UserLoginHistories (
+    Id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
+    UserId NVARCHAR(450) NOT NULL,
+    FullName NVARCHAR(200) NULL,
+    Email NVARCHAR(256) NULL,
+
+    LoginAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    LogoutAt DATETIME2 NULL,
+
+    IpAddress NVARCHAR(100) NULL,
+    UserAgent NVARCHAR(MAX) NULL,
+    SessionId NVARCHAR(100) NULL,
+
+    IsSuccess BIT NOT NULL,
+    FailureReason NVARCHAR(500) NULL
+);
+GO
+
+CREATE INDEX IX_UserLoginHistories_UserId ON UserLoginHistories(UserId);
+CREATE INDEX IX_UserLoginHistories_Email ON UserLoginHistories(Email);
+CREATE INDEX IX_UserLoginHistories_LoginAt ON UserLoginHistories(LoginAt);
+CREATE INDEX IX_UserLoginHistories_SessionId ON UserLoginHistories(SessionId);
+CREATE INDEX IX_UserLoginHistories_IsSuccess ON UserLoginHistories(IsSuccess);
+GO
+
+CREATE TABLE UserActiveSessions (
+    Id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
+    UserId NVARCHAR(450) NOT NULL,
+    FullName NVARCHAR(200) NULL,
+    Email NVARCHAR(256) NULL,
+
+    SessionId NVARCHAR(100) NOT NULL,
+
+    LoginAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    LastSeenAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    LogoutAt DATETIME2 NULL,
+
+    IsActive BIT NOT NULL DEFAULT 1,
+
+    IpAddress NVARCHAR(100) NULL,
+    UserAgent NVARCHAR(MAX) NULL
+);
+GO
+
+CREATE INDEX IX_UserActiveSessions_UserId ON UserActiveSessions(UserId);
+CREATE INDEX IX_UserActiveSessions_Email ON UserActiveSessions(Email);
+CREATE INDEX IX_UserActiveSessions_SessionId ON UserActiveSessions(SessionId);
+CREATE INDEX IX_UserActiveSessions_IsActive ON UserActiveSessions(IsActive);
+CREATE INDEX IX_UserActiveSessions_LastSeenAt ON UserActiveSessions(LastSeenAt);
+GO

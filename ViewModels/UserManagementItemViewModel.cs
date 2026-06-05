@@ -13,4 +13,9 @@ public class UserManagementItemViewModel
     public int TotalScore { get; set; }
     public int ExactPredictionCount { get; set; }
     public DateTime CreatedAt { get; set; }
+    public bool EmailConfirmed { get; set; }
+
+    public int TotalPredictionCount { get; set; }
+    public int NotPredictCount { get; set; }
+    public int NotParticipateCount { get; set; }
 }

@@ -89,97 +89,65 @@
 <!-- TOP SECTION: PROFILE LEFT + BANNER RIGHT -->
 <div class="row g-4 mb-4 dashboard-top-layout">
 
-    <!-- LEFT SIDE: PROFILE + STATS -->
+    <!-- LEFT SIDE: PROFILE + ACTIONS -->
     <div class="col-xl-4 col-lg-5">
         <div class="dashboard-card dashboard-left-panel p-3 p-md-4 h-100">
 
-            <div class="dashboard-profile-compact mb-3">
-                <img src="@avatarPath"
-                     alt="@Model.FullName"
-                     class="dashboard-profile-photo-compact" />
+            <div class="dashboard-smart-profile-card mb-3">
 
-                <div class="dashboard-profile-info-compact">
-                    <h2 class="h5 fw-bold mb-1">@Model.FullName</h2>
+                <div class="dashboard-smart-profile-main">
+                    <img src="@avatarPath"
+                         alt="@Model.FullName"
+                         class="dashboard-smart-profile-photo" />
 
-                    <div class="dashboard-mini-meta">
-                        <span>
-                            Rank:
-                            <strong>@Model.RankText</strong>
-                        </span>
+                    <div class="dashboard-smart-profile-info">
+                        <h2>@Model.FullName</h2>
 
-                        @* <span>
-                            Top Score:
-                            <strong>@Model.TopScore</strong>
-                        </span> *@
+                        <div class="dashboard-smart-designation">
+                            @(string.IsNullOrWhiteSpace(Model.Designation) ? "-" : Model.Designation)
+                        </div>
 
-                        <span class="total-point-smart">
-                            Total Point:
-                            <strong>@Model.TotalScore</strong>
-                        </span>
+                        <div class="dashboard-smart-department">
+                            @(string.IsNullOrWhiteSpace(Model.Department) ? "-" : Model.Department)
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="dashboard-quick-stats dashboard-quick-stats-left">
+                <div class="dashboard-smart-highlight-row">
 
-                <button type="button"
-                        class="dashboard-stat-tile stat-noprediction"
-                        data-filter="noprediction">
-                    <strong id="dashboardNoPredictionCount">@noPredictionCount</strong>
-                    <span>Pending Prediction</span>
-                </button>
+                    <div class="dashboard-smart-highlight-card rank-highlight">
+                        <div class="highlight-icon">
+                            <i class="bi bi-trophy"></i>
+                        </div>
 
-                <button type="button"
-                        class="dashboard-stat-tile stat-predicted"
-                        data-filter="predicted">
-                    <strong id="dashboardPredictedCount">@predictedCount</strong>
-                    <span>Predicted</span>
-                </button>
+                        <div>
+                            <span>Rank</span>
+                            <strong>@Model.RankText</strong>
+                        </div>
+                    </div>
 
-                <button type="button"
-                        class="dashboard-stat-tile stat-notparticipated"
-                        data-filter="notparticipated">
-                    <strong id="dashboardNotParticipateCount">@notParticipateCount</strong>
-                    <span>Not Participate</span>
-                </button>
+                    <div class="dashboard-smart-highlight-card point-highlight">
+                        <div class="highlight-icon">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
 
-                <button type="button"
-                        class="dashboard-stat-tile stat-finished"
-                        data-filter="Finished">
-                    <strong>@finishedCount</strong>
-                    <span>Finished</span>
-                </button>
+                        <div>
+                            <span>Total Score</span>
+                            <strong>@Model.TotalScore</strong>
+                        </div>
+                    </div>
 
-                <button type="button"
-                        class="dashboard-stat-tile stat-today"
-                        data-filter="today">
-                    <strong>@todaysMatchCount</strong>
-                    <span>Today's Match</span>
-                </button>
-
-                <button type="button"
-                        class="dashboard-stat-tile stat-tomorrow"
-                        data-filter="tomorrow">
-                    <strong>@tomorrowMatchCount</strong>
-                    <span>Tomorrow's Match</span>
-                </button>
+                </div>
 
             </div>
 
-            <div class="dashboard-action-row mt-3">
+            <div class="dashboard-action-row dashboard-action-row-smart mt-3">
 
                 <a asp-controller="Leaderboard"
                    asp-action="Index"
                    class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-trophy"></i>
                     Leaderboard
-                </a>
-
-                <a asp-controller="Account"
-                   asp-action="Profile"
-                   class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-person"></i>
-                    Profile
                 </a>
 
                 <a asp-controller="Dashboard"
@@ -192,7 +160,7 @@
                 <a asp-controller="Dashboard"
                    asp-action="PredictionScore"
                    class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-grid-1x2"></i>
+                    <i class="bi bi-clipboard-data"></i>
                     Prediction Score
                 </a>
 
@@ -231,22 +199,24 @@
                             var banner = Model.Banners[i];
 
                             <div class="carousel-item h-100 @(i == 0 ? "active" : "")">
-                                <div class="dashboard-banner-side"
-                                     style="background-image:url('.@Url.Content(banner.ImageUrl)')">
 
-                                    <div class="dashboard-banner-side-overlay">
-                                        <h2></h2>
-                                        <p></p>
+                                <a href="@banner.RedirectUrl"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="dashboard-banner-click-area">
 
-                                        <a href="@banner.RedirectUrl"
-                                           target="_blank"
-                                           class="btn btn-warning btn-sm fw-bold banner-action-btn">
-                                            @banner.ButtonText
-                                            <i class="bi bi-arrow-right"></i>
-                                        </a>
+                                    <div class="dashboard-banner-side"
+                                         style="background-image:url('.@Url.Content(banner.ImageUrl)')">
+
+                                        <div class="dashboard-banner-side-overlay">
+
+                                            <span class="btn btn-warning btn-sm fw-bold banner-action-btn">
+                                                @banner.ButtonText
+                                                <i class="bi bi-arrow-right"></i>
+                                            </span>
+                                        </div>
                                     </div>
-
-                                </div>
+                                </a>
                             </div>
                         }
                     </div>
@@ -279,7 +249,7 @@
 
 </div>
 
-<!-- FIXTURE FILTER BAR -->
+<!-- FIXTURE FILTER + SEARCH -->
 <div class="dashboard-card p-3 p-md-4 mb-4">
 
     <div class="fixture-header-compact mb-3">
@@ -353,6 +323,44 @@
             <span id="fixtureNotParticipatedCount">@notParticipateCount</span>
         </button>
 
+        <button type="button"
+                class="dashboard-filter-chip filter-today"
+                data-filter="today">
+            <i class="bi bi-calendar-day"></i>
+            Today's Match
+            <span>@todaysMatchCount</span>
+        </button>
+
+        <button type="button"
+                class="dashboard-filter-chip filter-tomorrow"
+                data-filter="tomorrow">
+            <i class="bi bi-calendar2-plus"></i>
+            Tomorrow's Match
+            <span>@tomorrowMatchCount</span>
+        </button>
+
+    </div>
+
+    <div class="dashboard-fixture-search-toolbar mt-3">
+
+        <div class="dashboard-fixture-search-box">
+            <span>
+                <i class="bi bi-search"></i>
+            </span>
+
+            <input type="search"
+                   id="dashboardFixtureSearch"
+                   class="form-control"
+                   placeholder="Search team, group, status, prediction, actual, point..." />
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm"
+                id="dashboardFixtureClearSearch">
+            <i class="bi bi-x-circle"></i>
+            Clear
+        </button>
+
     </div>
 
 </div>
@@ -396,16 +404,33 @@
                         ? "tomorrow"
                         : "";
 
+                var predictionSearchText = hasPrediction && prediction != null
+                    ? $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}"
+                    : canPredict
+                        ? "No Prediction"
+                        : "Not Participated";
+
+                var pointSearchText = hasPrediction && prediction != null && prediction.IsProcessed
+                    ? prediction.EarnedPoint.ToString()
+                    : hasPrediction
+                        ? "Pending"
+                        : "-";
+
+                var fixtureSearchText =
+                    $"{fixture.TeamOneName} {fixture.TeamTwoName} {fixture.Stage.GetDisplayName()} {fixture.Status} {predictionSearchText} {actualText} {pointSearchText} {fixture.MatchDateTime:dd MMM yyyy hh:mm tt}"
+                    .ToLowerInvariant();
+
                 <div class="dashboard-fixture-card"
                      data-fixture-id="@fixture.Id"
                      data-status="@fixture.Status"
                      data-participation="@participation"
                      data-date-filter="@fixtureDateValue"
                      data-has-prediction="@(hasPrediction ? "true" : "false")"
-                     data-can-predict="@(canPredict ? "true" : "false")">
+                     data-can-predict="@(canPredict ? "true" : "false")"
+                     data-search="@fixtureSearchText">
 
                     <div class="fixture-card-top">
-                        <span class="segment-chip">
+                        <span class="dashboard-stage-pill">
                             @fixture.Stage.GetDisplayName()
                         </span>
 
@@ -433,9 +458,13 @@
                         </div>
                     </div>
 
-                    <div class="fixture-mini-info">
+                    <div class="fixture-mini-info fixture-mini-info-smart">
+
                         <div class="mini-info-item prediction-info">
-                            <span>Prediction</span>
+                            <div class="mini-info-label">
+                                <i class="bi bi-pencil-square"></i>
+                                <span>Prediction</span>
+                            </div>
 
                             <strong>
                                 @if (hasPrediction && prediction != null)
@@ -460,12 +489,19 @@
                         </div>
 
                         <div class="mini-info-item actual-info">
-                            <span>Actual</span>
+                            <div class="mini-info-label">
+                                <i class="bi bi-bullseye"></i>
+                                <span>Actual</span>
+                            </div>
+
                             <strong>@actualText</strong>
                         </div>
 
                         <div class="mini-info-item point-info">
-                            <span>Point</span>
+                            <div class="mini-info-label">
+                                <i class="bi bi-star-fill"></i>
+                                <span>Point</span>
+                            </div>
 
                             <strong>
                                 @if (hasPrediction && prediction != null && prediction.IsProcessed)
@@ -488,6 +524,7 @@
                                 }
                             </strong>
                         </div>
+
                     </div>
 
                     <div class="fixture-card-action">
@@ -535,7 +572,9 @@
                                 </button>
                             </form>
                         }
-                        else if (fixture.Status == MatchStatus.Live || fixture.Status == MatchStatus.Finished || DateTime.Now >= fixture.MatchDateTime)
+                        else if (fixture.Status == MatchStatus.Live ||
+                                 fixture.Status == MatchStatus.Finished ||
+                                 DateTime.Now >= fixture.MatchDateTime)
                         {
                             <a asp-controller="Dashboard"
                                asp-action="PredictionDetail"
@@ -560,11 +599,15 @@
             }
 
         </div>
+
+        <div id="dashboardFixtureNoResult" class="empty-state mt-3 d-none">
+            No fixture matched your search/filter.
+        </div>
     }
 
 </div>
 
-@if (Model.SegmentPoints.Any())
+@* @if (Model.SegmentPoints.Any())
 {
     <div class="dashboard-card p-4 mb-4 chart-box">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -582,9 +625,8 @@
 
         <canvas id="segmentChart" height="100"></canvas>
     </div>
-}
+} *@
 
-<!-- AJAX Toast -->
 <div id="dashboardAjaxToast" class="custom-toast d-none">
     <div class="custom-toast-icon">
         <i id="dashboardAjaxToastIcon" class="bi bi-check-circle-fill"></i>
@@ -637,13 +679,17 @@
             });
         }
 
+        let activeDashboardFixtureFilter = "all";
+
         document.addEventListener("DOMContentLoaded", function () {
             bindDashboardFixtureFilters();
+            bindDashboardFixtureSearch();
             bindDashboardPredictionAjaxForms();
+            applyDashboardFixtureSearchAndFilter();
         });
 
         function bindDashboardFixtureFilters() {
-            document.querySelectorAll(".dashboard-filter-chip, .dashboard-stat-tile").forEach(function (button) {
+            document.querySelectorAll(".dashboard-filter-chip").forEach(function (button) {
                 button.addEventListener("click", function (e) {
                     const filter = button.getAttribute("data-filter");
 
@@ -653,45 +699,98 @@
 
                     e.preventDefault();
 
+                    activeDashboardFixtureFilter = filter;
+
                     document.querySelectorAll(".dashboard-filter-chip").forEach(function (btn) {
                         btn.classList.remove("active");
                     });
 
-                    const matchingButton = document.querySelector('.dashboard-filter-chip[data-filter="' + filter + '"]');
+                    button.classList.add("active");
 
-                    if (matchingButton) {
-                        matchingButton.classList.add("active");
-                    }
-
-                    filterDashboardFixtures(filter);
+                    applyDashboardFixtureSearchAndFilter();
                 });
             });
         }
 
-        function filterDashboardFixtures(filter) {
+        function bindDashboardFixtureSearch() {
+            const searchInput = document.getElementById("dashboardFixtureSearch");
+            const clearButton = document.getElementById("dashboardFixtureClearSearch");
+
+            if (searchInput) {
+                searchInput.addEventListener("input", function () {
+                    applyDashboardFixtureSearchAndFilter();
+                });
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener("click", function () {
+                    if (searchInput) {
+                        searchInput.value = "";
+                        searchInput.focus();
+                    }
+
+                    applyDashboardFixtureSearchAndFilter();
+                });
+            }
+        }
+
+        function applyDashboardFixtureSearchAndFilter() {
+            const searchInput = document.getElementById("dashboardFixtureSearch");
+            const noResult = document.getElementById("dashboardFixtureNoResult");
+
+            const searchText = searchInput
+                ? searchInput.value.trim().toLowerCase()
+                : "";
+
+            let visibleCount = 0;
+
             document.querySelectorAll(".dashboard-fixture-card").forEach(function (card) {
                 const status = card.getAttribute("data-status");
                 const participation = card.getAttribute("data-participation");
                 const dateFilter = card.getAttribute("data-date-filter");
+                const searchable = card.getAttribute("data-search") || "";
 
-                let shouldShow = false;
+                let matchesFilter = false;
 
-                if (filter === "all") {
-                    shouldShow = true;
-                } else if (filter === "Upcoming" || filter === "Live" || filter === "Finished") {
-                    shouldShow = status === filter;
-                } else if (filter === "predicted" || filter === "noprediction" || filter === "notparticipated") {
-                    shouldShow = participation === filter;
-                } else if (filter === "today" || filter === "tomorrow") {
-                    shouldShow = dateFilter === filter;
+                if (activeDashboardFixtureFilter === "all") {
+                    matchesFilter = true;
+                } else if (
+                    activeDashboardFixtureFilter === "Upcoming" ||
+                    activeDashboardFixtureFilter === "Live" ||
+                    activeDashboardFixtureFilter === "Finished"
+                ) {
+                    matchesFilter = status === activeDashboardFixtureFilter;
+                } else if (
+                    activeDashboardFixtureFilter === "predicted" ||
+                    activeDashboardFixtureFilter === "noprediction" ||
+                    activeDashboardFixtureFilter === "notparticipated"
+                ) {
+                    matchesFilter = participation === activeDashboardFixtureFilter;
+                } else if (
+                    activeDashboardFixtureFilter === "today" ||
+                    activeDashboardFixtureFilter === "tomorrow"
+                ) {
+                    matchesFilter = dateFilter === activeDashboardFixtureFilter;
                 }
+
+                const matchesSearch = searchText === "" || searchable.includes(searchText);
+                const shouldShow = matchesFilter && matchesSearch;
 
                 if (shouldShow) {
                     card.classList.remove("d-none");
+                    visibleCount++;
                 } else {
                     card.classList.add("d-none");
                 }
             });
+
+            if (noResult) {
+                if (visibleCount === 0 && document.querySelectorAll(".dashboard-fixture-card").length > 0) {
+                    noResult.classList.remove("d-none");
+                } else {
+                    noResult.classList.add("d-none");
+                }
+            }
         }
 
         function bindDashboardPredictionAjaxForms() {
@@ -805,18 +904,22 @@
             if (card) {
                 card.setAttribute("data-has-prediction", "true");
                 card.setAttribute("data-participation", "predicted");
+
+                const oldSearch = card.getAttribute("data-search") || "";
+                const updatedSearch = oldSearch + " " + String(data.predictionText || "").toLowerCase() + " pending predicted";
+                card.setAttribute("data-search", updatedSearch);
+
                 card.classList.add("prediction-row-updated");
 
                 setTimeout(function () {
                     card.classList.remove("prediction-row-updated");
                 }, 1600);
+
+                applyDashboardFixtureSearchAndFilter();
             }
 
             if (!wasPredictedBefore && data.wasNewPrediction) {
-                incrementDashboardCounter("dashboardPredictedCount", 1);
                 incrementDashboardCounter("fixturePredictedCount", 1);
-
-                incrementDashboardCounter("dashboardNoPredictionCount", -1);
                 incrementDashboardCounter("fixtureNoPredictionCount", -1);
             }
         }

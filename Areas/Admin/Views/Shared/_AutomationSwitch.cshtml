@@ -1,0 +1,25 @@
+﻿@model ValueTuple<string, string, bool>
+
+@{
+    var propertyName = Model.Item1;
+    var label = Model.Item2;
+    var value = Model.Item3;
+}
+
+<div class="form-check form-switch automation-switch-row">
+    <input type="checkbox"
+           class="form-check-input"
+           role="switch"
+           id="@propertyName"
+           name="@propertyName"
+           value="true"
+           @(value ? "checked" : "") />
+
+    <input type="hidden"
+           name="@propertyName"
+           value="false" />
+
+    <label class="form-check-label" for="@propertyName">
+        @label
+    </label>
+</div>

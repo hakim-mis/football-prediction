@@ -1,0 +1,113 @@
+﻿IF OBJECT_ID('dbo.PredictionReminderLogs', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PredictionReminderLogs
+    (
+        Id BIGINT IDENTITY(1,1) NOT NULL,
+        UserId NVARCHAR(450) NOT NULL,
+        FixtureId INT NOT NULL,
+
+        ReminderType NVARCHAR(50) NOT NULL,
+        -- 24Hour / 1Hour
+
+        EmailTo NVARCHAR(256) NULL,
+
+        IsSent BIT NOT NULL CONSTRAINT DF_PredictionReminderLogs_IsSent DEFAULT (0),
+        SentAt DATETIME2 NULL,
+
+        ErrorMessage NVARCHAR(MAX) NULL,
+
+        CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_PredictionReminderLogs_CreatedAt DEFAULT (GETDATE()),
+
+        CONSTRAINT PK_PredictionReminderLogs PRIMARY KEY (Id),
+
+        CONSTRAINT FK_PredictionReminderLogs_AspNetUsers_UserId
+            FOREIGN KEY (UserId)
+            REFERENCES dbo.AspNetUsers(Id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT FK_PredictionReminderLogs_Fixtures_FixtureId
+            FOREIGN KEY (FixtureId)
+            REFERENCES dbo.Fixtures(Id)
+            ON DELETE CASCADE
+    );
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_PredictionReminderLogs_UserId'
+    AND object_id = OBJECT_ID('dbo.PredictionReminderLogs')
+)
+BEGIN
+    CREATE INDEX IX_PredictionReminderLogs_UserId
+    ON dbo.PredictionReminderLogs(UserId);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_PredictionReminderLogs_FixtureId'
+    AND object_id = OBJECT_ID('dbo.PredictionReminderLogs')
+)
+BEGIN
+    CREATE INDEX IX_PredictionReminderLogs_FixtureId
+    ON dbo.PredictionReminderLogs(FixtureId);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_PredictionReminderLogs_ReminderType'
+    AND object_id = OBJECT_ID('dbo.PredictionReminderLogs')
+)
+BEGIN
+    CREATE INDEX IX_PredictionReminderLogs_ReminderType
+    ON dbo.PredictionReminderLogs(ReminderType);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_PredictionReminderLogs_IsSent'
+    AND object_id = OBJECT_ID('dbo.PredictionReminderLogs')
+)
+BEGIN
+    CREATE INDEX IX_PredictionReminderLogs_IsSent
+    ON dbo.PredictionReminderLogs(IsSent);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_PredictionReminderLogs_CreatedAt'
+    AND object_id = OBJECT_ID('dbo.PredictionReminderLogs')
+)
+BEGIN
+    CREATE INDEX IX_PredictionReminderLogs_CreatedAt
+    ON dbo.PredictionReminderLogs(CreatedAt);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_PredictionReminderLogs_User_Fixture_Type'
+    AND object_id = OBJECT_ID('dbo.PredictionReminderLogs')
+)
+BEGIN
+    CREATE INDEX IX_PredictionReminderLogs_User_Fixture_Type
+    ON dbo.PredictionReminderLogs(UserId, FixtureId, ReminderType);
+END
+GO
+
+---------------
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'UX_PredictionReminderLogs_User_Fixture_Type'
+    AND object_id = OBJECT_ID('dbo.PredictionReminderLogs')
+)
+BEGIN
+    CREATE UNIQUE INDEX UX_PredictionReminderLogs_User_Fixture_Type
+    ON dbo.PredictionReminderLogs(UserId, FixtureId, ReminderType);
+END
+GO

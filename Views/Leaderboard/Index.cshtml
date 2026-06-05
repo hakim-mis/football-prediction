@@ -54,6 +54,26 @@
         </a>
     </div>
 
+    <div class="leaderboard-search-toolbar mb-3">
+        <div class="leaderboard-search-box">
+            <span>
+                <i class="bi bi-search"></i>
+            </span>
+
+            <input type="search"
+                   id="leaderboardSearch"
+                   class="form-control"
+                   placeholder="Search name, designation, department, rank, score..." />
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm"
+                id="leaderboardClearSearch">
+            <i class="bi bi-x-circle"></i>
+            Clear
+        </button>
+    </div>
+
     <div class="leaderboard-table-wrap">
         <table class="table table-clean table-hover align-middle mb-0 leaderboard-table">
             <thead>
@@ -68,7 +88,7 @@
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody id="leaderboardTableBody">
                 @if (Model == null || !Model.Any())
                 {
                     <tr>
@@ -81,7 +101,12 @@
                 {
                     foreach (var user in Model)
                     {
-                        <tr>
+                        var designation = string.IsNullOrWhiteSpace(user.Designation) ? "-" : user.Designation;
+                        var department = string.IsNullOrWhiteSpace(user.Department) ? "-" : user.Department;
+                        var searchableText = $"{user.RankText} {user.FullName} {designation} {department} {user.TotalScore} {user.ExactPredictionCount}".ToLowerInvariant();
+
+                        <tr class="leaderboard-row-item"
+                            data-search="@searchableText">
                             <td>
                                 <span class="rank-circle">
                                     @user.RankText
@@ -105,11 +130,11 @@
                             </td>
 
                             <td class="leaderboard-designation-col">
-                                @(string.IsNullOrWhiteSpace(user.Designation) ? "-" : user.Designation)
+                                @designation
                             </td>
 
                             <td class="leaderboard-department-col">
-                                @(string.IsNullOrWhiteSpace(user.Department) ? "-" : user.Department)
+                                @department
                             </td>
 
                             <td>
@@ -140,4 +165,69 @@
         </table>
     </div>
 
+    <div id="leaderboardNoResult" class="empty-state mt-3 d-none">
+        No player matched your search.
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            bindLeaderboardSearch();
+        });
+
+        function bindLeaderboardSearch() {
+            const searchInput = document.getElementById("leaderboardSearch");
+            const clearButton = document.getElementById("leaderboardClearSearch");
+
+            if (searchInput) {
+                searchInput.addEventListener("input", function () {
+                    applyLeaderboardSearch();
+                });
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener("click", function () {
+                    if (searchInput) {
+                        searchInput.value = "";
+                        searchInput.focus();
+                    }
+
+                    applyLeaderboardSearch();
+                });
+            }
+        }
+
+        function applyLeaderboardSearch() {
+            const searchInput = document.getElementById("leaderboardSearch");
+            const noResult = document.getElementById("leaderboardNoResult");
+
+            const searchText = searchInput
+                ? searchInput.value.trim().toLowerCase()
+                : "";
+
+            let visibleCount = 0;
+
+            document.querySelectorAll(".leaderboard-row-item").forEach(function (row) {
+                const searchable = row.getAttribute("data-search") || "";
+                const shouldShow = searchText === "" || searchable.includes(searchText);
+
+                if (shouldShow) {
+                    row.classList.remove("d-none");
+                    visibleCount++;
+                } else {
+                    row.classList.add("d-none");
+                }
+            });
+
+            if (noResult) {
+                if (visibleCount === 0 && document.querySelectorAll(".leaderboard-row-item").length > 0) {
+                    noResult.classList.remove("d-none");
+                } else {
+                    noResult.classList.add("d-none");
+                }
+            }
+        }
+    </script>
+}

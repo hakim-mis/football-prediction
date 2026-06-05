@@ -1,4 +1,6 @@
-﻿using FootballPredictionGame.Models;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using FootballPredictionGame.Data;
+using FootballPredictionGame.Models;
 using FootballPredictionGame.Services;
 using FootballPredictionGame.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +10,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
-using FootballPredictionGame.Data;
 
 namespace FootballPredictionGame.Controllers;
 
@@ -19,19 +20,22 @@ public class AccountController : Controller
     private readonly IFileUploadService _fileUploadService;
     private readonly IEmailService _emailService;
     private readonly ApplicationDbContext _context;
+    private readonly ILoginTrackingService _loginTrackingService;
 
     public AccountController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IFileUploadService fileUploadService,
         IEmailService emailService,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        ILoginTrackingService loginTrackingService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _fileUploadService = fileUploadService;
         _emailService = emailService;
         _context = context;
+        _loginTrackingService = loginTrackingService;
     }
 
     [AllowAnonymous]
@@ -258,6 +262,8 @@ public class AccountController : Controller
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null)
         {
+            await _loginTrackingService.TrackFailedLoginAsync(model.Email, "Invalid login attempt.",HttpContext);
+
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
@@ -284,6 +290,8 @@ public class AccountController : Controller
             {
                 return LocalRedirect(returnUrl);
             }
+
+            await _loginTrackingService.TrackSuccessfulLoginAsync(user, HttpContext);
 
             if (await _userManager.IsInRoleAsync(user, "Admin"))
             {
@@ -348,13 +356,55 @@ public class AccountController : Controller
         await _context.SaveChangesAsync();
 
         var emailBody = $@"
-        <div style='font-family:Arial;padding:20px'>
-            <h2>Password Reset OTP</h2>
-            <p>Dear {user.FullName},</p>
-            <p>Your password reset OTP is:</p>
-            <h1 style='letter-spacing:5px;color:#0d6efd'>{otp}</h1>
-            <p>This OTP will expire in 10 minutes.</p>
-            <p>If you did not request this, please ignore this email.</p>
+        <div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
+            <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>
+
+                <div style='text-align:center;margin-bottom:20px;'>
+                    <div style='font-size:48px;'>🔐</div>
+                    <h2 style='color:#155dfc;margin:10px 0 5px;'>Password Reset OTP</h2>
+                    <p style='color:#64748b;margin:0;'>Transtec 360° Football Prediction</p>
+                </div>
+
+                <p>Dear {user.FullName},</p>
+
+                <p>
+                    We received a request to reset the password for your
+                    <strong>Transtec 360° Football Prediction</strong> account.
+                </p>
+
+                <p>
+                    Please use the OTP below to verify your request and set a new password.
+                </p>
+
+                <div style='background:#eef6ff;border:1px solid #b9d7ff;border-radius:12px;padding:22px;text-align:center;margin:26px 0;'>
+                    <p style='margin:0 0 10px;color:#334155;font-size:14px;font-weight:bold;'>
+                        Your One-Time Password
+                    </p>
+
+                    <div style='font-size:34px;font-weight:900;letter-spacing:8px;color:#155dfc;line-height:1.2;'>
+                        {otp}
+                    </div>
+
+                    <p style='margin:12px 0 0;color:#64748b;font-size:13px;'>
+                        This OTP will expire in 10 minutes.
+                    </p>
+                </div>
+
+                <div style='background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:15px;margin:22px 0;color:#7c2d12;'>
+                    <strong>Security Notice:</strong>
+                    Do not share this OTP with anyone. Admin or support will never ask for your OTP.
+                </div>
+
+                <p>
+                    If you did not request a password reset, please ignore this email.
+                    Your current password will remain unchanged.
+                </p>
+
+                <p style='font-size:13px;color:#64748b;margin-top:24px;'>
+                    This is an automated email from Transtec 360° Football Prediction.
+                </p>
+
+            </div>
         </div>";
 
         await _emailService.SendEmailAsync(
@@ -637,7 +687,15 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        var user = await _userManager.GetUserAsync(User);
+
+        if (user != null)
+        {
+            await _loginTrackingService.TrackLogoutAsync(user, HttpContext);
+        }
+
         await _signInManager.SignOutAsync();
+
         return RedirectToAction(nameof(Login));
     }
 
@@ -745,5 +803,30 @@ public class AccountController : Controller
     public IActionResult AccessDenied()
     {
         return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Heartbeat()
+    {
+        if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            return Unauthorized();
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+
+        await _loginTrackingService.UpdateHeartbeatAsync(user, HttpContext);
+
+        return Json(new
+        {
+            success = true,
+            serverTime = DateTime.Now.ToString("dd MMM yyyy, hh:mm:ss tt")
+        });
     }
 }

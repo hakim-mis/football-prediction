@@ -1,87 +1,414 @@
 @model List<UserManagementItemViewModel>
+
 @{
     ViewData["Title"] = "User Management";
+
     var status = (string?)ViewBag.Status ?? "all";
+
+    string UserPhoto(string? path)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? Url.Content("~/img/default-avatar.svg")
+            : Url.Content("~/" + path.TrimStart('/', '~'));
+    }
+
+    string UserSubInfo(string? designation, string? department)
+    {
+        var parts = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(designation))
+        {
+            parts.Add(designation);
+        }
+
+        if (!string.IsNullOrWhiteSpace(department))
+        {
+            parts.Add(department);
+        }
+
+        return parts.Any() ? string.Join(" • ", parts) : "-";
+    }
 }
-<div class="dashboard-card p-4 p-lg-5">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+<div class="dashboard-card admin-user-page p-3 p-md-4 mb-4">
+
+    <div class="admin-user-topbar mb-4">
+
         <div>
-            <span class="pill"><i class="bi bi-people"></i> User Control</span>
-            <h1 class="h2 fw-bold mt-3 mb-0">User Management</h1>
-            <p class="text-muted mb-0">Activate players, deactivate accounts and reset user passwords to the default password.</p>
+            <span class="pill">
+                <i class="bi bi-people"></i>
+                User Control
+            </span>
+
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                User Management
+            </h1>
+
+            <p class="text-muted mb-0 small">
+                Activate players, deactivate accounts, reset passwords, and monitor prediction participation.
+            </p>
         </div>
-        <div class="btn-group">
-            <a asp-action="Index" asp-route-status="all" class="btn @(status == "all" ? "btn-primary" : "btn-outline-light")">All</a>
-            <a asp-action="Index" asp-route-status="pending" class="btn @(status == "pending" ? "btn-primary" : "btn-outline-light")">Pending</a>
-            <a asp-action="Index" asp-route-status="active" class="btn @(status == "active" ? "btn-primary" : "btn-outline-light")">Active</a>
+
+        <div class="admin-user-status-tabs">
+            <a asp-action="Index"
+               asp-route-status="all"
+               class="btn btn-sm @(status == "all" ? "btn-primary" : "btn-outline-primary")">
+                All
+            </a>
+
+            <a asp-action="Index"
+               asp-route-status="pending"
+               class="btn btn-sm @(status == "pending" ? "btn-primary" : "btn-outline-primary")">
+                Pending
+            </a>
+
+            <a asp-action="Index"
+               asp-route-status="active"
+               class="btn btn-sm @(status == "active" ? "btn-primary" : "btn-outline-primary")">
+                Active
+            </a>
         </div>
+
     </div>
-    <div class="table-responsive">
-        <table class="table table-clean table-hover align-middle mb-0">
+
+    <div class="admin-user-search-toolbar mb-3">
+
+        <div class="admin-user-search-box">
+            <span>
+                <i class="bi bi-search"></i>
+            </span>
+
+            <input type="search"
+                   id="adminUserSearch"
+                   class="form-control"
+                   placeholder="Search name, email, mobile, designation, department, status..." />
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm"
+                id="adminUserClearSearch">
+            <i class="bi bi-x-circle"></i>
+            Clear
+        </button>
+
+    </div>
+
+    <div class="admin-user-table-wrap">
+        <table class="table table-clean table-hover align-middle mb-0 admin-user-table">
             <thead>
                 <tr>
                     <th>Player</th>
                     <th>Contact</th>
                     <th>Status</th>
                     <th>Score</th>
-                    <th>Registered</th>
+                    <th>Predicted</th>
+                    <th>Not Predict</th>
+                    <th>Not Participate</th>
+                    <th>
+                        <button type="button"
+                                id="adminUserDateSortBtn"
+                                class="admin-user-date-sort-btn"
+                                data-sort-direction="desc">
+                            Registered
+                            <i id="adminUserDateSortIcon" class="bi bi-arrow-down-short"></i>
+                        </button>
+                    </th>
                     <th class="text-end">Action</th>
                 </tr>
             </thead>
-            <tbody>
-                @if (!Model.Any())
+
+            <tbody id="adminUserTableBody">
+                @if (Model == null || !Model.Any())
                 {
-                    <tr><td colspan="6" class="text-center text-muted">No user found.</td></tr>
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            No user found.
+                        </td>
+                    </tr>
                 }
                 else
                 {
-                    @foreach (var user in Model)
+                    foreach (var user in Model)
                     {
-                        <tr>
+                        var subInfo = UserSubInfo(user.Designation, user.Department);
+                        var statusText = user.IsActive ? "Active" : "Pending";
+                        var emailVerifiedText = user.EmailConfirmed ? "Email Verified" : "Email Not Verified";
+
+                        var searchableText = $"{user.FullName} {subInfo} {user.Email} {user.MobileNo} {statusText} {emailVerifiedText} {user.TotalScore} {user.TotalPredictionCount} {user.NotPredictCount} {user.NotParticipateCount} {user.CreatedAt:dd MMM yyyy hh:mm tt}".ToLowerInvariant();
+
+                        <tr class="admin-user-row"
+                            data-search="@searchableText"
+                            data-registered="@user.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")">
+
                             <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <img src="..@(user.PhotoPath ?? "/img/default-avatar.svg")" class="avatar-sm" />
-                                    <strong>@user.FullName</strong>
-                                    <div class="small text-muted">@user.Designation | @user.Department</div>
+                                <div class="admin-user-player-cell">
+                                    <img src="@UserPhoto(user.PhotoPath)"
+                                         class="admin-user-avatar"
+                                         alt="@user.FullName" />
+
+                                    <div class="admin-user-player-info">
+                                        <strong>@user.FullName</strong>
+
+                                        <div class="small text-muted admin-user-subtitle">
+                                            @subInfo
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
+
                             <td>
-                                <div>@user.Email</div>
-                                <div class="small text-muted">@user.MobileNo</div>
+                                <div class="admin-user-email-line">
+                                    <span>@user.Email</span>
+
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <span class="email-verify-badge email-verified"
+                                              title="Email verified">
+                                            <i class="bi bi-check"></i>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="email-verify-badge email-not-verified"
+                                              title="Email not verified">
+                                            <i class="bi bi-x"></i>
+                                        </span>
+                                    }
+                                </div>
+
+                                <div class="small text-muted">
+                                    @(string.IsNullOrWhiteSpace(user.MobileNo) ? "-" : user.MobileNo)
+                                </div>
                             </td>
+
                             <td>
                                 @if (user.IsActive)
                                 {
-                                    <span class="badge text-bg-success">Active</span>
+                                    <span class="admin-user-status-badge user-status-active">
+                                        <i class="bi bi-check-circle"></i>
+                                        Active
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="badge text-bg-warning">Pending</span>
+                                    <span class="admin-user-status-badge user-status-pending">
+                                        <i class="bi bi-hourglass-split"></i>
+                                        Pending
+                                    </span>
                                 }
                             </td>
-                            <td>@user.TotalScore pts</td>
-                            <td>@user.CreatedAt.ToString("dd MMM yyyy")</td>
+
+                            <td>
+                                <span class="score-pill">
+                                    @user.TotalScore pts
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="admin-user-count-pill count-predicted">
+                                    @user.TotalPredictionCount
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="admin-user-count-pill count-notpredict">
+                                    @user.NotPredictCount
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="admin-user-count-pill count-notparticipate">
+                                    @user.NotParticipateCount
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="fw-semibold">
+                                    @user.CreatedAt.ToString("dd-MMM-yyyy")
+                                </div>
+
+                                <div class="small text-muted">
+                                    @user.CreatedAt.ToString("hh:mm tt")
+                                </div>
+                            </td>
+
                             <td class="text-end">
-                                @if (user.IsActive)
-                                {
-                                    <form asp-action="Deactivate" asp-route-id="@user.Id" method="post" class="d-inline">
-                                        <button class="btn btn-sm btn-outline-warning" onclick="return confirm('Deactivate this user?')"><i class="bi bi-person-x"></i> Deactivate</button>
+                                <div class="admin-user-action-row">
+
+                                    @if (user.IsActive)
+                                    {
+                                        <form asp-action="Deactivate"
+                                              asp-route-id="@user.Id"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-warning"
+                                                    onclick="return confirm('Deactivate this user?')">
+                                                <i class="bi bi-person-x"></i>
+                                                Deactivate
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="Activate"
+                                              asp-route-id="@user.Id"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-primary">
+                                                <i class="bi bi-person-check"></i>
+                                                Activate
+                                            </button>
+                                        </form>
+                                    }
+
+                                    <form asp-action="ResetPassword"
+                                          asp-route-id="@user.Id"
+                                          method="post"
+                                          class="d-inline">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Reset password to default? The user will be forced to change it after login.')">
+                                            <i class="bi bi-key"></i>
+                                            Reset Password
+                                        </button>
                                     </form>
-                                }
-                                else
-                                {
-                                    <form asp-action="Activate" asp-route-id="@user.Id" method="post" class="d-inline">
-                                        <button class="btn btn-sm btn-primary"><i class="bi bi-person-check"></i> Activate</button>
-                                    </form>
-                                }
-                                <form asp-action="ResetPassword" asp-route-id="@user.Id" method="post" class="d-inline">
-                                    <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Reset password to default? The user will be forced to change it after login.')"><i class="bi bi-key"></i> Reset Password</button>
-                                </form>
+
+                                </div>
                             </td>
+
                         </tr>
                     }
                 }
             </tbody>
         </table>
     </div>
+
+    <div id="adminUserNoResult" class="empty-state mt-3 d-none">
+        No user matched your search.
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            bindAdminUserSearch();
+            bindAdminUserDateSort();
+        });
+
+        function bindAdminUserSearch() {
+            const searchInput = document.getElementById("adminUserSearch");
+            const clearButton = document.getElementById("adminUserClearSearch");
+
+            if (searchInput) {
+                searchInput.addEventListener("input", function () {
+                    applyAdminUserSearch();
+                });
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener("click", function () {
+                    if (searchInput) {
+                        searchInput.value = "";
+                        searchInput.focus();
+                    }
+
+                    applyAdminUserSearch();
+                });
+            }
+        }
+
+        function applyAdminUserSearch() {
+            const searchInput = document.getElementById("adminUserSearch");
+            const noResult = document.getElementById("adminUserNoResult");
+
+            const searchText = searchInput
+                ? searchInput.value.trim().toLowerCase()
+                : "";
+
+            let visibleCount = 0;
+
+            document.querySelectorAll(".admin-user-row").forEach(function (row) {
+                const searchable = row.getAttribute("data-search") || "";
+                const shouldShow = searchText === "" || searchable.includes(searchText);
+
+                if (shouldShow) {
+                    row.classList.remove("d-none");
+                    visibleCount++;
+                } else {
+                    row.classList.add("d-none");
+                }
+            });
+
+            if (noResult) {
+                if (visibleCount === 0 && document.querySelectorAll(".admin-user-row").length > 0) {
+                    noResult.classList.remove("d-none");
+                } else {
+                    noResult.classList.add("d-none");
+                }
+            }
+        }
+
+        function bindAdminUserDateSort() {
+            const sortButton = document.getElementById("adminUserDateSortBtn");
+
+            if (!sortButton) {
+                return;
+            }
+
+            sortButton.addEventListener("click", function () {
+                const currentDirection = sortButton.getAttribute("data-sort-direction") || "desc";
+                const nextDirection = currentDirection === "desc" ? "asc" : "desc";
+
+                sortButton.setAttribute("data-sort-direction", nextDirection);
+
+                const icon = document.getElementById("adminUserDateSortIcon");
+
+                if (icon) {
+                    icon.className = nextDirection === "asc"
+                        ? "bi bi-arrow-up-short"
+                        : "bi bi-arrow-down-short";
+                }
+
+                sortAdminUserRows(nextDirection);
+                applyAdminUserSearch();
+            });
+        }
+
+        function sortAdminUserRows(direction) {
+            const tbody = document.getElementById("adminUserTableBody");
+
+            if (!tbody) {
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll(".admin-user-row"));
+
+            rows.sort(function (a, b) {
+                const aTime = new Date(a.getAttribute("data-registered")).getTime();
+                const bTime = new Date(b.getAttribute("data-registered")).getTime();
+
+                if (direction === "asc") {
+                    return aTime - bTime;
+                }
+
+                return bTime - aTime;
+            });
+
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+}

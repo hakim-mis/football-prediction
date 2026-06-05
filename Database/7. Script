@@ -1,0 +1,124 @@
+﻿IF OBJECT_ID('dbo.WeeklyPerformanceEmailLogs', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.WeeklyPerformanceEmailLogs
+    (
+        Id BIGINT IDENTITY(1,1) NOT NULL,
+        UserId NVARCHAR(450) NOT NULL,
+
+        EmailTo NVARCHAR(256) NULL,
+
+        EmailType NVARCHAR(50) NOT NULL,
+        -- Appreciation / Improvement
+
+        WeekStartDate DATETIME2 NOT NULL,
+        WeekEndDate DATETIME2 NOT NULL,
+
+        WeeklyPoint INT NOT NULL CONSTRAINT DF_WeeklyPerformanceEmailLogs_WeeklyPoint DEFAULT (0),
+        WeeklyPredictionCount INT NOT NULL CONSTRAINT DF_WeeklyPerformanceEmailLogs_WeeklyPredictionCount DEFAULT (0),
+        WeeklyExactPredictionCount INT NOT NULL CONSTRAINT DF_WeeklyPerformanceEmailLogs_WeeklyExactPredictionCount DEFAULT (0),
+        MissedPredictionCount INT NOT NULL CONSTRAINT DF_WeeklyPerformanceEmailLogs_MissedPredictionCount DEFAULT (0),
+
+        IsSent BIT NOT NULL CONSTRAINT DF_WeeklyPerformanceEmailLogs_IsSent DEFAULT (0),
+        SentAt DATETIME2 NULL,
+
+        ErrorMessage NVARCHAR(MAX) NULL,
+
+        CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_WeeklyPerformanceEmailLogs_CreatedAt DEFAULT (GETDATE()),
+
+        CONSTRAINT PK_WeeklyPerformanceEmailLogs PRIMARY KEY (Id),
+
+        CONSTRAINT FK_WeeklyPerformanceEmailLogs_AspNetUsers_UserId
+            FOREIGN KEY (UserId)
+            REFERENCES dbo.AspNetUsers(Id)
+            ON DELETE CASCADE
+    );
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_WeeklyPerformanceEmailLogs_UserId'
+    AND object_id = OBJECT_ID('dbo.WeeklyPerformanceEmailLogs')
+)
+BEGIN
+    CREATE INDEX IX_WeeklyPerformanceEmailLogs_UserId
+    ON dbo.WeeklyPerformanceEmailLogs(UserId);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_WeeklyPerformanceEmailLogs_EmailType'
+    AND object_id = OBJECT_ID('dbo.WeeklyPerformanceEmailLogs')
+)
+BEGIN
+    CREATE INDEX IX_WeeklyPerformanceEmailLogs_EmailType
+    ON dbo.WeeklyPerformanceEmailLogs(EmailType);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_WeeklyPerformanceEmailLogs_WeekStartDate'
+    AND object_id = OBJECT_ID('dbo.WeeklyPerformanceEmailLogs')
+)
+BEGIN
+    CREATE INDEX IX_WeeklyPerformanceEmailLogs_WeekStartDate
+    ON dbo.WeeklyPerformanceEmailLogs(WeekStartDate);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_WeeklyPerformanceEmailLogs_WeekEndDate'
+    AND object_id = OBJECT_ID('dbo.WeeklyPerformanceEmailLogs')
+)
+BEGIN
+    CREATE INDEX IX_WeeklyPerformanceEmailLogs_WeekEndDate
+    ON dbo.WeeklyPerformanceEmailLogs(WeekEndDate);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_WeeklyPerformanceEmailLogs_IsSent'
+    AND object_id = OBJECT_ID('dbo.WeeklyPerformanceEmailLogs')
+)
+BEGIN
+    CREATE INDEX IX_WeeklyPerformanceEmailLogs_IsSent
+    ON dbo.WeeklyPerformanceEmailLogs(IsSent);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_WeeklyPerformanceEmailLogs_User_Type_Week'
+    AND object_id = OBJECT_ID('dbo.WeeklyPerformanceEmailLogs')
+)
+BEGIN
+    CREATE INDEX IX_WeeklyPerformanceEmailLogs_User_Type_Week
+    ON dbo.WeeklyPerformanceEmailLogs(UserId, EmailType, WeekStartDate, WeekEndDate);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_WeeklyPerformanceEmailLogs_CreatedAt'
+    AND object_id = OBJECT_ID('dbo.WeeklyPerformanceEmailLogs')
+)
+BEGIN
+    CREATE INDEX IX_WeeklyPerformanceEmailLogs_CreatedAt
+    ON dbo.WeeklyPerformanceEmailLogs(CreatedAt);
+END
+GO
+--------------------
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'UX_WeeklyPerformanceEmailLogs_User_Type_Week'
+    AND object_id = OBJECT_ID('dbo.WeeklyPerformanceEmailLogs')
+)
+BEGIN
+    CREATE UNIQUE INDEX UX_WeeklyPerformanceEmailLogs_User_Type_Week
+    ON dbo.WeeklyPerformanceEmailLogs(UserId, EmailType, WeekStartDate, WeekEndDate);
+END
+GO

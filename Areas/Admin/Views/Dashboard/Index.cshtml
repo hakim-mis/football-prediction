@@ -1,114 +1,580 @@
 @model AdminDashboardViewModel
 @using System.Text.Json
+
 @{
     ViewData["Title"] = "Admin Dashboard";
+
+    var userStatusCounts = JsonSerializer.Serialize(Model.UserStatusCounts);
+    var fixtureStatusCounts = JsonSerializer.Serialize(Model.FixtureStatusCounts);
+    var fixturePublishCounts = JsonSerializer.Serialize(Model.FixturePublishCounts);
+    var processingCounts = JsonSerializer.Serialize(Model.ProcessingCounts);
+    var predictionCounts = JsonSerializer.Serialize(Model.PredictionCounts);
+
     var segmentLabels = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.SegmentName));
     var segmentPoints = JsonSerializer.Serialize(Model.SegmentPoints.Select(x => x.Points));
-    var statusCounts = JsonSerializer.Serialize(Model.FixtureStatusCounts);
+
+    string UserPhoto(string? path)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? Url.Content("~/img/default-avatar.svg")
+            : Url.Content("~/" + path.TrimStart('/', '~'));
+    }
 }
 
-<div class="row g-4 mb-4">
-    <div class="col-xl-3 col-md-6"><div class="stat-card"><div class="stat-left"><span class="stat-icon blue"><i class="bi bi-people"></i></span><div><div class="stat-title">Total Users</div><div class="stat-value">@Model.TotalUsers</div></div></div><i class="bi bi-three-dots-vertical stat-menu"></i></div></div>
-    <div class="col-xl-3 col-md-6"><div class="stat-card"><div class="stat-left"><span class="stat-icon orange"><i class="bi bi-person-plus"></i></span><div><div class="stat-title">Pending Users</div><div class="stat-value">@Model.PendingUsers</div></div></div><i class="bi bi-three-dots-vertical stat-menu"></i></div></div>
-    <div class="col-xl-3 col-md-6"><div class="stat-card"><div class="stat-left"><span class="stat-icon pink"><i class="bi bi-calendar2-event"></i></span><div><div class="stat-title">Fixtures</div><div class="stat-value">@Model.TotalFixtures</div></div></div><i class="bi bi-three-dots-vertical stat-menu"></i></div></div>
-    <div class="col-xl-3 col-md-6"><div class="stat-card"><div class="stat-left"><span class="stat-icon green"><i class="bi bi-cpu"></i></span><div><div class="stat-title">Processed</div><div class="stat-value">@Model.ProcessedResults</div></div></div><i class="bi bi-three-dots-vertical stat-menu"></i></div></div>
-</div>
+<div class="admin-dashboard-page">
 
-@* <div class="dashboard-card p-4 p-lg-5 mb-4"> *@
-@*     <span class="pill"><i class="bi bi-speedometer2"></i> Admin Control Room</span>
-    <h1 class="h2 fw-bold mt-3 mb-0">Football Prediction Administration</h1>
-    <p class="text-muted mb-0">Manage users, fixtures, match results, password resets and leaderboard processing.</p> *@
-@*     <div class="dashboard-card p-4 mb-4">
-        <h2 class="h4 fw-bold mb-3">Quick Actions</h2>
-        <div class="d-grid gap-2"> *@
-           @*  <a asp-area="Admin" asp-controller="Users" asp-action="Index" asp-route-status="pending" class="btn btn-primary"><i class="bi bi-person-check"></i> Approve Users</a>
-            <a asp-area="Admin" asp-controller="Fixtures" asp-action="Create" class="btn btn-outline-light"><i class="bi bi-plus-circle"></i> Add Fixture</a>
-            <a asp-area="Admin" asp-controller="Fixtures" asp-action="Index" class="btn btn-outline-light"><i class="bi bi-gear"></i> Process Results</a> *@
-     @*    </div>
-    </div> *@
-@* </div> *@
+    <div class="admin-dashboard-title mb-4">
+        <div>
+            <span class="pill">
+                <i class="bi bi-speedometer2"></i>
+                Admin Control Center
+            </span>
 
-<div class="row g-4 mb-4">
-    <div class="col-lg-8">
-        <div class="dashboard-card p-4 h-100 chart-box">
-            <h2 class="h4 fw-bold mb-3"><i class="bi bi-bar-chart text-primary"></i> Points by Segment</h2>
-            @if (Model.SegmentPoints.Any())
-            {
-                <canvas id="segmentChart" height="110"></canvas>
-            }
-            else
-            {
-                <div class="empty-state">No processed point data yet.</div>
-            }
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                Dashboard Overview
+            </h1>
+
+            <p class="text-muted mb-0 small">
+                Manage users, fixtures, predictions, result processing and leaderboard performance.
+            </p>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="dashboard-card p-4 h-100 chart-box">
-            <h2 class="h4 fw-bold mb-3"><i class="bi bi-pie-chart text-primary"></i> Fixture Status</h2>
-            <canvas id="statusChart" height="190"></canvas>
-        </div>
-    </div>
-</div>
 
-<div class="row g-4">
-    <div class="col-lg-8">
-        <div class="dashboard-card p-4">
-            <h2 class="h4 fw-bold mb-3"><i class="bi bi-trophy text-primary"></i> Leaderboard Overview</h2>
-            @if (!Model.TopUsers.Any())
-            {
-                <div class="empty-state">No active users in leaderboard.</div>
-            }
-            else
-            {
-                @foreach (var user in Model.TopUsers)
+    <!-- Quick Cards -->
+    <div class="admin-stat-grid mb-4">
+
+        <a asp-area="Admin"
+           asp-controller="Users"
+           asp-action="Index"
+           asp-route-status="all"
+           class="admin-stat-card stat-card-blue">
+            <div class="admin-stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Total Users</span>
+                <strong>@Model.TotalUsers</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+
+        <a asp-area="Admin"
+           asp-controller="Users"
+           asp-action="Index"
+           asp-route-status="pending"
+           class="admin-stat-card stat-card-orange">
+            <div class="admin-stat-icon">
+                <i class="bi bi-person-exclamation"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Pending Users</span>
+                <strong>@Model.PendingUsers</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+
+        <a asp-area="Admin"
+           asp-controller="Users"
+           asp-action="Index"
+           asp-route-status="active"
+           class="admin-stat-card stat-card-green">
+            <div class="admin-stat-icon">
+                <i class="bi bi-person-check"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Active Users</span>
+                <strong>@Model.ActiveUsers</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+
+        <a asp-area="Admin"
+           asp-controller="Fixtures"
+           asp-action="Index"
+           asp-route-filter="all"
+           class="admin-stat-card stat-card-pink">
+            <div class="admin-stat-icon">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Fixtures</span>
+                <strong>@Model.TotalFixtures</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+
+        <div class ="admin-stat-card stat-card-red admin-stat-info-only">
+            <div class="admin-stat-icon">
+                <i class="bi bi-eye-slash"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Unpublished Fixtures</span>
+                <strong>@Model.UnpublishedFixtures</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-info-circle"></i>
+            </div>
+        </div>
+
+        <div class="admin-stat-card stat-card-live admin-stat-info-only">
+            <div class="admin-stat-icon">
+                <i class="bi bi-broadcast"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Live Fixtures</span>
+                <strong>@Model.LiveFixtures</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-info-circle"></i>
+            </div>
+        </div>
+
+         <div class="admin-stat-card stat-card-slate admin-stat-info-only">
+            <div class="admin-stat-icon">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Finished Fixtures</span>
+                <strong>@Model.FinishedFixtures</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-info-circle"></i>
+            </div>
+         </div>
+
+        <div class="admin-stat-card stat-card-processed admin-stat-info-only">
+            <div class="admin-stat-icon">
+                <i class="bi bi-cpu"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Processed Results</span>
+                <strong>@Model.ProcessedResults</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-info-circle"></i>
+            </div>
+        </div>
+      
+        <div class="admin-stat-card stat-card-yellow admin-stat-info-only">
+            <div class="admin-stat-icon">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Pending Process</span>
+                <strong>@Model.PendingProcessResults</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-info-circle"></i>
+            </div>
+        </div>
+        <a class="nav-link" href="/admin/jobs" target="_blank" rel="noopener">
+            <div class="admin-stat-card stat-card-purple">
+                <div class="admin-stat-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+
+                <div class="admin-stat-content">
+                    <span>Background Jobs</span>
+                    @* <strong>@Model.TotalPredictions</strong> *@
+                    <strong>Running</strong>
+                </div>
+
+                <div class="admin-stat-arrow info">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+            </div>
+        </a>
+        <a asp-area="Admin"
+           asp-controller="LoginLogs"
+           asp-action="Index"
+           class="admin-stat-card stat-card-indigo">
+            <div class="admin-stat-icon">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Today Logins</span>
+                <strong>@Model.TodayLogins</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+
+        <a asp-area="Admin"
+           asp-controller="LoginLogs"
+           asp-action="Online"
+           class="admin-stat-card stat-card-teal">
+            <div class="admin-stat-icon">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Logged In Users</span>
+                <strong>@Model.LoggedInUsers</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+
+        <a asp-area="Admin"
+           asp-controller="LoginTracking"
+           asp-action="ActiveUsers"
+           class="nav-link">
+            <i class="bi bi-person-check-fill"></i>
+            Logged-In Users
+        </a>
+
+        <a asp-area="Admin"
+           asp-controller="LoginTracking"
+           asp-action="History"
+           class="nav-link">
+            <i class="bi bi-clock-history"></i>
+            Login History
+        </a>
+        <a asp-area="Admin"
+           asp-controller="AutomationSuggestions"
+           asp-action="Index"
+           class="nav-link">
+            <i class="bi bi-lightbulb"></i>
+            Automation Suggestions
+        </a>
+
+
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-xl-4 col-lg-6">
+            <div class="dashboard-card admin-chart-card p-3 p-md-4">
+                <div class="admin-chart-header">
+                    <div>
+                        <h2 class="h6 fw-bold mb-1">
+                            <i class="bi bi-people text-primary"></i>
+                            User Status
+                        </h2>
+                        <p class="small text-muted mb-0">Active, pending and unverified users.</p>
+                    </div>
+                </div>
+
+                <canvas id="userStatusChart" height="210"></canvas>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-6">
+            <div class="dashboard-card admin-chart-card p-3 p-md-4">
+                <div class="admin-chart-header">
+                    <div>
+                        <h2 class="h6 fw-bold mb-1">
+                            <i class="bi bi-calendar2-week text-primary"></i>
+                            Fixture Status
+                        </h2>
+                        <p class="small text-muted mb-0">Upcoming, live and finished fixtures.</p>
+                    </div>
+                </div>
+
+                <canvas id="fixtureStatusChart" height="210"></canvas>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-6">
+            <div class="dashboard-card admin-chart-card p-3 p-md-4">
+                <div class="admin-chart-header">
+                    <div>
+                        <h2 class="h6 fw-bold mb-1">
+                            <i class="bi bi-eye text-primary"></i>
+                            Publish Status
+                        </h2>
+                        <p class="small text-muted mb-0">Published vs unpublished fixtures.</p>
+                    </div>
+                </div>
+
+                <canvas id="publishChart" height="210"></canvas>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="dashboard-card admin-chart-card p-3 p-md-4">
+                <div class="admin-chart-header">
+                    <div>
+                        <h2 class="h6 fw-bold mb-1">
+                            <i class="bi bi-cpu text-primary"></i>
+                            Result Processing
+                        </h2>
+                        <p class="small text-muted mb-0">Processed and pending process results.</p>
+                    </div>
+                </div>
+
+                <canvas id="processingChart" height="160"></canvas>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="dashboard-card admin-chart-card p-3 p-md-4">
+                <div class="admin-chart-header">
+                    <div>
+                        <h2 class="h6 fw-bold mb-1">
+                            <i class="bi bi-clipboard-check text-primary"></i>
+                            Prediction Processing
+                        </h2>
+                        <p class="small text-muted mb-0">Processed and pending predictions.</p>
+                    </div>
+                </div>
+
+                <canvas id="predictionChart" height="160"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Segment and Top Users -->
+    <div class="row g-4">
+
+        <div class="col-xl-7">
+            <div class="dashboard-card admin-chart-card p-3 p-md-4">
+                <div class="admin-chart-header">
+                    <div>
+                        <h2 class="h5 fw-bold mb-1">
+                            <i class="bi bi-bar-chart text-primary"></i>
+                            Segment Points
+                        </h2>
+                        <p class="small text-muted mb-0">
+                            Points earned by group or knockout segment.
+                        </p>
+                    </div>
+                </div>
+
+                @if (!Model.SegmentPoints.Any())
                 {
-                    <div class="leaderboard-row">
-                        <span class="rank-circle">@user.RankText</span>
-                        <img src=".@(user.PhotoPath ?? "../img/default-avatar.svg")" class="avatar-sm" />
-                        <div class="flex-grow-1"><div class="fw-semibold">@user.FullName</div><div class="small text-muted">Exact: @user.ExactPredictionCount</div></div>
-                        <span class="score-pill">@user.TotalScore pts</span>
+                    <div class="empty-state">
+                        No processed segment data found.
                     </div>
                 }
-            }
-        </div>
-    </div>
-    <div class="col-lg-4">
-@*         <div class="dashboard-card p-4 mb-4">
-            <h2 class="h4 fw-bold mb-3">Quick Actions</h2>
-            <div class="d-grid gap-2">
-                <a asp-area="Admin" asp-controller="Users" asp-action="Index" asp-route-status="pending" class="btn btn-primary"><i class="bi bi-person-check"></i> Approve Users</a>
-                <a asp-area="Admin" asp-controller="Fixtures" asp-action="Create" class="btn btn-outline-light"><i class="bi bi-plus-circle"></i> Add Fixture</a>
-                <a asp-area="Admin" asp-controller="Fixtures" asp-action="Index" class="btn btn-outline-light"><i class="bi bi-gear"></i> Process Results</a>
+                else
+                {
+                    <canvas id="segmentPointChart" height="150"></canvas>
+                }
             </div>
-        </div> *@
-        <div class="dashboard-card p-4">
-            <h2 class="h4 fw-bold mb-3">System Summary</h2>
-            <div class="d-flex justify-content-between border-bottom py-2"><span>Active Users</span><strong>@Model.ActiveUsers</strong></div>
-            <div class="d-flex justify-content-between border-bottom py-2"><span>Upcoming Fixtures</span><strong>@Model.UpcomingFixtures</strong></div>
-            <div class="d-flex justify-content-between border-bottom py-2"><span>Finished Fixtures</span><strong>@Model.FinishedFixtures</strong></div>
-            <div class="d-flex justify-content-between py-2"><span>Total Predictions</span><strong>@Model.TotalPredictions</strong></div>
         </div>
+
+        <div class="col-xl-5">
+            <div class="dashboard-card p-3 p-md-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h2 class="h5 fw-bold mb-1">
+                            <i class="bi bi-trophy text-warning"></i>
+                            Top Players
+                        </h2>
+                        <p class="small text-muted mb-0">
+                            Top 10 players by leaderboard score.
+                        </p>
+                    </div>
+
+                    <a asp-area=""
+                       asp-controller="Leaderboard"
+                       asp-action="Index"
+                       class="btn btn-outline-primary btn-sm">
+                        View All
+                    </a>
+                </div>
+
+                <div class="admin-top-user-list">
+                    @if (!Model.TopUsers.Any())
+                    {
+                        <div class="empty-state">
+                            No scored player found.
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var user in Model.TopUsers)
+                        {
+                            <a asp-area=""
+                               asp-controller="Dashboard"
+                               asp-action="UserPredictionDetail"
+                               asp-route-userId="@user.UserId"
+                               class="admin-top-user-item">
+
+                                <div class="admin-top-rank">
+                                    @user.RankText
+                                </div>
+
+                                <img src="@UserPhoto(user.PhotoPath)"
+                                     class="admin-top-avatar"
+                                     alt="@user.FullName" />
+
+                                <div class="admin-top-info">
+                                    <strong>@user.FullName</strong>
+                                    <span>
+                                        @(string.IsNullOrWhiteSpace(user.Designation) ? "-" : user.Designation)
+                                        @if (!string.IsNullOrWhiteSpace(user.Department))
+                                        {
+                                            <text> • @user.Department</text>
+                                        }
+                                    </span>
+                                </div>
+
+                                <div class="admin-top-score">
+                                    @user.TotalScore pts
+                                </div>
+
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
     </div>
+
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
+        const userStatusCounts = @Html.Raw(userStatusCounts);
+        const fixtureStatusCounts = @Html.Raw(fixtureStatusCounts);
+        const fixturePublishCounts = @Html.Raw(fixturePublishCounts);
+        const processingCounts = @Html.Raw(processingCounts);
+        const predictionCounts = @Html.Raw(predictionCounts);
         const segmentLabels = @Html.Raw(segmentLabels);
         const segmentPoints = @Html.Raw(segmentPoints);
-        const statusCounts = @Html.Raw(statusCounts);
-        if (document.getElementById('segmentChart') && segmentLabels.length > 0) {
-            new Chart(document.getElementById('segmentChart'), {
-                type: 'bar',
-                data: { labels: segmentLabels, datasets: [{ label: 'Points', data: segmentPoints }] },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            renderDoughnutChart(
+                "userStatusChart",
+                ["Active", "Pending", "Email Not Verified"],
+                userStatusCounts
+            );
+
+            renderDoughnutChart(
+                "fixtureStatusChart",
+                ["Upcoming", "Live", "Finished"],
+                fixtureStatusCounts
+            );
+
+            renderDoughnutChart(
+                "publishChart",
+                ["Published", "Unpublished"],
+                fixturePublishCounts
+            );
+
+            renderBarChart(
+                "processingChart",
+                ["Processed", "Pending Process"],
+                processingCounts,
+                "Results"
+            );
+
+            renderBarChart(
+                "predictionChart",
+                ["Processed", "Pending"],
+                predictionCounts,
+                "Predictions"
+            );
+
+            if (segmentLabels.length > 0) {
+                renderBarChart(
+                    "segmentPointChart",
+                    segmentLabels,
+                    segmentPoints,
+                    "Points"
+                );
+            }
+        });
+
+        function renderDoughnutChart(elementId, labels, data) {
+            const element = document.getElementById(elementId);
+
+            if (!element) {
+                return;
+            }
+
+            new Chart(element, {
+                type: "doughnut",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: "68%",
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        }
+                    }
+                }
             });
         }
-        if (document.getElementById('statusChart')) {
-            new Chart(document.getElementById('statusChart'), {
-                type: 'doughnut',
-                data: { labels: ['Upcoming', 'Live', 'Finished'], datasets: [{ data: statusCounts }] },
-                options: { responsive: true }
+
+        function renderBarChart(elementId, labels, data, label) {
+            const element = document.getElementById(elementId);
+
+            if (!element) {
+                return;
+            }
+
+            new Chart(element, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
             });
         }
     </script>

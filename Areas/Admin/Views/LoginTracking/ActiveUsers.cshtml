@@ -1,0 +1,92 @@
+﻿@model List<FootballPredictionGame.ViewModels.UserActiveSessionViewModel>
+
+@{
+    ViewData["Title"] = "Currently Logged-In Users";
+}
+
+<div class="dashboard-card p-3 p-md-4 mb-4">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+            <span class="pill">
+                <i class="bi bi-person-check-fill"></i>
+                Live Sessions
+            </span>
+
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                Currently Logged-In Users
+            </h1>
+
+            <p class="text-muted small mb-0">
+                Users are removed automatically when they logout or become inactive.
+            </p>
+        </div>
+
+        <a asp-area="Admin"
+           asp-controller="LoginTracking"
+           asp-action="History"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-clock-history"></i>
+            Login History
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-clean table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Login At</th>
+                    <th>Online For</th>
+                    <th>Last Seen</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No active logged-in user found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.FullName</strong>
+                            </td>
+
+                            <td>@item.Email</td>
+
+                            <td>
+                                <div>@item.LoginAt.ToString("dd MMM yyyy")</div>
+                                <div class="small text-muted">@item.LoginAt.ToString("hh:mm tt")</div>
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-primary">
+                                    @item.OnlineForText
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-success">
+                                    @item.LastSeenText
+                                </span>
+                            </td>
+
+                            <td>@(item.IpAddress ?? "-")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
