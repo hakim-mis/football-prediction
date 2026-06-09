@@ -1,7 +1,30 @@
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using FootballPredictionGame.Data
 @using FootballPredictionGame.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
+
+@{
+    var hideNavbar = ViewData["HideNavbar"] as bool? ?? false;
+
+    AutomationSettings? portalSettings = null;
+
+    if (!hideNavbar)
+    {
+        portalSettings = await DbContext.AutomationSettings
+            .AsNoTracking()
+            .OrderBy(x => x.Id)
+            .FirstOrDefaultAsync();
+    }
+
+    var showWhatsAppButton =
+        portalSettings != null &&
+        portalSettings.ShowWhatsAppJoinMenu &&
+        !string.IsNullOrWhiteSpace(portalSettings.WhatsAppGroupUrl);
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,11 +53,53 @@
             height: 100%;
             object-fit: contain;
         }
+
+        .whatsapp-menu-btn {
+            background: #25D366;
+            border-color: #25D366;
+            color: #ffffff !important;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 6px 16px rgba(37, 211, 102, .22);
+        }
+
+            .whatsapp-menu-btn:hover,
+            .whatsapp-menu-btn:focus {
+                background: #1ebe5d;
+                border-color: #1ebe5d;
+                color: #ffffff !important;
+                box-shadow: 0 8px 20px rgba(37, 211, 102, .30);
+            }
+
+            .whatsapp-menu-btn i {
+                font-size: 1rem;
+                line-height: 1;
+            }
+
+        @@media (max-width: 991.98px) {
+            .navbar-action-area {
+                align-items: stretch !important;
+                width: 100%;
+                margin-top: 10px;
+            }
+
+                .navbar-action-area .btn,
+                .navbar-action-area form,
+                .navbar-action-area form button {
+                    width: 100%;
+                }
+
+            .whatsapp-menu-btn {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 
 <body>
-    @if (!(ViewData["HideNavbar"] as bool? ?? false))
+    @if (!hideNavbar)
     {
         <nav class="navbar navbar-expand-lg navbar-dark sticky-top app-navbar">
             <div class="container-fluid px-lg-4">
@@ -79,7 +144,7 @@
 
                                 <li class="nav-item">
                                     <a class="nav-link" asp-area="Admin" asp-controller="AutomationSettings" asp-action="Index">
-                                        <i class="bi bi-robot"></i> Automation Settings
+                                        <i class="bi bi-robot"></i> Settings
                                     </a>
                                 </li>
                             }
@@ -112,7 +177,18 @@
                         }
                     </ul>
 
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 navbar-action-area">
+                        @if (showWhatsAppButton)
+                        {
+                            <a class="btn btn-sm whatsapp-menu-btn"
+                               href="@portalSettings!.WhatsAppGroupUrl"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="bi bi-whatsapp"></i>
+                                Join WhatsApp Group
+                            </a>
+                        }
+
                         @if (SignInManager.IsSignedIn(User))
                         {
                             var currentUser = await UserManager.GetUserAsync(User);
@@ -125,6 +201,8 @@
                             </a>
 
                             <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+
                                 <button type="submit" class="btn btn-warning btn-sm">
                                     <i class="bi bi-box-arrow-right"></i> Logout
                                 </button>
@@ -181,46 +259,44 @@
 
     @await RenderSectionAsync("Scripts", required: false)
 
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <form id="heartbeatAntiForgeryForm" class="d-none">
+            @Html.AntiForgeryToken()
+        </form>
 
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                startUserHeartbeat();
+            });
 
-@if (User.Identity?.IsAuthenticated == true)
-{
-    <form id="heartbeatAntiForgeryForm" class="d-none">
-        @Html.AntiForgeryToken()
-    </form>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            startUserHeartbeat();
-        });
-
-        function startUserHeartbeat() {
-            sendUserHeartbeat();
-
-            setInterval(function () {
+            function startUserHeartbeat() {
                 sendUserHeartbeat();
-            }, 60000);
-        }
 
-        async function sendUserHeartbeat() {
-            const tokenInput = document.querySelector('#heartbeatAntiForgeryForm input[name="__RequestVerificationToken"]');
-            const token = tokenInput ? tokenInput.value : "";
+                setInterval(function () {
+                    sendUserHeartbeat();
+                }, 60000);
+            }
 
-            try {
-                await fetch('@Url.Action("Heartbeat", "Account", new { area = "" })', {
-                    method: "POST",
-                    headers: {
-                        "RequestVerificationToken": token,
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
-                });
+            async function sendUserHeartbeat() {
+                const tokenInput = document.querySelector('#heartbeatAntiForgeryForm input[name="__RequestVerificationToken"]');
+                const token = tokenInput ? tokenInput.value : "";
+
+                try {
+                    await fetch('@Url.Action("Heartbeat", "Account", new { area = "" })', {
+                        method: "POST",
+                        headers: {
+                            "RequestVerificationToken": token,
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    });
+                }
+                catch (error) {
+                    console.warn("Heartbeat failed.", error);
+                }
             }
-            catch (error) {
-                console.warn("Heartbeat failed.", error);
-            }
-        }
-    </script>
-}
+        </script>
+    }
 
 </body>
 </html>

@@ -67,6 +67,12 @@
                class="btn btn-sm @(status == "active" ? "btn-primary" : "btn-outline-primary")">
                 Active
             </a>
+            <a asp-action="Index"
+               asp-route-status="email-not-verified"
+               class="btn btn-sm @(status == "email-not-verified" ? "btn-danger" : "btn-outline-danger")">
+                <i class="bi bi-envelope-x"></i>
+                Email Not Verified
+            </a>
         </div>
 
     </div>

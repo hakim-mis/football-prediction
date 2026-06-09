@@ -49,6 +49,14 @@ public class AutomationSettings
     [Range(1, 120)]
     public int SessionTimeoutMinutes { get; set; } = 10;
 
+    // Portal / Registration settings
+    public bool AutoActivateUserAfterEmailVerification { get; set; } = false;
+
+    public bool ShowWhatsAppJoinMenu { get; set; } = true;
+
+    [MaxLength(500)]
+    public string? WhatsAppGroupUrl { get; set; }
+
     // Execution mode
     public AutomationExecutionMode ExecutionMode { get; set; } = AutomationExecutionMode.SuggestOnly;
 

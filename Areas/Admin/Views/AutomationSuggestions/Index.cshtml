@@ -3,11 +3,268 @@
 @{
     ViewData["Title"] = "Automation Suggestions";
     var status = (string?)ViewBag.Status ?? "pending";
+
+    string DisplayText(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "-" : value;
+    }
+
+    string ConfidenceClass(int score)
+    {
+        return score >= 80
+            ? "suggestion-confidence-high"
+            : score >= 50
+                ? "suggestion-confidence-medium"
+                : "suggestion-confidence-low";
+    }
+
+    string StatusClass(string? statusText)
+    {
+        return statusText == "Pending"
+            ? "suggestion-status-pending"
+            : statusText == "Executed"
+                ? "suggestion-status-executed"
+                : statusText == "Rejected"
+                    ? "suggestion-status-rejected"
+                    : "suggestion-status-other";
+    }
+
+    string StatusIcon(string? statusText)
+    {
+        return statusText == "Pending"
+            ? "bi-hourglass-split"
+            : statusText == "Executed"
+                ? "bi-check-circle"
+                : statusText == "Rejected"
+                    ? "bi-x-circle"
+                    : "bi-info-circle";
+    }
 }
 
-<div class="dashboard-card p-3 p-md-4 mb-4">
+<style>
+    .automation-suggestion-page {
+        overflow: hidden;
+    }
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    .automation-suggestion-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .automation-suggestion-tabs {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .automation-suggestion-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .automation-suggestion-table {
+        min-width: 980px;
+    }
+
+        .automation-suggestion-table th {
+            white-space: nowrap;
+            font-size: .84rem;
+            color: #475569;
+            background: #f8fafc;
+        }
+
+        .automation-suggestion-table td {
+            vertical-align: middle;
+            font-size: .9rem;
+        }
+
+    .suggestion-main {
+        min-width: 260px;
+    }
+
+        .suggestion-main strong {
+            display: block;
+            color: #111827;
+            line-height: 1.25;
+            white-space: nowrap;
+        }
+
+    .suggestion-type {
+        display: block;
+        color: #64748b;
+        font-size: .82rem;
+        margin-top: 2px;
+        white-space: nowrap;
+    }
+
+    .suggestion-reason {
+        color: #475569;
+        font-size: .82rem;
+        margin-top: 6px;
+        max-width: 360px;
+        white-space: normal;
+        line-height: 1.4;
+    }
+
+    .suggestion-entity-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: .78rem;
+        font-weight: 700;
+        background: #f8fafc;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    .suggestion-entity-id {
+        color: #64748b;
+        font-size: .8rem;
+        margin-top: 5px;
+        white-space: nowrap;
+    }
+
+    .suggestion-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: .78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .suggestion-confidence-high {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+
+    .suggestion-confidence-medium {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .suggestion-confidence-low {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .suggestion-status-pending {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .suggestion-status-executed {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+
+    .suggestion-status-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .suggestion-status-other {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .suggestion-action-row {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .suggestion-reviewed-text {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #64748b;
+        font-size: .82rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    @@media (max-width: 767.98px) {
+        .automation-suggestion-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .automation-suggestion-topbar {
+            align-items: stretch;
+        }
+
+            .automation-suggestion-topbar > div,
+            .automation-suggestion-topbar > a {
+                width: 100%;
+            }
+
+            .automation-suggestion-topbar > a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+        .automation-suggestion-tabs {
+            gap: 6px;
+        }
+
+            .automation-suggestion-tabs .btn {
+                flex: 1 1 auto;
+            }
+
+        .automation-suggestion-table-wrap {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .automation-suggestion-table {
+            min-width: 980px;
+        }
+
+            .automation-suggestion-table th,
+            .automation-suggestion-table td {
+                white-space: nowrap;
+                font-size: .82rem;
+            }
+
+        .suggestion-main {
+            min-width: 260px;
+        }
+
+        .suggestion-reason {
+            max-width: 300px;
+            white-space: normal;
+        }
+    }
+</style>
+
+<div class="dashboard-card automation-suggestion-page p-3 p-md-4 mb-4">
+
+    <div class="automation-suggestion-topbar mb-3">
         <div>
             <span class="pill">
                 <i class="bi bi-lightbulb"></i>
@@ -78,8 +335,8 @@
 
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-clean table-hover align-middle mb-0">
+    <div class="automation-suggestion-table-wrap">
+        <table class="table table-clean table-hover align-middle mb-0 automation-suggestion-table">
             <thead>
                 <tr>
                     <th>Suggestion</th>
@@ -106,64 +363,52 @@
                     {
                         <tr>
                             <td>
-                                <strong>@item.SuggestedAction</strong>
-                                <div class="small text-muted">
-                                    @item.AutomationType
-                                </div>
+                                <div class="suggestion-main">
+                                    <strong>@DisplayText(item.SuggestedAction)</strong>
 
-                                @if (!string.IsNullOrWhiteSpace(item.Reason))
-                                {
-                                    <div class="small mt-1">
-                                        @item.Reason
-                                    </div>
-                                }
+                                    <span class="suggestion-type">
+                                        @DisplayText(item.AutomationType)
+                                    </span>
+
+                                    @if (!string.IsNullOrWhiteSpace(item.Reason))
+                                    {
+                                        <div class="suggestion-reason">
+                                            @item.Reason
+                                        </div>
+                                    }
+                                </div>
                             </td>
 
                             <td>
-                                <span class="badge text-bg-light text-muted">
-                                    @item.EntityType
+                                <span class="suggestion-entity-pill">
+                                    <i class="bi bi-box"></i>
+                                    @DisplayText(item.EntityType)
                                 </span>
 
-                                <div class="small text-muted">
-                                    ID: @(item.EntityId ?? "-")
+                                <div class="suggestion-entity-id">
+                                    ID: @DisplayText(item.EntityId)
                                 </div>
                             </td>
 
                             <td>
-                                @{
-                                    var confidenceClass = item.ConfidenceScore >= 80
-                                    ? "text-bg-success"
-                                    : item.ConfidenceScore >= 50
-                                    ? "text-bg-warning"
-                                    : "text-bg-secondary";
-                                }
-
-                                <span class="badge @confidenceClass">
+                                <span class="suggestion-badge @ConfidenceClass(item.ConfidenceScore)">
+                                    <i class="bi bi-activity"></i>
                                     @item.ConfidenceScore%
                                 </span>
                             </td>
 
                             <td>
-                                @if (item.StatusText == "Pending")
-                                {
-                                    <span class="badge text-bg-warning">Pending</span>
-                                }
-                                else if (item.StatusText == "Executed")
-                                {
-                                    <span class="badge text-bg-success">Executed</span>
-                                }
-                                else if (item.StatusText == "Rejected")
-                                {
-                                    <span class="badge text-bg-danger">Rejected</span>
-                                }
-                                else
-                                {
-                                    <span class="badge text-bg-secondary">@item.StatusText</span>
-                                }
+                                <span class="suggestion-badge @StatusClass(item.StatusText)">
+                                    <i class="bi @StatusIcon(item.StatusText)"></i>
+                                    @DisplayText(item.StatusText)
+                                </span>
                             </td>
 
                             <td>
-                                <div>@item.CreatedAt.ToString("dd MMM yyyy")</div>
+                                <div>
+                                    @item.CreatedAt.ToString("dd MMM yyyy")
+                                </div>
+
                                 <div class="small text-muted">
                                     @item.CreatedAt.ToString("hh:mm tt")
                                 </div>
@@ -172,37 +417,40 @@
                             <td class="text-end">
                                 @if (!item.IsReviewed)
                                 {
-                                    <form asp-action="Execute"
-                                          asp-route-id="@item.Id"
-                                          method="post"
-                                          class="d-inline">
-                                        @Html.AntiForgeryToken()
+                                    <div class="suggestion-action-row">
+                                        <form asp-action="Execute"
+                                              asp-route-id="@item.Id"
+                                              method="post"
+                                              class="d-inline">
+                                            @Html.AntiForgeryToken()
 
-                                        <button type="submit"
-                                                class="btn btn-success btn-sm"
-                                                onclick="return confirm('Execute this automation suggestion now?');">
-                                            <i class="bi bi-play-fill"></i>
-                                            Execute
-                                        </button>
-                                    </form>
+                                            <button type="submit"
+                                                    class="btn btn-success btn-sm"
+                                                    onclick="return confirm('Execute this automation suggestion now?');">
+                                                <i class="bi bi-play-fill"></i>
+                                                Execute
+                                            </button>
+                                        </form>
 
-                                    <form asp-action="Reject"
-                                          asp-route-id="@item.Id"
-                                          method="post"
-                                          class="d-inline">
-                                        @Html.AntiForgeryToken()
+                                        <form asp-action="Reject"
+                                              asp-route-id="@item.Id"
+                                              method="post"
+                                              class="d-inline">
+                                            @Html.AntiForgeryToken()
 
-                                        <button type="submit"
-                                                class="btn btn-outline-danger btn-sm"
-                                                onclick="return confirm('Reject this suggestion?');">
-                                            <i class="bi bi-x-circle"></i>
-                                            Reject
-                                        </button>
-                                    </form>
+                                            <button type="submit"
+                                                    class="btn btn-outline-danger btn-sm"
+                                                    onclick="return confirm('Reject this suggestion?');">
+                                                <i class="bi bi-x-circle"></i>
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </div>
                                 }
                                 else
                                 {
-                                    <span class="text-muted small">
+                                    <span class="suggestion-reviewed-text">
+                                        <i class="bi bi-check2-circle"></i>
                                         Reviewed
                                     </span>
                                 }

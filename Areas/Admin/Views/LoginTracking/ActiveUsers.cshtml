@@ -2,11 +2,155 @@
 
 @{
     ViewData["Title"] = "Currently Logged-In Users";
+
+    string DisplayText(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "-" : value;
+    }
 }
 
-<div class="dashboard-card p-3 p-md-4 mb-4">
+<style>
+    .active-session-page {
+        overflow: hidden;
+    }
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    .active-session-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .active-session-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .active-session-table {
+        min-width: 900px;
+    }
+
+        .active-session-table th {
+            white-space: nowrap;
+            font-size: .84rem;
+            color: #475569;
+            background: #f8fafc;
+        }
+
+        .active-session-table td {
+            vertical-align: middle;
+            font-size: .9rem;
+        }
+
+    .active-session-user strong {
+        display: block;
+        color: #111827;
+        line-height: 1.25;
+        white-space: nowrap;
+    }
+
+    .active-session-email {
+        color: #475569;
+        word-break: break-word;
+        max-width: 260px;
+    }
+
+    .active-session-ip {
+        font-family: Consolas, Monaco, monospace;
+        font-size: .84rem;
+        color: #334155;
+        white-space: nowrap;
+    }
+
+    .active-session-online-badge,
+    .active-session-seen-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: .78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .active-session-online-badge {
+        background: #dbeafe;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .active-session-seen-badge {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+
+    .active-session-empty {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        color: #64748b;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+    }
+
+    @@media (max-width: 767.98px) {
+        .active-session-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .active-session-topbar {
+            align-items: stretch;
+        }
+
+            .active-session-topbar > div,
+            .active-session-topbar > a {
+                width: 100%;
+            }
+
+            .active-session-topbar > a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+        .active-session-table-wrap {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .active-session-table {
+            min-width: 900px;
+        }
+
+            .active-session-table th,
+            .active-session-table td {
+                white-space: nowrap;
+                font-size: .82rem;
+            }
+
+        .active-session-user {
+            min-width: 180px;
+        }
+
+        .active-session-email {
+            max-width: 240px;
+            white-space: normal;
+            word-break: break-word;
+        }
+    }
+</style>
+
+<div class="dashboard-card active-session-page p-3 p-md-4 mb-4">
+
+    <div class="active-session-topbar mb-3">
         <div>
             <span class="pill">
                 <i class="bi bi-person-check-fill"></i>
@@ -31,8 +175,8 @@
         </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-clean table-hover align-middle mb-0">
+    <div class="active-session-table-wrap">
+        <table class="table table-clean table-hover align-middle mb-0 active-session-table">
             <thead>
                 <tr>
                     <th>User</th>
@@ -59,29 +203,46 @@
                     {
                         <tr>
                             <td>
-                                <strong>@item.FullName</strong>
-                            </td>
-
-                            <td>@item.Email</td>
-
-                            <td>
-                                <div>@item.LoginAt.ToString("dd MMM yyyy")</div>
-                                <div class="small text-muted">@item.LoginAt.ToString("hh:mm tt")</div>
+                                <div class="active-session-user">
+                                    <strong>@DisplayText(item.FullName)</strong>
+                                </div>
                             </td>
 
                             <td>
-                                <span class="badge text-bg-primary">
-                                    @item.OnlineForText
+                                <div class="active-session-email">
+                                    @DisplayText(item.Email)
+                                </div>
+                            </td>
+
+                            <td>
+                                <div>
+                                    @item.LoginAt.ToString("dd MMM yyyy")
+                                </div>
+
+                                <div class="small text-muted">
+                                    @item.LoginAt.ToString("hh:mm tt")
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="active-session-online-badge">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    @DisplayText(item.OnlineForText)
                                 </span>
                             </td>
 
                             <td>
-                                <span class="badge text-bg-success">
-                                    @item.LastSeenText
+                                <span class="active-session-seen-badge">
+                                    <i class="bi bi-wifi"></i>
+                                    @DisplayText(item.LastSeenText)
                                 </span>
                             </td>
 
-                            <td>@(item.IpAddress ?? "-")</td>
+                            <td>
+                                <span class="active-session-ip">
+                                    @DisplayText(item.IpAddress)
+                                </span>
+                            </td>
                         </tr>
                     }
                 }

@@ -122,3 +122,31 @@ BEGIN
     ON dbo.WeeklyPerformanceEmailLogs(UserId, EmailType, WeekStartDate, WeekEndDate);
 END
 GO
+
+
+
+
+--------------
+
+IF COL_LENGTH('dbo.AutomationSettings', 'AutoActivateUserAfterEmailVerification') IS NULL
+BEGIN
+    ALTER TABLE dbo.AutomationSettings
+    ADD AutoActivateUserAfterEmailVerification BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AutoActivateUserAfterEmailVerification DEFAULT (0);
+END
+GO
+
+IF COL_LENGTH('dbo.AutomationSettings', 'ShowWhatsAppJoinMenu') IS NULL
+BEGIN
+    ALTER TABLE dbo.AutomationSettings
+    ADD ShowWhatsAppJoinMenu BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_ShowWhatsAppJoinMenu DEFAULT (1);
+END
+GO
+
+IF COL_LENGTH('dbo.AutomationSettings', 'WhatsAppGroupUrl') IS NULL
+BEGIN
+    ALTER TABLE dbo.AutomationSettings
+    ADD WhatsAppGroupUrl NVARCHAR(500) NULL;
+END
+GO

@@ -74,6 +74,10 @@ public class AutomationSettingsController : Controller
         settings.ActiveSessionTrackingEnabled = model.ActiveSessionTrackingEnabled;
         settings.SessionTimeoutMinutes = model.SessionTimeoutMinutes;
 
+        settings.AutoActivateUserAfterEmailVerification = model.AutoActivateUserAfterEmailVerification;
+        settings.ShowWhatsAppJoinMenu = model.ShowWhatsAppJoinMenu;
+        settings.WhatsAppGroupUrl = model.WhatsAppGroupUrl;
+
         settings.ExecutionMode = model.ExecutionMode;
 
         settings.FixtureCheckIntervalMinutes = model.FixtureCheckIntervalMinutes;
@@ -85,9 +89,10 @@ public class AutomationSettingsController : Controller
         settings.WeeklyEmailSendDay = model.WeeklyEmailSendDay;
         settings.WeeklyEmailSendTime = model.WeeklyEmailSendTime;
 
+        settings.DefaultMatchDurationMinutes = model.DefaultMatchDurationMinutes;
+
         settings.UpdatedAt = DateTime.Now;
         settings.UpdatedByUserId = _userManager.GetUserId(User);
-        settings.DefaultMatchDurationMinutes = model.DefaultMatchDurationMinutes;
 
         var afterJson = System.Text.Json.JsonSerializer.Serialize(settings);
 
@@ -128,6 +133,8 @@ public class AutomationSettingsController : Controller
         {
             MasterAutomationEnabled = false,
             ExecutionMode = AutomationExecutionMode.SuggestOnly,
+            AutoActivateUserAfterEmailVerification = false,
+            ShowWhatsAppJoinMenu = true,
             CreatedAt = DateTime.Now
         };
 
@@ -169,6 +176,10 @@ public class AutomationSettingsController : Controller
             LoginTrackingEnabled = settings.LoginTrackingEnabled,
             ActiveSessionTrackingEnabled = settings.ActiveSessionTrackingEnabled,
             SessionTimeoutMinutes = settings.SessionTimeoutMinutes,
+
+            AutoActivateUserAfterEmailVerification = settings.AutoActivateUserAfterEmailVerification,
+            ShowWhatsAppJoinMenu = settings.ShowWhatsAppJoinMenu,
+            WhatsAppGroupUrl = settings.WhatsAppGroupUrl,
 
             ExecutionMode = settings.ExecutionMode,
 

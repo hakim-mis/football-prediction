@@ -1,6 +1,17 @@
-﻿@{
+﻿@using Microsoft.EntityFrameworkCore
+@using FootballPredictionGame.Data
+@inject ApplicationDbContext DbContext
+
+@{
     ViewData["Title"] = "Registration Submitted";
     ViewData["HideNavbar"] = true;
+
+    var settings = await DbContext.AutomationSettings
+        .AsNoTracking()
+        .OrderBy(x => x.Id)
+        .FirstOrDefaultAsync();
+
+    var autoActivateAfterVerification = settings?.AutoActivateUserAfterEmailVerification ?? false;
 }
 
 <style>
@@ -40,25 +51,31 @@
 
         .forgot-title-box h1 {
             line-height: 1.2;
+            color: #111827;
         }
 
         .forgot-title-box p {
             line-height: 1.5;
+            color: #475569 !important;
         }
 
     .registration-status-box {
-        background: rgba(255, 255, 255, .08);
-        border: 1px solid rgba(255, 255, 255, .18);
-        border-radius: 14px;
+        background: #f8fbff;
+        border: 1px solid #bfdbfe;
+        border-radius: 16px;
         padding: 18px;
-        margin-bottom: 20px;
+        margin-bottom: 22px;
     }
 
     .registration-status-item {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
-        margin-bottom: 14px;
+        gap: 13px;
+        padding: 12px;
+        border-radius: 14px;
+        background: #ffffff;
+        border: 1px solid #e5eefb;
+        margin-bottom: 12px;
     }
 
         .registration-status-item:last-child {
@@ -66,8 +83,8 @@
         }
 
     .registration-status-icon {
-        width: 36px;
-        height: 36px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         background: #ffc107;
         color: #111827;
@@ -76,23 +93,47 @@
         justify-content: center;
         flex: 0 0 auto;
         font-size: 17px;
+        box-shadow: 0 8px 20px rgba(255, 193, 7, .25);
     }
+
+        .registration-status-icon.success {
+            background: #16a34a;
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(22, 163, 74, .25);
+        }
 
     .registration-status-text strong {
         display: block;
-        color: #ffffff;
+        color: #111827;
         font-weight: 800;
-        margin-bottom: 2px;
+        margin-bottom: 3px;
+        line-height: 1.25;
     }
 
     .registration-status-text span {
-        color: rgba(255, 255, 255, .65);
+        display: block;
+        color: #475569;
         font-size: .92rem;
         line-height: 1.45;
     }
 
-    @@media (max-width: 767.98px) {
+    .registration-note {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        color: #9a3412;
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: .9rem;
+        line-height: 1.5;
+        margin-bottom: 22px;
+    }
 
+        .registration-note i {
+            color: #f97316;
+            margin-right: 5px;
+        }
+
+    @@media (max-width: 767.98px) {
         .forgot-wrapper {
             padding: 12px 8px;
         }
@@ -113,13 +154,20 @@
             border-radius: 14px;
         }
 
+        .registration-status-box {
+            padding: 12px;
+        }
+
+        .registration-status-item {
+            padding: 11px;
+        }
+
         .d-grid.d-md-flex .btn {
             width: 100%;
         }
     }
 
     @@media (max-width: 420px) {
-
         .forgot-logo {
             width: 190px;
         }
@@ -130,6 +178,20 @@
 
         .forgot-title-box p {
             font-size: .9rem;
+        }
+
+        .registration-status-item {
+            gap: 10px;
+        }
+
+        .registration-status-icon {
+            width: 34px;
+            height: 34px;
+            font-size: 15px;
+        }
+
+        .registration-status-text span {
+            font-size: .86rem;
         }
     }
 </style>
@@ -151,7 +213,7 @@
                         Check Your Email
                     </h1>
 
-                    <p class="text-white-50 mb-0">
+                    <p class="mb-0">
                         Your registration has been submitted successfully. Please verify your email address to continue.
                     </p>
                 </div>
@@ -168,38 +230,75 @@
                     <div class="registration-status-text">
                         <strong>Email verification required</strong>
                         <span>
-                            We sent a verification link to your registered email address.
+                            We have sent a verification link to your registered email address.
                             Please open your inbox and click the verification link.
                         </span>
                     </div>
                 </div>
 
-                <div class="registration-status-item">
-                    <div class="registration-status-icon">
-                        <i class="bi bi-person-check"></i>
+                @if (autoActivateAfterVerification)
+                {
+                    <div class="registration-status-item">
+                        <div class="registration-status-icon success">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+
+                        <div class="registration-status-text">
+                            <strong>Automatic account activation</strong>
+                            <span>
+                                After email verification, your account will be activated automatically.
+                                You can then log in and start submitting predictions.
+                            </span>
+                        </div>
                     </div>
 
-                    <div class="registration-status-text">
-                        <strong>Admin approval required</strong>
-                        <span>
-                            After email verification, admin will review and approve your account.
-                        </span>
-                    </div>
-                </div>
+                    <div class="registration-status-item">
+                        <div class="registration-status-icon">
+                            <i class="bi bi-trophy"></i>
+                        </div>
 
-                <div class="registration-status-item">
-                    <div class="registration-status-icon">
-                        <i class="bi bi-trophy"></i>
+                        <div class="registration-status-text">
+                            <strong>Start prediction after verification</strong>
+                            <span>
+                                Once your email is verified, you can log in, predict fixtures, earn points, and compete on the leaderboard.
+                            </span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="registration-status-item">
+                        <div class="registration-status-icon">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+
+                        <div class="registration-status-text">
+                            <strong>Admin approval required</strong>
+                            <span>
+                                After email verification, admin will review your profile and approve your account.
+                            </span>
+                        </div>
                     </div>
 
-                    <div class="registration-status-text">
-                        <strong>Start prediction after approval</strong>
-                        <span>
-                            Once approved, you can log in, predict fixtures, earn points, and compete on the leaderboard.
-                        </span>
-                    </div>
-                </div>
+                    <div class="registration-status-item">
+                        <div class="registration-status-icon">
+                            <i class="bi bi-trophy"></i>
+                        </div>
 
+                        <div class="registration-status-text">
+                            <strong>Start prediction after approval</strong>
+                            <span>
+                                Once approved, you can log in, predict fixtures, earn points, and compete on the leaderboard.
+                            </span>
+                        </div>
+                    </div>
+                }
+
+            </div>
+
+            <div class="registration-note">
+                <i class="bi bi-info-circle-fill"></i>
+                If you do not find the email, please check your spam or junk folder. You can also resend the verification link.
             </div>
 
             <div class="d-grid d-md-flex gap-2">
@@ -213,7 +312,7 @@
 
                 <a asp-controller="Account"
                    asp-action="ResendEmailVerification"
-                   class="btn btn-outline-light btn-lg flex-fill">
+                   class="btn btn-outline-primary btn-lg flex-fill">
                     <i class="bi bi-send"></i>
                     Resend Link
                 </a>

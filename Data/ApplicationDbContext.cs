@@ -82,6 +82,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasConversion<string>()
                 .HasMaxLength(50);
 
+            entity.Property(x => x.WhatsAppGroupUrl)
+                .HasMaxLength(500);
+
             entity.Property(x => x.WeeklyEmailSendDay)
                 .HasConversion<string>()
                 .HasMaxLength(20);

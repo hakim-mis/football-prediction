@@ -73,6 +73,16 @@ public class AutomationSettingsViewModel
     [Display(Name = "Session Timeout Minutes")]
     public int SessionTimeoutMinutes { get; set; }
 
+    [Display(Name = "Auto Activate User After Email Verification")]
+    public bool AutoActivateUserAfterEmailVerification { get; set; }
+
+    [Display(Name = "Show WhatsApp Join Menu")]
+    public bool ShowWhatsAppJoinMenu { get; set; }
+
+    [Display(Name = "WhatsApp Group URL")]
+    [MaxLength(500)]
+    public string? WhatsAppGroupUrl { get; set; }
+
     [Display(Name = "Execution Mode")]
     public AutomationExecutionMode ExecutionMode { get; set; }
 

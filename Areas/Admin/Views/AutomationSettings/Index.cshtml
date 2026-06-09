@@ -188,7 +188,55 @@
                     </div>
                 </div>
             </div>
+            <!-- PORTAL / REGISTRATION SETTINGS -->
+            <div class="col-lg-6">
+                <div class="automation-section-card h-100">
+                    <h3>
+                        <i class="bi bi-globe2"></i>
+                        Portal & Registration Settings
+                    </h3>
 
+                    <p class="text-muted small">
+                        Control user activation flow after email verification and WhatsApp group menu visibility.
+                    </p>
+
+                    <div class="automation-switch-list mb-3">
+
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="AutoActivateUserAfterEmailVerification"
+                                   class="form-check-input"
+                                   role="switch" />
+                            <label asp-for="AutoActivateUserAfterEmailVerification"
+                                   class="form-check-label"></label>
+                        </div>
+
+                        <div class="small text-muted mb-3">
+                            <strong>OFF:</strong> User must wait for admin activation after email verification.<br />
+                            <strong>ON:</strong> User will be activated automatically after email verification.
+                        </div>
+
+                        <div class="form-check form-switch automation-switch-row">
+                            <input asp-for="ShowWhatsAppJoinMenu"
+                                   class="form-check-input"
+                                   role="switch" />
+                            <label asp-for="ShowWhatsAppJoinMenu"
+                                   class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label asp-for="WhatsAppGroupUrl" class="form-label"></label>
+                        <input asp-for="WhatsAppGroupUrl"
+                               class="form-control"
+                               placeholder="https://chat.whatsapp.com/your-group-link" />
+                        <span asp-validation-for="WhatsAppGroupUrl" class="text-danger small"></span>
+
+                        <div class="form-text">
+                            If enabled, all users will see a WhatsApp group button in the top menu.
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- WEEKLY EMAIL -->
             <div class="col-lg-6">
                 <div class="automation-section-card h-100">

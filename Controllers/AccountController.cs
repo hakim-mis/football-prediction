@@ -50,6 +50,167 @@ public class AccountController : Controller
         return View();
     }
 
+    //[AllowAnonymous]
+    //[HttpPost]
+    //[ValidateAntiForgeryToken]
+    //public async Task<IActionResult> Register(RegisterViewModel model)
+    //{
+    //    if (!ModelState.IsValid)
+    //    {
+    //        return View(model);
+    //    }
+
+    //    string? photoPath = null;
+
+    //    try
+    //    {
+    //        if (model.ProfilePhoto != null)
+    //        {
+    //            photoPath = await _fileUploadService.SaveImageAsync(model.ProfilePhoto, "profiles");
+    //        }
+    //    }
+    //    catch (InvalidOperationException ex)
+    //    {
+    //        ModelState.AddModelError(nameof(model.ProfilePhoto), ex.Message);
+    //        return View(model);
+    //    }
+
+    //    var user = new ApplicationUser
+    //    {
+    //        UserName = model.Email.Trim(),
+    //        Email = model.Email.Trim(),
+
+    //        Designation = model.Designation?.Trim(),
+    //        Department = model.Department?.Trim(),
+
+    //        FullName = model.FullName.Trim(),
+    //        MobileNo = model.MobileNo.Trim(),
+
+    //        ProfilePhotoPath = photoPath,
+
+    //        IsActive = false,
+    //        EmailConfirmed = false,
+
+    //        CreatedAt = DateTime.Now
+    //    };
+
+    //    var result = await _userManager.CreateAsync(user, model.Password);
+
+    //    if (result.Succeeded)
+    //    {
+    //        await _userManager.AddToRoleAsync(user, "User");
+
+    //        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+    //        var encodedToken = WebEncoders.Base64UrlEncode(
+    //            Encoding.UTF8.GetBytes(token)
+    //        );
+
+    //        var confirmationLink = Url.Action(
+    //            action: nameof(ConfirmEmail),
+    //            controller: "Account",
+    //            values: new
+    //            {
+    //                userId = user.Id,
+    //                token = encodedToken
+    //            },
+    //            protocol: Request.Scheme
+    //        );
+    //        var emailBody = $@"
+    //        <div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
+    //            <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>
+
+    //                <div style='text-align:center;margin-bottom:20px;'>
+    //                    <div style='font-size:48px;'>🛡️</div>
+    //                    <h2 style='color:#155dfc;margin:10px 0 5px;'>Verify Your Email Address</h2>
+    //                    <p style='color:#64748b;margin:0;'>New verification link requested</p>
+    //                </div>
+
+    //                <p>Dear {user.FullName},</p>
+
+    //                <p>
+    //                    You requested a new email verification link for your
+    //                    <strong>Transtec 360° Football Prediction</strong> account.
+    //                </p>
+
+    //                <p>
+    //                    Please verify your email address by clicking the button below.
+    //                    After verification, admin will review and approve your account.
+    //                </p>
+
+    //                <div style='background:#eef6ff;border:1px solid #b9d7ff;border-radius:10px;padding:16px;margin:24px 0;color:#334155;'>
+    //                    <strong style='color:#155dfc;'>Important:</strong>
+    //                    Your account will remain inactive until your email is verified and admin approval is completed.
+    //                </div>
+
+    //                <p style='text-align:center;margin:30px 0;'>
+    //                    <a href='{confirmationLink}'
+    //                       style='background:#ffc107;border:1px solid #e0a800;border-radius:8px;
+    //                              color:#212529 !important;display:inline-block;font-family:Arial,sans-serif;
+    //                              font-size:18px;font-weight:700;line-height:24px;padding:14px 32px;
+    //                              text-align:center;text-decoration:none;min-width:240px;'>
+    //                        🛡️ Verify Email Address
+    //                    </a>
+    //                </p>
+
+    //                <div style='background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin:22px 0;'>
+    //                    <p style='margin:0 0 8px;color:#334155;font-weight:bold;'>
+    //                        What happens next?
+    //                    </p>
+
+    //                    <ol style='margin:0;padding-left:20px;color:#475569;line-height:1.6;'>
+    //                        <li>Click the verification button above.</li>
+    //                        <li>Your email address will be verified.</li>
+    //                        <li>Admin will review and approve your account.</li>
+    //                        <li>After approval, you can log in and start predicting fixtures.</li>
+    //                    </ol>
+    //                </div>
+
+    //                <p style='font-size:13px;color:#64748b;margin-bottom:8px;'>
+    //                    If the button does not work, copy and paste this link into your browser:
+    //                </p>
+
+    //                <p style='font-size:13px;word-break:break-all;color:#155dfc;background:#f8fafc;
+    //                          border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:0;'>
+    //                    {confirmationLink}
+    //                </p>
+
+    //                <p style='font-size:13px;color:#64748b;margin-top:18px;'>
+    //                    Please ignore this email if you did not request a new verification link.
+    //                </p>
+
+    //            </div>
+    //        </div>";
+
+    //        await _emailService.SendEmailAsync(
+    //            user.Email,
+    //            "Verify your Transtec 360° Football Prediction account",
+    //            emailBody
+    //        );
+
+    //        TempData["Success"] = "Registration successful. Please check your email and verify your account. After verification, admin will approve your login access.";
+
+    //        return RedirectToAction(nameof(RegisterConfirmation));
+    //    }
+
+    //    _fileUploadService.DeleteFileIfExists(photoPath);
+
+    //    foreach (var error in result.Errors)
+    //    {
+    //        ModelState.AddModelError(string.Empty, error.Description);
+    //    }
+
+    //    return View(model);
+    //}
+
+    private async Task<AutomationSettings?> GetAutomationSettingsAsync()
+    {
+        return await _context.AutomationSettings
+            .AsNoTracking()
+            .OrderBy(x => x.Id)
+            .FirstOrDefaultAsync();
+    }
+
     [AllowAnonymous]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -117,47 +278,36 @@ public class AccountController : Controller
                 protocol: Request.Scheme
             );
 
-            var emailBody = $@"
-            <div style='font-family:Arial, sans-serif; padding:20px; background:#f5f8ff;'>
-                <div style='max-width:600px; margin:auto; background:#ffffff; padding:25px; border-radius:10px; border:1px solid #b9d7ff;'>
-                    <h2 style='color:#0d6efd; margin-bottom:15px;'>Football Prediction Game</h2>
+            if (string.IsNullOrWhiteSpace(confirmationLink))
+            {
+                _fileUploadService.DeleteFileIfExists(photoPath);
 
-                    <p>Dear {user.FullName},</p>
+                ModelState.AddModelError(string.Empty, "Unable to generate email verification link.");
+                return View(model);
+            }
 
-                    <p>
-                        Thank you for registering in the Football Prediction Game.
-                        Please verify your email address by clicking the button below.
-                    </p>
+            var automationSettings = await GetAutomationSettingsAsync();
 
-                    <p style='margin:25px 0;'>
-                        <a href='{confirmationLink}'
-                           style='background:#0d6efd; color:#ffffff; padding:12px 22px; 
-                                  text-decoration:none; border-radius:6px; display:inline-block;'>
-                            Verify Email Address
-                        </a>
-                    </p>
+            var autoActivateAfterVerification =
+                automationSettings != null &&
+                automationSettings.AutoActivateUserAfterEmailVerification;
 
-                    <p>
-                        After email verification, admin will review and approve your account.
-                    </p>
-
-                    <p style='font-size:13px; color:#666;'>
-                        If the button does not work, copy and paste this link into your browser:
-                    </p>
-
-                    <p style='font-size:13px; word-break:break-all; color:#0d6efd;'>
-                        {confirmationLink}
-                    </p>
-                </div>
-            </div>";
+            var emailBody = BuildEmailVerificationBody(
+                user: user,
+                confirmationLink: confirmationLink,
+                isResend: false,
+                autoActivateAfterVerification: autoActivateAfterVerification
+            );
 
             await _emailService.SendEmailAsync(
-                user.Email,
-                "Verify your Football Prediction Game account",
+                user.Email!,
+                "Verify your Transtec 360° Football Prediction account",
                 emailBody
             );
 
-            TempData["Success"] = "Registration successful. Please check your email and verify your account. After verification, admin will approve your login access.";
+            TempData["Success"] = autoActivateAfterVerification
+                ? "Registration successful. Please check your email and verify your account. After verification, your account will be activated automatically."
+                : "Registration successful. Please check your email and verify your account. After verification, admin will approve your login access.";
 
             return RedirectToAction(nameof(RegisterConfirmation));
         }
@@ -172,13 +322,125 @@ public class AccountController : Controller
         return View(model);
     }
 
+    private string BuildEmailVerificationBody(
+    ApplicationUser user,
+    string confirmationLink,
+    bool isResend,
+    bool autoActivateAfterVerification)
+    {
+        var headerSubtitle = isResend
+            ? "New verification link requested"
+            : "Registration verification required";
+
+        var introText = isResend
+            ? $@"
+            <p>
+                You requested a new email verification link for your
+                <strong>Transtec 360° Football Prediction</strong> account.
+            </p>"
+            : $@"
+            <p>
+                Thank you for creating your player profile for the
+                <strong>Transtec 360° Football Prediction</strong> game.
+            </p>";
+
+        var approvalMessage = autoActivateAfterVerification
+            ? "After email verification, your account will be activated automatically and you will be able to log in and submit predictions."
+            : "After email verification, admin will review and approve your account before you can log in and submit predictions.";
+
+        var importantMessage = autoActivateAfterVerification
+            ? "Your account will be activated automatically after successful email verification."
+            : "Your account will remain inactive until your email is verified and admin approval is completed.";
+
+        var nextSteps = autoActivateAfterVerification
+            ? @"
+            <li>Click the verification button above.</li>
+            <li>Your email address will be verified.</li>
+            <li>Your account will be activated automatically.</li>
+            <li>You can log in and start predicting fixtures.</li>"
+            : @"
+            <li>Click the verification button above.</li>
+            <li>Your email address will be verified.</li>
+            <li>Admin will review and approve your account.</li>
+            <li>After approval, you can log in and start predicting fixtures.</li>";
+
+        return $@"
+<div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
+    <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>
+
+        <div style='text-align:center;margin-bottom:20px;'>
+            <div style='font-size:48px;'>🛡️</div>
+            <h2 style='color:#155dfc;margin:10px 0 5px;'>Verify Your Email Address</h2>
+            <p style='color:#64748b;margin:0;'>{headerSubtitle}</p>
+        </div>
+
+        <p>Dear {user.FullName},</p>
+
+        {introText}
+
+        <p>
+            Please verify your email address by clicking the button below.
+        </p>
+
+        <div style='background:#eef6ff;border:1px solid #b9d7ff;border-radius:10px;padding:16px;margin:24px 0;color:#334155;'>
+            <strong style='color:#155dfc;'>Important:</strong>
+            {importantMessage}
+        </div>
+
+        <p style='text-align:center;margin:30px 0;'>
+            <a href='{confirmationLink}'
+               style='background:#ffc107;border:1px solid #e0a800;border-radius:8px;
+                      color:#212529 !important;display:inline-block;font-family:Arial,sans-serif;
+                      font-size:18px;font-weight:700;line-height:24px;padding:14px 32px;
+                      text-align:center;text-decoration:none;min-width:240px;'>
+                🛡️ Verify Email Address
+            </a>
+        </p>
+
+        <div style='background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin:22px 0;'>
+            <p style='margin:0 0 8px;color:#334155;font-weight:bold;'>
+                What happens next?
+            </p>
+
+            <ol style='margin:0;padding-left:20px;color:#475569;line-height:1.6;'>
+                {nextSteps}
+            </ol>
+        </div>
+
+        <div style='background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px;margin:20px 0;'>
+            <strong style='color:#9a3412;'>Note:</strong>
+            <span style='color:#9a3412;'>{approvalMessage}</span>
+        </div>
+
+        <p style='font-size:13px;color:#64748b;margin-bottom:8px;'>
+            If the button does not work, copy and paste this link into your browser:
+        </p>
+
+        <p style='font-size:13px;word-break:break-all;color:#155dfc;background:#f8fafc;
+                  border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:0;'>
+            {confirmationLink}
+        </p>
+
+        <p style='font-size:13px;color:#64748b;margin-top:18px;'>
+            Please ignore this email if you did not request this verification link.
+        </p>
+
+    </div>
+</div>";
+    }
+
     [HttpGet]
     public IActionResult RegisterConfirmation()
     {
         return View();
     }
 
-
+    [AllowAnonymous]
+    [HttpGet]
+    public IActionResult EmailVerified()
+    {
+        return View();
+    }
     [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> ConfirmEmail(string userId, string token)
@@ -193,13 +455,7 @@ public class AccountController : Controller
 
         if (user == null)
         {
-            TempData["Error"] = "User account was not found.";
-            return RedirectToAction(nameof(Login));
-        }
-
-        if (user.EmailConfirmed)
-        {
-            TempData["Success"] = "Your email is already verified. Please wait for admin approval.";
+            TempData["Error"] = "User not found.";
             return RedirectToAction(nameof(Login));
         }
 
@@ -207,11 +463,13 @@ public class AccountController : Controller
 
         try
         {
-            decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+            decodedToken = Encoding.UTF8.GetString(
+                WebEncoders.Base64UrlDecode(token)
+            );
         }
         catch
         {
-            TempData["Error"] = "Invalid email verification token.";
+            TempData["Error"] = "Invalid or expired email verification link.";
             return RedirectToAction(nameof(Login));
         }
 
@@ -219,20 +477,177 @@ public class AccountController : Controller
 
         if (!result.Succeeded)
         {
-            var errorMessage = string.Join(" ", result.Errors.Select(x => x.Description));
-            TempData["Error"] = "Email verification failed. " + errorMessage;
+            TempData["Error"] = "Email verification failed or the verification link has expired.";
             return RedirectToAction(nameof(Login));
         }
 
-        // Extra safety: force update if Identity says success but DB still not updated
-        user.EmailConfirmed = true;
-        user.UpdatedAt = DateTime.Now;
+        var automationSettings = await GetAutomationSettingsAsync();
 
-        await _userManager.UpdateAsync(user);
+        var autoActivateAfterVerification =
+            automationSettings != null &&
+            automationSettings.AutoActivateUserAfterEmailVerification;
 
-        TempData["Success"] = "Email verified successfully. Please wait for admin approval.";
-        return RedirectToAction(nameof(Login));
+        if (autoActivateAfterVerification)
+        {
+            var wasInactive = !user.IsActive;
+
+            user.IsActive = true;
+            user.UpdatedAt = DateTime.Now;
+            user.EmailConfirmed = true;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                TempData["Error"] = "Email verified, but account activation failed. Please contact admin.";
+                return RedirectToAction(nameof(Login));
+            }
+
+            if (wasInactive)
+            {
+                await SendAccountActivatedEmailAsync(user, activatedByAdmin: false);
+            }
+
+            TempData["Success"] = "Your email has been verified and your account has been activated. You can now login and start prediction.";
+
+            return RedirectToAction(nameof(EmailVerifiedAutoActivated));
+        }
+        else
+        {
+            
+            user.UpdatedAt = DateTime.Now;
+            user.EmailConfirmed = true;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+        }
+
+        TempData["Success"] = "Your email has been verified successfully. Please wait for admin approval.";
+
+        return RedirectToAction(nameof(EmailVerified));
     }
+    private async Task SendAccountActivatedEmailAsync(ApplicationUser user, bool activatedByAdmin)
+    {
+        var loginUrl = Url.Action(
+            action: nameof(Login),
+            controller: "Account",
+            values: null,
+            protocol: Request.Scheme
+        );
+
+        var activationText = activatedByAdmin
+            ? "Your account has been reviewed and activated by admin."
+            : "Your email address has been verified successfully and your account has been activated automatically.";
+
+        var emailBody = $@"
+<div style='font-family:Arial,sans-serif;padding:20px;background:#f5f8ff;'>
+    <div style='max-width:650px;margin:auto;background:#ffffff;padding:28px;border-radius:12px;border:1px solid #b9d7ff;'>
+
+        <div style='text-align:center;margin-bottom:20px;'>
+            <div style='font-size:48px;'>✅</div>
+            <h2 style='color:#16a34a;margin:10px 0 5px;'>Account Activated</h2>
+            <p style='color:#64748b;margin:0;'>Transtec 360° Football Prediction</p>
+        </div>
+
+        <p>Dear {user.FullName},</p>
+
+        <p>
+            {activationText}
+        </p>
+
+        <p>
+            You can now log in, submit predictions, earn points, and compete on the leaderboard.
+        </p>
+
+        <div style='background:#ecfdf5;border:1px solid #86efac;border-radius:10px;padding:16px;margin:24px 0;color:#14532d;'>
+            <strong>Ready to play:</strong>
+            Log in to view fixtures and submit your match predictions before kickoff.
+        </div>
+
+        <p style='text-align:center;margin:30px 0;'>
+            <a href='{loginUrl}'
+               style='background:#ffc107;border:1px solid #e0a800;border-radius:8px;
+                      color:#212529 !important;display:inline-block;font-family:Arial,sans-serif;
+                      font-size:18px;font-weight:700;line-height:24px;padding:14px 32px;
+                      text-align:center;text-decoration:none;min-width:240px;'>
+                Login and Start Prediction
+            </a>
+        </p>
+
+        <p style='font-size:13px;color:#64748b;margin-top:18px;'>
+            Thank you for joining Transtec 360° Football Prediction.
+        </p>
+
+    </div>
+</div>";
+
+        await _emailService.SendEmailAsync(
+            user.Email!,
+            "Account Activated - Transtec 360° Football Prediction",
+            emailBody
+        );
+    }
+
+    //[AllowAnonymous]
+    //[HttpGet]
+    //public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    //{
+    //    if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+    //    {
+    //        TempData["Error"] = "Invalid email verification request.";
+    //        return RedirectToAction(nameof(Login));
+    //    }
+
+    //    var user = await _userManager.FindByIdAsync(userId);
+
+    //    if (user == null)
+    //    {
+    //        TempData["Error"] = "User account was not found.";
+    //        return RedirectToAction(nameof(Login));
+    //    }
+
+    //    if (user.EmailConfirmed)
+    //    {
+    //        TempData["Success"] = "Your email is already verified. Please wait for admin approval.";
+    //        return RedirectToAction(nameof(Login));
+    //    }
+
+    //    string decodedToken;
+
+    //    try
+    //    {
+    //        decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+    //    }
+    //    catch
+    //    {
+    //        TempData["Error"] = "Invalid email verification token.";
+    //        return RedirectToAction(nameof(Login));
+    //    }
+
+    //    var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+
+    //    if (!result.Succeeded)
+    //    {
+    //        var errorMessage = string.Join(" ", result.Errors.Select(x => x.Description));
+    //        TempData["Error"] = "Email verification failed. " + errorMessage;
+    //        return RedirectToAction(nameof(Login));
+    //    }
+
+    //    // Extra safety: force update if Identity says success but DB still not updated
+    //    user.EmailConfirmed = true;
+    //    user.UpdatedAt = DateTime.Now;
+
+    //    await _userManager.UpdateAsync(user);
+
+    //    TempData["Success"] = "Email verified successfully. Please wait for admin approval.";
+    //    return RedirectToAction(nameof(Login));
+    //}
+
+    [HttpGet]
+    public IActionResult EmailVerifiedAutoActivated()
+    {
+        return View();
+    }
+
     [AllowAnonymous]
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)

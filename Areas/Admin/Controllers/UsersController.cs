@@ -55,6 +55,12 @@ public class UsersController : Controller
                 .Where(x => x.IsActive)
                 .ToList();
         }
+        else if (status == "email-not-verified")
+        {
+            nonAdminUsers = nonAdminUsers
+                .Where(x => !x.EmailConfirmed)
+                .ToList();
+        }
 
         ViewBag.Status = status;
 

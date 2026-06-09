@@ -39,9 +39,28 @@ public class LoginTrackingController : Controller
         return View(model);
     }
 
-    public async Task<IActionResult> History(string? search, bool? successOnly, DateTime? fromDate, DateTime? toDate)
+    public async Task<IActionResult> History(
+        string? search,
+        bool? successOnly,
+        DateTime? fromDate,
+        DateTime? toDate)
     {
+        var today = DateTime.Today;
+
+        var effectiveFromDate = fromDate?.Date ?? today;
+        var effectiveToDate = toDate?.Date ?? today;
+
+        if (effectiveToDate < effectiveFromDate)
+        {
+            effectiveToDate = effectiveFromDate;
+        }
+
         var query = _context.UserLoginHistories.AsQueryable();
+
+        query = query.Where(x => x.LoginAt >= effectiveFromDate);
+
+        var endDate = effectiveToDate.AddDays(1);
+        query = query.Where(x => x.LoginAt < endDate);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -50,23 +69,13 @@ public class LoginTrackingController : Controller
             query = query.Where(x =>
                 (x.FullName != null && x.FullName.Contains(keyword)) ||
                 (x.Email != null && x.Email.Contains(keyword)) ||
-                (x.IpAddress != null && x.IpAddress.Contains(keyword)));
+                (x.IpAddress != null && x.IpAddress.Contains(keyword)) ||
+                (x.FailureReason != null && x.FailureReason.Contains(keyword)));
         }
 
         if (successOnly.HasValue)
         {
             query = query.Where(x => x.IsSuccess == successOnly.Value);
-        }
-
-        if (fromDate.HasValue)
-        {
-            query = query.Where(x => x.LoginAt >= fromDate.Value.Date);
-        }
-
-        if (toDate.HasValue)
-        {
-            var endDate = toDate.Value.Date.AddDays(1);
-            query = query.Where(x => x.LoginAt < endDate);
         }
 
         var model = await query
@@ -90,8 +99,8 @@ public class LoginTrackingController : Controller
 
         ViewBag.Search = search;
         ViewBag.SuccessOnly = successOnly;
-        ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
-        ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+        ViewBag.FromDate = effectiveFromDate.ToString("yyyy-MM-dd");
+        ViewBag.ToDate = effectiveToDate.ToString("yyyy-MM-dd");
 
         return View(model);
     }

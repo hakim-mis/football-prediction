@@ -229,15 +229,32 @@
         </a>
 
         <a asp-area="Admin"
-           asp-controller="LoginLogs"
-           asp-action="Online"
+           asp-controller="LoginTracking"
+           asp-action="ActiveUsers"
            class="admin-stat-card stat-card-teal">
             <div class="admin-stat-icon">
                 <i class="bi bi-person-check-fill"></i>
             </div>
 
             <div class="admin-stat-content">
-                <span>Logged In Users</span>
+                <span>Logged-In Users</span>
+                <strong>@Model.LoggedInUsers</strong>
+            </div>
+
+            <div class="admin-stat-arrow">
+                <i class="bi bi-arrow-right"></i>
+            </div>
+        </a>
+        <a asp-area="Admin"
+           asp-controller="AutomationSuggestions"
+           asp-action="Index"
+           class="admin-stat-card stat-card-teal">
+            <div class="admin-stat-icon">
+                <i class="bi bi-lightbulb"></i>
+            </div>
+
+            <div class="admin-stat-content">
+                <span>Automation Suggestions</span>
                 <strong>@Model.LoggedInUsers</strong>
             </div>
 
@@ -246,7 +263,7 @@
             </div>
         </a>
 
-        <a asp-area="Admin"
+       @*  <a asp-area="Admin"
            asp-controller="LoginTracking"
            asp-action="ActiveUsers"
            class="nav-link">
@@ -267,7 +284,7 @@
            class="nav-link">
             <i class="bi bi-lightbulb"></i>
             Automation Suggestions
-        </a>
+        </a> *@
 
 
     </div>

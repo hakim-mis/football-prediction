@@ -22,7 +22,7 @@ public class PredictionReminderEmailService : IPredictionReminderEmailService
         string reminderType)
     {
         var motherUrl = _configuration["AppSettings:MotherUrl"] ?? "";
-        var predictionUrl = motherUrl.TrimEnd('/') + "/Dashboard/PredictionScore";
+        var predictionUrl = motherUrl.TrimEnd('/') + "/Dashboard";
 
         var reminderTitle = reminderType == "1Hour"
             ? "Final Call: Submit Your Prediction"

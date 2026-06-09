@@ -2,15 +2,213 @@
 
 @{
     ViewData["Title"] = "Login History";
+
     string? search = ViewBag.Search as string;
     bool? successOnly = ViewBag.SuccessOnly as bool?;
-    string? fromDate = ViewBag.FromDate as string;
-    string? toDate = ViewBag.ToDate as string;
+
+    var todayText = DateTime.Today.ToString("yyyy-MM-dd");
+
+    string fromDate = !string.IsNullOrWhiteSpace(ViewBag.FromDate as string)
+        ? (ViewBag.FromDate as string)!
+        : todayText;
+
+    string toDate = !string.IsNullOrWhiteSpace(ViewBag.ToDate as string)
+        ? (ViewBag.ToDate as string)!
+        : todayText;
+
+    string DisplayUserName(string? fullName)
+    {
+        return string.IsNullOrWhiteSpace(fullName) ? "-" : fullName;
+    }
+
+    string DisplayText(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "-" : value;
+    }
+
+    string StatusText(bool isSuccess)
+    {
+        return isSuccess ? "Success" : "Failed";
+    }
 }
 
-<div class="dashboard-card p-3 p-md-4 mb-4">
+<style>
+    .login-history-page {
+        overflow: hidden;
+    }
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    .login-history-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .login-history-filter-card {
+        background: #f8fbff;
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        padding: 14px;
+    }
+
+        .login-history-filter-card .form-control,
+        .login-history-filter-card .form-select {
+            min-height: 40px;
+        }
+
+    .login-history-date-note {
+        color: #64748b;
+        font-size: .84rem;
+        margin-top: 8px;
+    }
+
+    .login-history-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .login-history-table {
+        min-width: 980px;
+    }
+
+        .login-history-table th {
+            white-space: nowrap;
+            font-size: .84rem;
+            color: #475569;
+            background: #f8fafc;
+        }
+
+        .login-history-table td {
+            vertical-align: middle;
+            font-size: .9rem;
+        }
+
+    .login-history-user strong {
+        display: block;
+        color: #111827;
+        line-height: 1.25;
+    }
+
+    .login-history-user .small {
+        word-break: break-word;
+    }
+
+    .login-history-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: .78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .login-status-success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+
+    .login-status-failed {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .login-history-ip {
+        font-family: Consolas, Monaco, monospace;
+        font-size: .84rem;
+        color: #334155;
+        white-space: nowrap;
+    }
+
+    .login-history-reason {
+        max-width: 260px;
+        white-space: normal;
+        color: #475569;
+    }
+
+    .login-history-empty {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        color: #64748b;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+    }
+
+    @@media (max-width: 991.98px) {
+        .login-history-filter-card .btn {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .login-history-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .login-history-topbar {
+            align-items: stretch;
+        }
+
+            .login-history-topbar > div,
+            .login-history-topbar > a {
+                width: 100%;
+            }
+
+            .login-history-topbar > a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+        .login-history-filter-card {
+            padding: 12px;
+        }
+
+        .login-history-table-wrap {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .login-history-table {
+            min-width: 980px;
+        }
+
+            .login-history-table th,
+            .login-history-table td {
+                white-space: nowrap;
+                font-size: .82rem;
+            }
+
+        .login-history-user {
+            min-width: 190px;
+        }
+
+            .login-history-user .small {
+                max-width: 190px;
+                white-space: normal;
+                word-break: break-word;
+            }
+
+        .login-history-reason {
+            max-width: 240px;
+            white-space: normal;
+        }
+    }
+</style>
+
+<div class="dashboard-card login-history-page p-3 p-md-4 mb-4">
+
+    <div class="login-history-topbar mb-3">
         <div>
             <span class="pill">
                 <i class="bi bi-clock-history"></i>
@@ -22,7 +220,7 @@
             </h1>
 
             <p class="text-muted small mb-0">
-                Showing latest 500 login records.
+                Showing latest 500 login records for the selected date range.
             </p>
         </div>
 
@@ -35,47 +233,72 @@
         </a>
     </div>
 
-    <form method="get" class="row g-2 mb-3">
-        <div class="col-lg-4">
-            <input type="search"
-                   name="search"
-                   value="@search"
-                   class="form-control"
-                   placeholder="Search name, email, IP..." />
+    <form method="get" class="login-history-filter-card mb-3">
+        <div class="row g-2 align-items-end">
+
+            <div class="col-lg-4">
+                <label class="form-label small fw-semibold">
+                    Search
+                </label>
+
+                <input type="search"
+                       name="search"
+                       value="@search"
+                       class="form-control"
+                       placeholder="Search name, email, IP..." />
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label small fw-semibold">
+                    From Date
+                </label>
+
+                <input type="date"
+                       name="fromDate"
+                       value="@fromDate"
+                       class="form-control" />
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label small fw-semibold">
+                    To Date
+                </label>
+
+                <input type="date"
+                       name="toDate"
+                       value="@toDate"
+                       class="form-control" />
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label small fw-semibold">
+                    Status
+                </label>
+
+                <select name="successOnly" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="true" selected="@(successOnly == true)">Success</option>
+                    <option value="false" selected="@(successOnly == false)">Failed</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i>
+                    Search
+                </button>
+            </div>
+
         </div>
 
-        <div class="col-lg-2">
-            <input type="date"
-                   name="fromDate"
-                   value="@fromDate"
-                   class="form-control" />
-        </div>
-
-        <div class="col-lg-2">
-            <input type="date"
-                   name="toDate"
-                   value="@toDate"
-                   class="form-control" />
-        </div>
-
-        <div class="col-lg-2">
-            <select name="successOnly" class="form-select">
-                <option value="">All Status</option>
-                <option value="true" selected="@(successOnly == true)">Success</option>
-                <option value="false" selected="@(successOnly == false)">Failed</option>
-            </select>
-        </div>
-
-        <div class="col-lg-2">
-            <button type="submit" class="btn btn-primary w-100">
-                <i class="bi bi-search"></i>
-                Search
-            </button>
+        <div class="login-history-date-note">
+            <i class="bi bi-info-circle"></i>
+            By default, this page shows today’s login history only. Change the date range to view previous records.
         </div>
     </form>
 
-    <div class="table-responsive">
-        <table class="table table-clean table-hover align-middle mb-0">
+    <div class="login-history-table-wrap">
+        <table class="table table-clean table-hover align-middle mb-0 login-history-table">
             <thead>
                 <tr>
                     <th>User</th>
@@ -93,7 +316,7 @@
                 {
                     <tr>
                         <td colspan="7" class="text-center text-muted py-4">
-                            No login history found.
+                            No login history found for the selected date range.
                         </td>
                     </tr>
                 }
@@ -103,31 +326,52 @@
                     {
                         <tr>
                             <td>
-                                <strong>@(string.IsNullOrWhiteSpace(item.FullName) ? "-" : item.FullName)</strong>
-                                <div class="small text-muted">@item.Email</div>
+                                <div class="login-history-user">
+                                    <strong>@DisplayUserName(item.FullName)</strong>
+
+                                    <div class="small text-muted">
+                                        @DisplayText(item.Email)
+                                    </div>
+                                </div>
                             </td>
 
                             <td>
                                 @if (item.IsSuccess)
                                 {
-                                    <span class="badge text-bg-success">Success</span>
+                                    <span class="login-history-status-badge login-status-success">
+                                        <i class="bi bi-check-circle"></i>
+                                        Success
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="badge text-bg-danger">Failed</span>
+                                    <span class="login-history-status-badge login-status-failed">
+                                        <i class="bi bi-x-circle"></i>
+                                        Failed
+                                    </span>
                                 }
                             </td>
 
                             <td>
-                                <div>@item.LoginAt.ToString("dd MMM yyyy")</div>
-                                <div class="small text-muted">@item.LoginAt.ToString("hh:mm tt")</div>
+                                <div>
+                                    @item.LoginAt.ToString("dd MMM yyyy")
+                                </div>
+
+                                <div class="small text-muted">
+                                    @item.LoginAt.ToString("hh:mm tt")
+                                </div>
                             </td>
 
                             <td>
                                 @if (item.LogoutAt.HasValue)
                                 {
-                                    <div>@item.LogoutAt.Value.ToString("dd MMM yyyy")</div>
-                                    <div class="small text-muted">@item.LogoutAt.Value.ToString("hh:mm tt")</div>
+                                    <div>
+                                        @item.LogoutAt.Value.ToString("dd MMM yyyy")
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        @item.LogoutAt.Value.ToString("hh:mm tt")
+                                    </div>
                                 }
                                 else
                                 {
@@ -135,12 +379,22 @@
                                 }
                             </td>
 
-                            <td>@item.DurationText</td>
-
-                            <td>@(item.IpAddress ?? "-")</td>
+                            <td>
+                                <span class="fw-semibold">
+                                    @DisplayText(item.DurationText)
+                                </span>
+                            </td>
 
                             <td>
-                                @(string.IsNullOrWhiteSpace(item.FailureReason) ? "-" : item.FailureReason)
+                                <span class="login-history-ip">
+                                    @DisplayText(item.IpAddress)
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="login-history-reason">
+                                    @DisplayText(item.FailureReason)
+                                </div>
                             </td>
                         </tr>
                     }
