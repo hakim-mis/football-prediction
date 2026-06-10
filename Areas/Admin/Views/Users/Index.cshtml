@@ -30,23 +30,193 @@
     }
 }
 
+<style>
+    .admin-user-page {
+        overflow: hidden;
+    }
+
+    .admin-user-topbar {
+        width: 100%;
+    }
+
+    .admin-user-header-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        margin-bottom: 14px;
+    }
+
+    .admin-user-title-pill {
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .admin-user-back-btn {
+        border-radius: 999px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .admin-user-status-tabs {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+        .admin-user-status-tabs .btn {
+            min-width: 82px;
+            font-weight: 700;
+            border-radius: 10px;
+        }
+
+    .admin-user-search-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .admin-user-search-box {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+        .admin-user-search-box span {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            z-index: 2;
+        }
+
+        .admin-user-search-box .form-control {
+            padding-left: 38px;
+            min-height: 42px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+    .admin-user-clear-btn {
+        flex: 0 0 auto;
+        width: auto !important;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        background: #ffffff;
+        font-weight: 700;
+        white-space: nowrap;
+        min-height: 42px;
+        border-radius: 12px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+        .admin-user-clear-btn:hover,
+        .admin-user-clear-btn:focus {
+            color: #ffffff;
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+    .admin-user-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @@media (max-width: 767.98px) {
+        .admin-user-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .admin-user-header-line {
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .admin-user-title-pill {
+            font-size: .85rem;
+            padding: 8px 12px;
+        }
+
+        .admin-user-back-btn {
+            padding: 6px 12px;
+            font-size: .82rem;
+        }
+
+        .admin-user-status-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+            .admin-user-status-tabs .btn {
+                min-width: 0;
+                width: 100%;
+                font-size: .8rem;
+                padding-left: 6px;
+                padding-right: 6px;
+            }
+
+        .admin-user-search-toolbar {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 6px !important;
+            width: 100%;
+        }
+
+        .admin-user-search-box {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+            .admin-user-search-box span {
+                left: 10px;
+            }
+
+            .admin-user-search-box .form-control {
+                min-height: 40px;
+                font-size: .86rem;
+                padding-left: 34px;
+            }
+
+        .admin-user-clear-btn {
+            flex: 0 0 auto;
+            width: auto !important;
+            min-width: 68px;
+            min-height: 40px;
+            padding-left: 9px;
+            padding-right: 9px;
+            font-size: .8rem;
+        }
+    }
+</style>
+
 <div class="dashboard-card admin-user-page p-3 p-md-4 mb-4">
 
-    <div class="admin-user-topbar mb-4">
+    <div class="admin-user-topbar mb-3">
 
-        <div>
-            <span class="pill">
+        <div class="admin-user-header-line">
+            <span class="pill admin-user-title-pill">
                 <i class="bi bi-people"></i>
                 User Control
             </span>
 
-            <h1 class="h3 fw-bold mt-3 mb-1">
-                User Management
-            </h1>
-
-            <p class="text-muted mb-0 small">
-                Activate players, deactivate accounts, reset passwords, and monitor prediction participation.
-            </p>
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm admin-user-back-btn"
+                    onclick="goBackOrDashboard()">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </button>
         </div>
 
         <div class="admin-user-status-tabs">
@@ -67,11 +237,11 @@
                class="btn btn-sm @(status == "active" ? "btn-primary" : "btn-outline-primary")">
                 Active
             </a>
+
             <a asp-action="Index"
                asp-route-status="email-not-verified"
                class="btn btn-sm @(status == "email-not-verified" ? "btn-danger" : "btn-outline-danger")">
-                <i class="bi bi-envelope-x"></i>
-                Email Not Verified
+                Email N/V
             </a>
         </div>
 
@@ -87,11 +257,11 @@
             <input type="search"
                    id="adminUserSearch"
                    class="form-control"
-                   placeholder="Search name, email, mobile, designation, department, status..." />
+                   placeholder="Search" />
         </div>
 
         <button type="button"
-                class="btn btn-outline-secondary btn-sm"
+                class="btn admin-user-clear-btn"
                 id="adminUserClearSearch">
             <i class="bi bi-x-circle"></i>
             Clear
@@ -137,7 +307,13 @@
                     foreach (var user in Model)
                     {
                         var subInfo = UserSubInfo(user.Designation, user.Department);
-                        var statusText = user.IsActive ? "Active" : "Pending";
+
+                        var statusText = !user.EmailConfirmed
+                        ? "Email Not Verified"
+                        : user.IsActive
+                        ? "Active"
+                        : "Pending";
+
                         var emailVerifiedText = user.EmailConfirmed ? "Email Verified" : "Email Not Verified";
 
                         var searchableText = $"{user.FullName} {subInfo} {user.Email} {user.MobileNo} {statusText} {emailVerifiedText} {user.TotalScore} {user.TotalPredictionCount} {user.NotPredictCount} {user.NotParticipateCount} {user.CreatedAt:dd MMM yyyy hh:mm tt}".ToLowerInvariant();
@@ -188,7 +364,14 @@
                             </td>
 
                             <td>
-                                @if (user.IsActive)
+                                @if (!user.EmailConfirmed)
+                                {
+                                    <span class="admin-user-status-badge user-status-pending">
+                                        <i class="bi bi-envelope-x"></i>
+                                        Email Not Verified
+                                    </span>
+                                }
+                                else if (user.IsActive)
                                 {
                                     <span class="admin-user-status-badge user-status-active">
                                         <i class="bi bi-check-circle"></i>
@@ -312,6 +495,15 @@
             bindAdminUserSearch();
             bindAdminUserDateSort();
         });
+
+        function goBackOrDashboard() {
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+
+            window.location.href = '@Url.Action("Index", "Dashboard", new { area = "Admin" })';
+        }
 
         function bindAdminUserSearch() {
             const searchInput = document.getElementById("adminUserSearch");

@@ -54,35 +54,34 @@
             object-fit: contain;
         }
 
-        .whatsapp-menu-btn {
-            background: #25D366;
-            border-color: #25D366;
-            color: #ffffff !important;
+        .whatsapp-nav-link {
+            color: #25D366 !important;
             font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 6px 16px rgba(37, 211, 102, .22);
         }
 
-            .whatsapp-menu-btn:hover,
-            .whatsapp-menu-btn:focus {
-                background: #1ebe5d;
-                border-color: #1ebe5d;
-                color: #ffffff !important;
-                box-shadow: 0 8px 20px rgba(37, 211, 102, .30);
+            .whatsapp-nav-link i {
+                color: #25D366 !important;
             }
 
-            .whatsapp-menu-btn i {
-                font-size: 1rem;
-                line-height: 1;
+            .whatsapp-nav-link:hover,
+            .whatsapp-nav-link:focus {
+                color: #1ebe5d !important;
             }
+
+        .navbar-action-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         @@media (max-width: 991.98px) {
             .navbar-action-area {
-                align-items: stretch !important;
                 width: 100%;
-                margin-top: 10px;
+                margin-top: 12px;
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                align-items: stretch !important;
             }
 
                 .navbar-action-area .btn,
@@ -91,9 +90,38 @@
                     width: 100%;
                 }
 
-            .whatsapp-menu-btn {
-                justify-content: center;
+                .navbar-action-area .btn,
+                .navbar-action-area form button {
+                    min-height: 42px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 5px;
+                    white-space: normal;
+                    line-height: 1.25;
+                }
+
+            .navbar-nav .nav-link {
+                padding-top: 9px;
+                padding-bottom: 9px;
             }
+
+            .whatsapp-nav-link {
+                color: #25D366 !important;
+            }
+        }
+
+        @@media (max-width: 380px) {
+            .navbar-action-area {
+                gap: 6px;
+            }
+
+                .navbar-action-area .btn,
+                .navbar-action-area form button {
+                    font-size: .82rem;
+                    padding-left: 8px;
+                    padding-right: 8px;
+                }
         }
     </style>
 </head>
@@ -174,21 +202,22 @@
                                     <i class="bi bi-journal-check"></i> Game Rules
                                 </a>
                             </li>
+
+                            @if (showWhatsAppButton)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link whatsapp-nav-link"
+                                       href="@portalSettings!.WhatsAppGroupUrl"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        <i class="bi bi-whatsapp"></i> Join WhatsApp Group
+                                    </a>
+                                </li>
+                            }
                         }
                     </ul>
 
-                    <div class="d-flex align-items-center gap-2 navbar-action-area">
-                        @if (showWhatsAppButton)
-                        {
-                            <a class="btn btn-sm whatsapp-menu-btn"
-                               href="@portalSettings!.WhatsAppGroupUrl"
-                               target="_blank"
-                               rel="noopener noreferrer">
-                                <i class="bi bi-whatsapp"></i>
-                                Join WhatsApp Group
-                            </a>
-                        }
-
+                    <div class="navbar-action-area">
                         @if (SignInManager.IsSignedIn(User))
                         {
                             var currentUser = await UserManager.GetUserAsync(User);

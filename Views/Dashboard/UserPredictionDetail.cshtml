@@ -26,6 +26,159 @@
     }
 }
 
+<style>
+    .user-history-page {
+        overflow: hidden;
+    }
+
+    .user-history-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .user-history-action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .user-history-back-btn {
+        border-radius: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .user-history-download-btn {
+        border-radius: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .user-history-search-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .user-history-search-box {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+        .user-history-search-box span {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            z-index: 2;
+        }
+
+        .user-history-search-box .form-control {
+            padding-left: 38px;
+            min-height: 42px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+    .user-history-clear-btn {
+        flex: 0 0 auto;
+        width: auto !important;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        background: #ffffff;
+        font-weight: 700;
+        white-space: nowrap;
+        min-height: 42px;
+        border-radius: 12px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+        .user-history-clear-btn:hover,
+        .user-history-clear-btn:focus {
+            color: #ffffff;
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+    .user-history-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @@media (max-width: 767.98px) {
+        .user-history-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .user-history-topbar {
+            align-items: stretch;
+        }
+
+            .user-history-topbar > div {
+                width: 100%;
+            }
+
+        .user-history-action-buttons {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            width: 100%;
+        }
+
+            .user-history-action-buttons .btn {
+                width: 100%;
+                min-height: 40px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+            }
+
+        .user-history-search-toolbar {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 6px !important;
+            width: 100%;
+        }
+
+        .user-history-search-box {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+            .user-history-search-box span {
+                left: 10px;
+            }
+
+            .user-history-search-box .form-control {
+                min-height: 40px;
+                font-size: .86rem;
+                padding-left: 34px;
+            }
+
+        .user-history-clear-btn {
+            flex: 0 0 auto;
+            width: auto !important;
+            min-width: 74px;
+            min-height: 40px;
+            padding-left: 9px;
+            padding-right: 9px;
+            font-size: .8rem;
+        }
+    }
+</style>
+
 <div class="dashboard-card user-history-page p-3 p-md-4 mb-4">
 
     <div class="user-history-topbar mb-4">
@@ -44,16 +197,17 @@
 
             <a asp-action="DownloadUserPredictionDetailExcel"
                asp-route-userId="@Model.UserId"
-               class="btn btn-success btn-sm">
+               class="btn btn-success btn-sm user-history-download-btn">
                 <i class="bi bi-file-earmark-excel"></i>
                 Download Excel
             </a>
 
-            <a asp-action="PredictionScore"
-               class="btn btn-outline-primary btn-sm">
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm user-history-back-btn"
+                    onclick="window.history.back();">
                 <i class="bi bi-arrow-left"></i>
                 Back
-            </a>
+            </button>
 
         </div>
     </div>
@@ -109,11 +263,11 @@
             <input type="search"
                    id="userHistorySearch"
                    class="form-control"
-                   placeholder="Search team, group, status, prediction, actual, point..." />
+                   placeholder="Search" />
         </div>
 
         <button type="button"
-                class="btn btn-outline-secondary btn-sm"
+                class="btn user-history-clear-btn"
                 id="userHistoryClearSearch">
             <i class="bi bi-x-circle"></i>
             Clear
@@ -166,18 +320,18 @@
                     foreach (var item in Model.Items)
                     {
                         var actualText = item.TeamOneActualGoal.HasValue && item.TeamTwoActualGoal.HasValue
-                            ? $"{item.TeamOneActualGoal} - {item.TeamTwoActualGoal}"
-                            : "Pending";
+                        ? $"{item.TeamOneActualGoal} - {item.TeamTwoActualGoal}"
+                        : "Pending";
 
                         var predictionText = item.HasPrediction
-                            ? $"{item.TeamOnePredictedGoal} - {item.TeamTwoPredictedGoal}"
-                            : "Not Participated";
+                        ? $"{item.TeamOnePredictedGoal} - {item.TeamTwoPredictedGoal}"
+                        : "Not Participated";
 
                         var pointValue = item.HasPrediction ? item.EarnedPoint : -1;
 
                         var searchableText =
-                            $"{item.TeamOneName} {item.TeamTwoName} {item.StageName} {item.Status} {predictionText} {actualText} {pointValue} {item.MatchDateTime:dd MMM yyyy hh:mm tt}"
-                            .ToLowerInvariant();
+                        $"{item.TeamOneName} {item.TeamTwoName} {item.StageName} {item.Status} {predictionText} {actualText} {pointValue} {item.MatchDateTime:dd MMM yyyy hh:mm tt}"
+                        .ToLowerInvariant();
 
                         <tr class="user-history-row"
                             data-search="@searchableText"

@@ -86,6 +86,94 @@
     }
 }
 
+<style>
+    .dashboard-fixture-search-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .dashboard-fixture-search-box {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+        .dashboard-fixture-search-box span {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            z-index: 2;
+        }
+
+        .dashboard-fixture-search-box .form-control {
+            padding-left: 38px;
+            min-height: 42px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+    .dashboard-fixture-clear-btn {
+        flex: 0 0 auto;
+        width: auto !important;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        background: #ffffff;
+        font-weight: 700;
+        white-space: nowrap;
+        min-height: 42px;
+        border-radius: 12px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+        .dashboard-fixture-clear-btn:hover,
+        .dashboard-fixture-clear-btn:focus {
+            color: #ffffff;
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+    @@media (max-width: 767.98px) {
+        .dashboard-fixture-search-toolbar {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 6px !important;
+            width: 100%;
+        }
+
+        .dashboard-fixture-search-box {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+            .dashboard-fixture-search-box span {
+                left: 10px;
+            }
+
+            .dashboard-fixture-search-box .form-control {
+                min-height: 40px;
+                font-size: .86rem;
+                padding-left: 34px;
+            }
+
+        .dashboard-fixture-clear-btn {
+            flex: 0 0 auto;
+            width: auto !important;
+            min-width: 74px;
+            min-height: 40px;
+            padding-left: 9px;
+            padding-right: 9px;
+            font-size: .8rem;
+        }
+    }
+</style>
+
 <!-- TOP SECTION: PROFILE LEFT + BANNER RIGHT -->
 <div class="row g-4 mb-4 dashboard-top-layout">
 
@@ -351,11 +439,11 @@
             <input type="search"
                    id="dashboardFixtureSearch"
                    class="form-control"
-                   placeholder="Search team, group, status, prediction, actual, point..." />
+                   placeholder="Search" />
         </div>
 
         <button type="button"
-                class="btn btn-outline-secondary btn-sm"
+                class="btn dashboard-fixture-clear-btn"
                 id="dashboardFixtureClearSearch">
             <i class="bi bi-x-circle"></i>
             Clear
@@ -383,11 +471,11 @@
                 Prediction? prediction = null;
 
                 var hasPrediction = Model.UserPredictionLookup != null &&
-                                    Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
+                Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
 
                 var canPredict = fixture.Status == MatchStatus.Upcoming &&
-                                 !fixture.IsProcessed &&
-                                 DateTime.Now < fixture.MatchDateTime;
+                !fixture.IsProcessed &&
+                DateTime.Now < fixture.MatchDateTime;
 
                 var participation = ParticipationText(hasPrediction, canPredict);
 
@@ -395,30 +483,30 @@
                 var teamTwoFlag = ToImageUrl(Url, fixture.TeamTwoFlagPath, "/img/default-flag.svg");
 
                 var actualText = fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue
-                    ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
-                    : "Pending";
+                ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
+                : "Pending";
 
                 var fixtureDateValue = fixture.MatchDateTime.Date == today
-                    ? "today"
-                    : fixture.MatchDateTime.Date == tomorrow
-                        ? "tomorrow"
-                        : "";
+                ? "today"
+                : fixture.MatchDateTime.Date == tomorrow
+                ? "tomorrow"
+                : "";
 
                 var predictionSearchText = hasPrediction && prediction != null
-                    ? $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}"
-                    : canPredict
-                        ? "No Prediction"
-                        : "Not Participated";
+                ? $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}"
+                : canPredict
+                ? "No Prediction"
+                : "Not Participated";
 
                 var pointSearchText = hasPrediction && prediction != null && prediction.IsProcessed
-                    ? prediction.EarnedPoint.ToString()
-                    : hasPrediction
-                        ? "Pending"
-                        : "-";
+                ? prediction.EarnedPoint.ToString()
+                : hasPrediction
+                ? "Pending"
+                : "-";
 
                 var fixtureSearchText =
-                    $"{fixture.TeamOneName} {fixture.TeamTwoName} {fixture.Stage.GetDisplayName()} {fixture.Status} {predictionSearchText} {actualText} {pointSearchText} {fixture.MatchDateTime:dd MMM yyyy hh:mm tt}"
-                    .ToLowerInvariant();
+                $"{fixture.TeamOneName} {fixture.TeamTwoName} {fixture.Stage.GetDisplayName()} {fixture.Status} {predictionSearchText} {actualText} {pointSearchText} {fixture.MatchDateTime:dd MMM yyyy hh:mm tt}"
+                .ToLowerInvariant();
 
                 <div class="dashboard-fixture-card"
                      data-fixture-id="@fixture.Id"
@@ -573,8 +661,8 @@
                             </form>
                         }
                         else if (fixture.Status == MatchStatus.Live ||
-                                 fixture.Status == MatchStatus.Finished ||
-                                 DateTime.Now >= fixture.MatchDateTime)
+                        fixture.Status == MatchStatus.Finished ||
+                        DateTime.Now >= fixture.MatchDateTime)
                         {
                             <a asp-controller="Dashboard"
                                asp-action="PredictionDetail"
@@ -606,26 +694,6 @@
     }
 
 </div>
-
-@* @if (Model.SegmentPoints.Any())
-{
-    <div class="dashboard-card p-4 mb-4 chart-box">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <span class="pill">
-                    <i class="bi bi-bar-chart"></i>
-                    Segment Performance
-                </span>
-
-                <h2 class="h4 fw-bold mt-2 mb-0">
-                    Points by Group / Knockout Segment
-                </h2>
-            </div>
-        </div>
-
-        <canvas id="segmentChart" height="100"></canvas>
-    </div>
-} *@
 
 <div id="dashboardAjaxToast" class="custom-toast d-none">
     <div class="custom-toast-icon">

@@ -28,46 +28,169 @@
     }
 }
 
+<style>
+    .leaderboard-topbar {
+        width: 100%;
+    }
+
+    .leaderboard-header-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .leaderboard-title-pill {
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .leaderboard-back-btn {
+        border-radius: 999px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .leaderboard-search-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .leaderboard-search-box {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .leaderboard-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        z-index: 2;
+    }
+
+    .leaderboard-search-box .form-control {
+        padding-left: 38px;
+        min-height: 42px;
+        border-radius: 12px;
+        width: 100%;
+    }
+
+    .leaderboard-clear-btn {
+        flex: 0 0 auto;
+        width: auto !important;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        background: #ffffff;
+        font-weight: 700;
+        white-space: nowrap;
+        min-height: 42px;
+        border-radius: 12px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+        .leaderboard-clear-btn:hover,
+        .leaderboard-clear-btn:focus {
+            color: #ffffff;
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+    @@media (max-width: 767.98px) {
+        .leaderboard-topbar {
+            margin-bottom: 12px !important;
+        }
+
+        .leaderboard-header-line {
+            align-items: center;
+        }
+
+        .leaderboard-title-pill {
+            font-size: .85rem;
+            padding: 8px 12px;
+        }
+
+        .leaderboard-back-btn {
+            padding: 6px 12px;
+            font-size: .82rem;
+        }
+
+        .leaderboard-search-toolbar {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 6px !important;
+            width: 100%;
+        }
+
+        .leaderboard-search-box {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+            .leaderboard-search-box .form-control {
+                min-height: 40px;
+                font-size: .86rem;
+                padding-left: 34px;
+            }
+
+        .leaderboard-search-icon {
+            left: 10px;
+        }
+
+        .leaderboard-clear-btn {
+            flex: 0 0 auto;
+            width: auto !important;
+            min-width: 74px;
+            min-height: 40px;
+            padding-left: 9px;
+            padding-right: 9px;
+            font-size: .8rem;
+        }
+    }
+</style>
+
 <div class="dashboard-card leaderboard-page p-3 p-md-4 mb-4">
 
-    <div class="leaderboard-topbar mb-4">
-        <div>
-            <span class="pill">
+    <div class="leaderboard-topbar mb-3">
+
+        <div class="leaderboard-header-line">
+            <span class="pill leaderboard-title-pill">
                 <i class="bi bi-trophy"></i>
-                Ranking Table
+                Leaderboard Top 100
             </span>
 
-            <h1 class="h3 fw-bold mt-3 mb-1">
-                Leaderboard Top 100
-            </h1>
-
-            <p class="text-muted mb-0 small">
-                Users with the same score share the same rank. Users with zero score show No rank.
-            </p>
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm leaderboard-back-btn"
+                    onclick="goBackOrDashboard()">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </button>
         </div>
 
-        <a asp-controller="Dashboard"
-           asp-action="Index"
-           class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-arrow-left"></i>
-            Back to Dashboard
-        </a>
     </div>
 
     <div class="leaderboard-search-toolbar mb-3">
         <div class="leaderboard-search-box">
-            <span>
+            <span class="leaderboard-search-icon">
                 <i class="bi bi-search"></i>
             </span>
 
             <input type="search"
                    id="leaderboardSearch"
                    class="form-control"
-                   placeholder="Search name, designation, department, rank, score..." />
+                   placeholder="Search" />
         </div>
 
         <button type="button"
-                class="btn btn-outline-secondary btn-sm"
+                class="btn leaderboard-clear-btn"
                 id="leaderboardClearSearch">
             <i class="bi bi-x-circle"></i>
             Clear
@@ -176,6 +299,15 @@
         document.addEventListener("DOMContentLoaded", function () {
             bindLeaderboardSearch();
         });
+
+        function goBackOrDashboard() {
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+
+            window.location.href = '@Url.Action("Index", "Dashboard", new { area = "" })';
+        }
 
         function bindLeaderboardSearch() {
             const searchInput = document.getElementById("leaderboardSearch");

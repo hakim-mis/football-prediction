@@ -39,29 +39,187 @@
     }
 }
 
+<style>
+    .admin-fixture-page {
+        overflow: hidden;
+    }
+
+    .admin-fixture-topbar {
+        width: 100%;
+    }
+
+    .admin-fixture-header-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        margin-bottom: 14px;
+    }
+
+    .admin-fixture-title-pill {
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .admin-fixture-back-btn {
+        border-radius: 999px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .admin-fixture-add-row {
+        margin-bottom: 16px;
+    }
+
+        .admin-fixture-add-row .btn {
+            font-weight: 700;
+            border-radius: 10px;
+        }
+
+    .admin-fixture-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .admin-fixture-search-box {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+        .admin-fixture-search-box span {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            z-index: 2;
+        }
+
+        .admin-fixture-search-box .form-control {
+            padding-left: 38px;
+            min-height: 42px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+    .admin-fixture-clear-btn {
+        flex: 0 0 auto;
+        width: auto !important;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        background: #ffffff;
+        font-weight: 700;
+        white-space: nowrap;
+        min-height: 42px;
+        border-radius: 12px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+        .admin-fixture-clear-btn:hover,
+        .admin-fixture-clear-btn:focus {
+            color: #ffffff;
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+    .admin-fixture-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @@media (max-width: 767.98px) {
+        .admin-fixture-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .admin-fixture-header-line {
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .admin-fixture-title-pill {
+            font-size: .85rem;
+            padding: 8px 12px;
+        }
+
+        .admin-fixture-back-btn {
+            padding: 6px 12px;
+            font-size: .82rem;
+        }
+
+        .admin-fixture-add-row {
+            margin-bottom: 14px;
+        }
+
+        .admin-fixture-toolbar {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 6px !important;
+            width: 100%;
+        }
+
+        .admin-fixture-search-box {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+            .admin-fixture-search-box span {
+                left: 10px;
+            }
+
+            .admin-fixture-search-box .form-control {
+                min-height: 40px;
+                font-size: .86rem;
+                padding-left: 34px;
+            }
+
+        .admin-fixture-clear-btn {
+            flex: 0 0 auto;
+            width: auto !important;
+            min-width: 68px;
+            min-height: 40px;
+            padding-left: 9px;
+            padding-right: 9px;
+            font-size: .8rem;
+        }
+    }
+</style>
+
 <div class="dashboard-card admin-fixture-page p-3 p-md-4 mb-4">
 
-    <div class="admin-fixture-topbar mb-4">
-        <div>
-            <span class="pill">
+    <div class="admin-fixture-topbar mb-3">
+
+        <div class="admin-fixture-header-line">
+            <span class="pill admin-fixture-title-pill">
                 <i class="bi bi-calendar-event"></i>
-                Match Center
+                Fixture Management
             </span>
 
-            <h1 class="h3 fw-bold mt-3 mb-1">
-                Fixture Management
-            </h1>
-
-            <p class="text-muted mb-0 small">
-                Search, filter, publish, process and manage all fixtures date-wise.
-            </p>
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm admin-fixture-back-btn"
+                    onclick="goBackOrAdminDashboard()">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </button>
         </div>
 
-        <a asp-action="Create"
-           class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-circle"></i>
-            Add Fixture
-        </a>
+        <div class="admin-fixture-add-row">
+            <a asp-action="Create"
+               class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i>
+                Add Fixture
+            </a>
+        </div>
+
     </div>
 
     <!-- Search + Filters -->
@@ -75,11 +233,11 @@
             <input type="search"
                    id="adminFixtureSearch"
                    class="form-control"
-                   placeholder="Search team, group, status, score, publish, process..." />
+                   placeholder="Search" />
         </div>
 
         <button type="button"
-                class="btn btn-outline-secondary btn-sm"
+                class="btn admin-fixture-clear-btn"
                 id="adminFixtureClearSearch">
             <i class="bi bi-x-circle"></i>
             Clear
@@ -386,6 +544,15 @@
         });
 
         let activeAdminFixtureFilter = "all";
+
+        function goBackOrAdminDashboard() {
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+
+            window.location.href = '@Url.Action("Index", "Dashboard", new { area = "Admin" })';
+        }
 
         function bindAdminFixtureFilters() {
             document.querySelectorAll(".admin-fixture-filter-btn").forEach(function (button) {

@@ -52,24 +52,332 @@
         : "status-finished";
 }
 
+<style>
+    .prediction-detail-page {
+        overflow: hidden;
+    }
+
+    .prediction-detail-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: nowrap;
+    }
+
+    .prediction-detail-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+        .prediction-detail-title-row h2 {
+            margin: 0;
+            font-weight: 800;
+        }
+
+    .prediction-detail-action-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: nowrap;
+        margin-left: auto;
+    }
+
+        .prediction-detail-action-row .btn {
+            font-weight: 700;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+
+    .prediction-history-back-btn {
+        border-radius: 999px !important;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .prediction-history-back-mobile {
+        display: none !important;
+    }
+
+    .prediction-history-back-desktop {
+        display: inline-flex !important;
+    }
+
+    .match-prediction-summary {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        gap: 12px;
+        border: 1px solid #bfdbfe;
+        background: #fffdf8;
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+    .match-summary-team {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        text-align: center;
+    }
+
+        .match-summary-team strong {
+            display: block;
+            width: 100%;
+            font-size: .9rem;
+            color: #111827;
+            line-height: 1.2;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+
+    .match-summary-flag {
+        width: 52px;
+        height: 34px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+    }
+
+    .match-summary-center {
+        min-width: 150px;
+        text-align: center;
+    }
+
+    .match-summary-meta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 7px;
+    }
+
+    .match-summary-stage {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: .75rem;
+        font-weight: 800;
+        color: #0f766e;
+        background: #ccfbf1;
+        border: 1px solid #99f6e4;
+        white-space: nowrap;
+    }
+
+    .match-summary-date {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: .75rem;
+        font-weight: 700;
+        color: #475569;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+        .match-summary-date i {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            line-height: 1;
+        }
+
+    .match-summary-score {
+        font-size: 1.55rem;
+        font-weight: 900;
+        color: #020617;
+        line-height: 1.1;
+        margin-bottom: 6px;
+    }
+
+    .match-prediction-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @@media (max-width: 767.98px) {
+        .prediction-detail-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .prediction-detail-topbar {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prediction-detail-title-row {
+            min-width: 0;
+        }
+
+            .prediction-detail-title-row h2 {
+                font-size: 1.25rem;
+                line-height: 1.2;
+            }
+
+        .prediction-history-back-mobile {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 6px 12px;
+            font-size: .82rem;
+        }
+
+        .prediction-history-back-desktop {
+            display: none !important;
+        }
+
+        .prediction-detail-action-row {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            gap: 8px;
+            margin-top: 2px;
+            margin-left: 0;
+        }
+
+            .prediction-detail-action-row .btn {
+                width: 100%;
+                min-height: 40px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+                font-size: .82rem;
+            }
+
+        .match-prediction-summary {
+            grid-template-columns: minmax(0, 1fr) minmax(104px, auto) minmax(0, 1fr);
+            gap: 8px;
+            padding: 14px 10px;
+            border-radius: 16px;
+        }
+
+        .match-summary-flag {
+            width: 48px;
+            height: 32px;
+        }
+
+        .match-summary-team {
+            gap: 5px;
+        }
+
+            .match-summary-team strong {
+                font-size: .78rem;
+                line-height: 1.12;
+                max-width: 96px;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                word-break: normal;
+            }
+
+        .match-summary-center {
+            min-width: 104px;
+        }
+
+        .match-summary-meta {
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .match-summary-stage,
+        .match-summary-date {
+            font-size: .62rem;
+            padding: 3px 6px;
+        }
+
+            .match-summary-date i {
+                display: inline-block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                font-size: .68rem;
+                margin-right: 2px;
+            }
+
+        .match-summary-score {
+            font-size: 1.32rem;
+        }
+    }
+
+    @@media (max-width: 390px) {
+        .prediction-detail-action-row .btn {
+            font-size: .78rem;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        .match-prediction-summary {
+            grid-template-columns: minmax(0, 1fr) minmax(98px, auto) minmax(0, 1fr);
+            gap: 6px;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        .match-summary-center {
+            min-width: 98px;
+        }
+
+        .match-summary-score {
+            font-size: 1.22rem;
+        }
+
+        .match-summary-team strong {
+            font-size: .74rem;
+            max-width: 90px;
+        }
+
+        .match-summary-stage,
+        .match-summary-date {
+            font-size: .58rem;
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+
+            .match-summary-date i {
+                font-size: .62rem;
+            }
+    }
+</style>
+
 <div class="dashboard-card prediction-detail-page p-3 p-md-4 mb-4">
 
     <div class="prediction-detail-topbar mb-3">
 
-        <div>
-            <span class="segment-chip">@Model.StageName</span>
-
-            <h2 class="h4 fw-bold mt-2 mb-1">
+        <div class="prediction-detail-title-row">
+            <h2 class="h4 fw-bold">
+                <i class="bi bi-list-check text-primary"></i>
                 Match Predictions
             </h2>
-
-            <div class="text-muted small">
-                <i class="bi bi-clock"></i>
-                @Model.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")
-            </div>
         </div>
 
-       <div class="d-flex flex-wrap gap-2">
+        <button type="button"
+                class="btn btn-outline-primary btn-sm prediction-history-back-btn prediction-history-back-mobile"
+                onclick="window.history.back();">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </button>
+
+        <div class="prediction-detail-action-row">
 
             <a asp-action="DownloadFixturePredictionsExcel"
                asp-route-fixtureId="@Model.FixtureId"
@@ -80,9 +388,16 @@
 
             <a asp-action="Index"
                class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-arrow-left"></i>
+                <i class="bi bi-speedometer2"></i>
                 Back to Dashboard
             </a>
+
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm prediction-history-back-btn prediction-history-back-desktop"
+                    onclick="window.history.back();">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </button>
 
         </div>
 
@@ -100,6 +415,18 @@
         </div>
 
         <div class="match-summary-center">
+
+            <div class="match-summary-meta">
+                <span class="match-summary-stage">
+                    @Model.StageName
+                </span>
+
+                <span class="match-summary-date">
+                    <i class="bi bi-clock"></i>
+                    @Model.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt")
+                </span>
+            </div>
+
             <div class="match-summary-score">
                 @actualScore
             </div>

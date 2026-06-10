@@ -74,13 +74,192 @@
     }
 }
 
+<style>
+    .prediction-score-header {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start !important;
+        column-gap: 10px;
+        row-gap: 4px;
+        width: 100%;
+    }
+
+    .prediction-score-title-block {
+        min-width: 0;
+    }
+
+        .prediction-score-title-block h2 {
+            margin: 0 0 4px 0;
+            line-height: 1.2;
+        }
+
+        .prediction-score-title-block .text-muted {
+            line-height: 1.35;
+        }
+
+    .prediction-score-back-btn {
+        grid-column: 2;
+        grid-row: 1;
+        align-self: start;
+        justify-self: end;
+        border-radius: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .prediction-score-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .prediction-score-search-box {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+        .prediction-score-search-box span {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            z-index: 2;
+        }
+
+        .prediction-score-search-box .form-control {
+            padding-left: 38px;
+            min-height: 42px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+    .prediction-score-clear-btn {
+        flex: 0 0 auto;
+        width: auto !important;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        background: #ffffff;
+        font-weight: 700;
+        white-space: nowrap;
+        min-height: 42px;
+        border-radius: 12px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+        .prediction-score-clear-btn:hover,
+        .prediction-score-clear-btn:focus {
+            color: #ffffff;
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+    @@media (max-width: 767.98px) {
+        .prediction-score-page-card {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .prediction-score-header {
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: start !important;
+            column-gap: 8px;
+            row-gap: 4px;
+            margin-bottom: 14px !important;
+        }
+
+        .prediction-score-title-block h2 {
+            font-size: 1.14rem;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .prediction-score-title-block .text-muted {
+            font-size: .8rem;
+            line-height: 1.35;
+            max-width: 210px;
+        }
+
+        .prediction-score-back-btn {
+            min-height: 34px;
+            padding: 6px 10px;
+            font-size: .76rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .prediction-score-toolbar {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 6px !important;
+            width: 100%;
+        }
+
+        .prediction-score-search-box {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+            .prediction-score-search-box span {
+                left: 10px;
+            }
+
+            .prediction-score-search-box .form-control {
+                min-height: 40px;
+                font-size: .86rem;
+                padding-left: 34px;
+            }
+
+        .prediction-score-clear-btn {
+            flex: 0 0 auto;
+            width: auto !important;
+            min-width: 74px;
+            min-height: 40px;
+            padding-left: 9px;
+            padding-right: 9px;
+            font-size: .8rem;
+        }
+    }
+
+    @@media (max-width: 390px) {
+        .prediction-score-title-block h2 {
+            font-size: 1.08rem;
+        }
+
+        .prediction-score-title-block .text-muted {
+            max-width: 190px;
+            font-size: .78rem;
+        }
+
+        .prediction-score-back-btn {
+            font-size: .72rem;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        .prediction-score-clear-btn {
+            min-width: 68px;
+            font-size: .76rem;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+    }
+</style>
+
 <div class="dashboard-card prediction-score-page-card p-3 p-md-4 mb-4" id="predictionScoreCard">
 
     <div class="prediction-score-header mb-3">
-        <div>
-            <h2 class="h4 fw-bold mb-1">
+        <div class="prediction-score-title-block">
+            <h2 class="h4 fw-bold">
                 <i class="bi bi-grid-1x2 text-primary"></i>
-                Prediction & Score
+                Prediction &amp; Score
             </h2>
 
             <div class="text-muted small">
@@ -90,7 +269,7 @@
 
         <a asp-controller="Dashboard"
            asp-action="Index"
-           class="btn btn-outline-primary btn-sm">
+           class="btn btn-outline-primary btn-sm prediction-score-back-btn">
             <i class="bi bi-arrow-left"></i>
             Back to Dashboard
         </a>
@@ -218,11 +397,11 @@
             <input type="search"
                    id="predictionScoreSearch"
                    class="form-control"
-                   placeholder="Search team, group, status, prediction, actual, point..." />
+                   placeholder="Search" />
         </div>
 
         <button type="button"
-                class="btn btn-outline-secondary btn-sm"
+                class="btn prediction-score-clear-btn"
                 id="predictionScoreClearSearch">
             <i class="bi bi-x-circle"></i>
             Clear
@@ -289,11 +468,11 @@
                         Prediction? prediction = null;
 
                         var hasPrediction = Model.UserPredictionLookup != null &&
-                                            Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
+                        Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
 
                         var canPredict = fixture.Status == MatchStatus.Upcoming &&
-                                         !fixture.IsProcessed &&
-                                         DateTime.Now < fixture.MatchDateTime;
+                        !fixture.IsProcessed &&
+                        DateTime.Now < fixture.MatchDateTime;
 
                         var participation = ParticipationText(hasPrediction, canPredict);
 
@@ -301,27 +480,27 @@
                         var teamTwoFlag = ToImageUrl(Url, fixture.TeamTwoFlagPath, "/img/default-flag.svg");
 
                         var actualText = fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue
-                            ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
-                            : "Pending";
+                        ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
+                        : "Pending";
 
                         var pointSortValue = hasPrediction && prediction != null && prediction.IsProcessed
-                            ? prediction.EarnedPoint
-                            : -1;
+                        ? prediction.EarnedPoint
+                        : -1;
 
                         var predictionTextForSearch = hasPrediction && prediction != null
-                            ? $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}"
-                            : canPredict
-                                ? "Not Predict"
-                                : "Not Participated";
+                        ? $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}"
+                        : canPredict
+                        ? "Not Predict"
+                        : "Not Participated";
 
                         var pointTextForSearch = hasPrediction && prediction != null && prediction.IsProcessed
-                            ? prediction.EarnedPoint.ToString()
-                            : hasPrediction
-                                ? "Pending"
-                                : "-";
+                        ? prediction.EarnedPoint.ToString()
+                        : hasPrediction
+                        ? "Pending"
+                        : "-";
 
                         var searchText = $"{fixture.TeamOneName} {fixture.TeamTwoName} {fixture.Stage.GetDisplayName()} {fixture.Status} {predictionTextForSearch} {actualText} {pointTextForSearch} {fixture.MatchDateTime:dd MMM yyyy hh:mm tt}"
-                            .ToLowerInvariant();
+                        .ToLowerInvariant();
 
                         <tr id="fixture-row-@fixture.Id"
                             class="prediction-fixture-row"
@@ -467,8 +646,8 @@
                                     </button>
                                 }
                                 else if (fixture.Status == MatchStatus.Live ||
-                                         fixture.Status == MatchStatus.Finished ||
-                                         DateTime.Now >= fixture.MatchDateTime)
+                                fixture.Status == MatchStatus.Finished ||
+                                DateTime.Now >= fixture.MatchDateTime)
                                 {
                                     <a asp-controller="Dashboard"
                                        asp-action="PredictionDetail"
