@@ -39,14 +39,24 @@
         gap: 12px;
     }
 
+    .user-history-title-block {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+        .user-history-title-block h2 {
+            line-height: 1.2;
+        }
+
     .user-history-action-buttons {
         display: flex;
         align-items: center;
         gap: 8px;
+        flex: 0 0 auto;
     }
 
     .user-history-back-btn {
-        border-radius: 10px;
+        border-radius: 999px;
         font-weight: 700;
         white-space: nowrap;
     }
@@ -55,6 +65,10 @@
         border-radius: 10px;
         font-weight: 700;
         white-space: nowrap;
+    }
+
+    .user-history-mobile-download-btn {
+        display: none;
     }
 
     .user-history-search-toolbar {
@@ -71,41 +85,60 @@
         min-width: 0;
     }
 
-        .user-history-search-box span {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #64748b;
-            z-index: 2;
-        }
-
-        .user-history-search-box .form-control {
-            padding-left: 38px;
-            min-height: 42px;
-            border-radius: 12px;
-            width: 100%;
-        }
-
-    .user-history-clear-btn {
-        flex: 0 0 auto;
-        width: auto !important;
-        border: 1px solid #fecaca;
-        color: #dc2626;
-        background: #ffffff;
-        font-weight: 700;
-        white-space: nowrap;
-        min-height: 42px;
-        border-radius: 12px;
-        padding-left: 14px;
-        padding-right: 14px;
+    .user-history-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        z-index: 2;
     }
 
-        .user-history-clear-btn:hover,
-        .user-history-clear-btn:focus {
-            color: #ffffff;
-            background: #dc2626;
-            border-color: #dc2626;
+    .user-history-search-box .form-control {
+        padding-left: 38px;
+        padding-right: 42px;
+        min-height: 42px;
+        border-radius: 12px;
+        width: 100%;
+    }
+
+    .search-decoration-none::-webkit-search-decoration,
+    .search-decoration-none::-webkit-search-cancel-button,
+    .search-decoration-none::-webkit-search-results-button,
+    .search-decoration-none::-webkit-search-results-decoration {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    .search-decoration-none {
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .user-history-search-clear-inside {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 26px;
+        height: 26px;
+        border: 0;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        padding: 0;
+        font-size: .9rem;
+        line-height: 1;
+    }
+
+        .user-history-search-clear-inside:hover,
+        .user-history-search-clear-inside:focus {
+            background: #fee2e2;
+            color: #b91c1c;
         }
 
     .user-history-table-wrap {
@@ -121,28 +154,57 @@
         }
 
         .user-history-topbar {
-            align-items: stretch;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: start;
+            gap: 8px;
+            margin-bottom: 10px !important;
         }
 
-            .user-history-topbar > div {
-                width: 100%;
+        .user-history-title-block {
+            grid-column: 1;
+            grid-row: 1;
+            width: auto !important;
+            min-width: 0;
+        }
+
+            .user-history-title-block h2 {
+                font-size: 1.2rem;
+                margin-bottom: 4px;
+            }
+
+            .user-history-title-block .text-muted {
+                font-size: .82rem;
+                line-height: 1.35;
             }
 
         .user-history-action-buttons {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            width: 100%;
+            grid-column: 2;
+            grid-row: 1;
+            width: auto !important;
+            display: flex !important;
+            align-items: flex-start;
+            justify-content: flex-end;
         }
 
-            .user-history-action-buttons .btn {
-                width: 100%;
-                min-height: 40px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 5px;
-            }
+        .user-history-download-desktop {
+            display: none !important;
+        }
+
+        .user-history-back-btn {
+            min-height: 34px;
+            padding: 6px 12px;
+            font-size: .82rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border-radius: 999px;
+        }
+
+        .user-history-profile-card {
+            margin-bottom: 14px !important;
+        }
 
         .user-history-search-toolbar {
             display: flex !important;
@@ -150,6 +212,7 @@
             align-items: center !important;
             gap: 6px !important;
             width: 100%;
+            margin-bottom: 12px !important;
         }
 
         .user-history-search-box {
@@ -157,47 +220,96 @@
             min-width: 0;
         }
 
-            .user-history-search-box span {
-                left: 10px;
-            }
-
-            .user-history-search-box .form-control {
-                min-height: 40px;
-                font-size: .86rem;
-                padding-left: 34px;
-            }
-
-        .user-history-clear-btn {
-            flex: 0 0 auto;
-            width: auto !important;
-            min-width: 74px;
-            min-height: 40px;
-            padding-left: 9px;
-            padding-right: 9px;
-            font-size: .8rem;
+        .user-history-search-icon {
+            left: 10px;
         }
+
+        .user-history-search-box .form-control {
+            min-height: 40px;
+            font-size: .86rem;
+            padding-left: 34px;
+            padding-right: 38px;
+        }
+
+        .user-history-search-clear-inside {
+            right: 7px;
+            width: 24px;
+            height: 24px;
+            font-size: .82rem;
+        }
+
+        .user-history-mobile-download-btn {
+            flex: 0 0 auto;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            width: 42px !important;
+            min-width: 42px !important;
+            height: 40px !important;
+            min-height: 40px !important;
+            border-radius: 12px;
+            padding: 0 !important;
+            line-height: 1;
+        }
+
+            .user-history-mobile-download-btn i {
+                margin: 0 !important;
+                line-height: 1;
+                font-size: .82rem;
+            }
+    }
+
+    @@media (max-width: 390px) {
+        .user-history-title-block h2 {
+            font-size: 1.1rem;
+        }
+
+        .user-history-title-block .text-muted {
+            font-size: .78rem;
+        }
+
+        .user-history-back-btn {
+            font-size: .76rem;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .user-history-profile-card {
+            margin-bottom: 12px !important;
+        }
+
+        .user-history-mobile-download-btn {
+            width: 40px !important;
+            min-width: 40px !important;
+        }
+
+            .user-history-mobile-download-btn i {
+                font-size: .78rem;
+            }
     }
 </style>
 
 <div class="dashboard-card user-history-page p-3 p-md-4 mb-4">
 
     <div class="user-history-topbar mb-4">
-        <div>
+        <div class="user-history-title-block">
             <h2 class="h4 fw-bold mb-1">
                 <i class="bi bi-person-lines-fill text-primary"></i>
                 User Prediction Detail
             </h2>
 
             <div class="text-muted small">
-                Showing only Live and Finished fixtures. Upcoming match predictions are hidden.
+                Showing only Live and Finished fixtures.
             </div>
         </div>
 
-        <div class="d-flex flex-wrap gap-2 user-history-action-buttons">
+        <div class="user-history-action-buttons">
 
             <a asp-action="DownloadUserPredictionDetailExcel"
                asp-route-userId="@Model.UserId"
-               class="btn btn-success btn-sm user-history-download-btn">
+               class="btn btn-success btn-sm user-history-download-btn user-history-download-desktop">
+                <i class="bi bi-download"></i>
                 <i class="bi bi-file-earmark-excel"></i>
                 Download Excel
             </a>
@@ -256,22 +368,32 @@
     <div class="user-history-search-toolbar mb-3">
 
         <div class="user-history-search-box">
-            <span>
+            <span class="user-history-search-icon">
                 <i class="bi bi-search"></i>
             </span>
 
             <input type="search"
                    id="userHistorySearch"
-                   class="form-control"
+                   class="form-control search-decoration-none"
                    placeholder="Search" />
+
+            <button type="button"
+                    class="user-history-search-clear-inside"
+                    id="userHistoryClearSearch"
+                    title="Clear search"
+                    aria-label="Clear search">
+                <i class="bi bi-x-circle"></i>
+            </button>
         </div>
 
-        <button type="button"
-                class="btn user-history-clear-btn"
-                id="userHistoryClearSearch">
-            <i class="bi bi-x-circle"></i>
-            Clear
-        </button>
+        <a asp-action="DownloadUserPredictionDetailExcel"
+           asp-route-userId="@Model.UserId"
+           class="btn btn-success user-history-mobile-download-btn"
+           title="Download Excel"
+           aria-label="Download Excel">
+            <i class="bi bi-download"></i>
+            <i class="bi bi-file-earmark-excel"></i>
+        </a>
 
     </div>
 

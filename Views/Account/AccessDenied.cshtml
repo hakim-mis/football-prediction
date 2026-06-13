@@ -4,7 +4,7 @@
 }
 
 <style>
-    .forgot-wrapper {
+    .access-denied-wrapper {
         min-height: 100vh;
         padding: 24px 12px;
         display: flex;
@@ -12,44 +12,50 @@
         justify-content: center;
     }
 
-    .forgot-card {
+    .access-denied-card {
         width: 100%;
         max-width: 650px;
         overflow: hidden;
+        background: #ffffff;
+        border: 1px solid rgba(148, 163, 184, .35);
+        border-radius: 22px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, .18);
     }
 
-    .forgot-header {
+    .access-denied-header {
         width: 100%;
     }
 
-    .forgot-logo-box {
+    .access-denied-logo-box {
         flex: 0 0 auto;
     }
 
-    .forgot-logo {
+    .access-denied-logo {
         width: 180px;
         max-width: 100%;
         height: auto;
         object-fit: contain;
     }
 
-    .forgot-title-box {
+    .access-denied-title-box {
         flex: 1;
         min-width: 0;
     }
 
-        .forgot-title-box h1 {
+        .access-denied-title-box h1 {
             line-height: 1.2;
+            color: #111827;
         }
 
-        .forgot-title-box p {
+        .access-denied-title-box p {
             line-height: 1.5;
+            color: #475569;
         }
 
     .access-status-box {
-        background: rgba(255, 255, 255, .08);
-        border: 1px solid rgba(255, 255, 255, .18);
-        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
         padding: 18px;
         margin-bottom: 20px;
     }
@@ -68,11 +74,25 @@
         border: 1px solid #fdba74;
     }
 
+    .access-status-heading {
+        color: #b45309;
+        font-weight: 800;
+    }
+
+    .access-status-description {
+        color: #475569;
+        line-height: 1.5;
+    }
+
     .access-status-item {
         display: flex;
         align-items: flex-start;
         gap: 12px;
         margin-bottom: 14px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 12px;
     }
 
         .access-status-item:last-child {
@@ -83,87 +103,100 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: #ffc107;
-        color: #111827;
+        background: #fef3c7;
+        color: #92400e;
         display: flex;
         align-items: center;
         justify-content: center;
         flex: 0 0 auto;
         font-size: 17px;
+        border: 1px solid #fde68a;
     }
 
     .access-status-text strong {
         display: block;
-        color: #ffffff;
+        color: #111827;
         font-weight: 800;
         margin-bottom: 2px;
     }
 
     .access-status-text span {
-        color: rgba(255, 255, 255, .65);
+        color: #475569;
         font-size: .92rem;
         line-height: 1.45;
     }
 
+    .access-denied-btn-row .btn {
+        border-radius: 12px;
+    }
+
     @@media (max-width: 767.98px) {
-        .forgot-wrapper {
+        .access-denied-wrapper {
             padding: 12px 8px;
         }
 
-        .forgot-logo {
+        .access-denied-card {
+            border-radius: 16px;
+        }
+
+        .access-denied-logo {
             width: 220px;
         }
 
-        .forgot-title-box h1 {
+        .access-denied-title-box h1 {
             font-size: 1.6rem;
         }
 
-        .forgot-title-box p {
+        .access-denied-title-box p {
             font-size: .95rem;
         }
 
-        .forgot-card {
-            border-radius: 14px;
-        }
-
-        .d-grid.d-md-flex .btn {
+        .access-denied-btn-row .btn {
             width: 100%;
         }
     }
 
     @@media (max-width: 420px) {
-        .forgot-logo {
+        .access-denied-logo {
             width: 190px;
         }
 
-        .forgot-title-box h1 {
+        .access-denied-title-box h1 {
             font-size: 1.4rem;
         }
 
-        .forgot-title-box p {
+        .access-denied-title-box p {
             font-size: .9rem;
+        }
+
+        .access-status-box {
+            padding: 14px;
+        }
+
+        .access-status-item {
+            padding: 10px;
         }
     }
 </style>
 
-<div class="forgot-wrapper">
+<div class="access-denied-wrapper">
 
     <div class="col-12 col-sm-11 col-md-8 col-lg-6">
 
-        <div class="glass-card forgot-card p-3 p-sm-4 p-lg-5">
+        <div class="access-denied-card p-3 p-sm-4 p-lg-5">
 
-            <div class="forgot-header d-flex flex-column flex-md-row align-items-center text-center text-md-start gap-3 gap-md-4 mb-4">
+            <div class="access-denied-header d-flex flex-column flex-md-row align-items-center text-center text-md-start gap-3 gap-md-4 mb-4">
 
-                <div class="forgot-logo-box">
-                    <img src="~/img/logo2.png" alt="Logo" class="forgot-logo" />
+                <div class="access-denied-logo-box">
+                    <img src="~/img/logo2.png" alt="Logo" class="access-denied-logo" />
                 </div>
 
-                <div class="forgot-title-box">
+                <div class="access-denied-title-box">
                     <h1 class="h3 fw-bold mb-1">
                         Access Denied
                     </h1>
 
-                    <p class="text-white-50 mb-0">
+                    <p class="mb-0">
                         You do not have permission to access this page.
                     </p>
                 </div>
@@ -177,11 +210,11 @@
                 </div>
 
                 <div class="text-center mb-4">
-                    <h3 class="fw-bold text-warning mb-2">
+                    <h3 class="access-status-heading mb-2">
                         Permission Required
                     </h3>
 
-                    <p class="text-white-50 mb-0">
+                    <p class="access-status-description mb-0">
                         This area is restricted. Please use an authorized account or contact the administrator.
                     </p>
                 </div>
@@ -227,7 +260,7 @@
 
             </div>
 
-            <div class="d-grid d-md-flex gap-2">
+            <div class="d-grid d-md-flex gap-2 access-denied-btn-row">
 
                 <a asp-controller="Home"
                    asp-action="Index"
@@ -238,7 +271,7 @@
 
                 <a asp-controller="Account"
                    asp-action="Login"
-                   class="btn btn-outline-light btn-lg flex-fill">
+                   class="btn btn-outline-primary btn-lg fw-bold flex-fill">
                     <i class="bi bi-box-arrow-in-right"></i>
                     Login Again
                 </a>

@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "Leaderboard";
 
+    var selectedRange = (string?)ViewBag.Range ?? "1-50";
+    var startSl = ViewBag.StartSl is int slValue ? slValue : 1;
+
     string UserPhoto(string? path)
     {
         return string.IsNullOrWhiteSpace(path)
@@ -26,6 +29,20 @@
 
         return parts.Any() ? string.Join(" • ", parts) : "-";
     }
+
+    int RankSortValue(string? rankText)
+    {
+        if (string.IsNullOrWhiteSpace(rankText))
+        {
+            return 999999;
+        }
+
+        var clean = rankText.Replace("#", "").Trim();
+
+        return int.TryParse(clean, out var value)
+            ? value
+            : 999999;
+    }
 }
 
 <style>
@@ -47,6 +64,20 @@
     }
 
     .leaderboard-back-btn {
+        border-radius: 999px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .leaderboard-range-filter {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .leaderboard-range-filter .btn {
         border-radius: 999px;
         font-weight: 700;
         white-space: nowrap;
@@ -77,31 +108,81 @@
 
     .leaderboard-search-box .form-control {
         padding-left: 38px;
+        padding-right: 42px;
         min-height: 42px;
         border-radius: 12px;
         width: 100%;
     }
 
-    .leaderboard-clear-btn {
-        flex: 0 0 auto;
-        width: auto !important;
-        border: 1px solid #fecaca;
-        color: #dc2626;
+    .leaderboard-search-clear-inside {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 26px;
+        height: 26px;
+        border: 0;
+        border-radius: 50%;
         background: #ffffff;
-        font-weight: 700;
-        white-space: nowrap;
-        min-height: 42px;
-        border-radius: 12px;
-        padding-left: 14px;
-        padding-right: 14px;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        padding: 0;
+        font-size: .9rem;
+        line-height: 1;
     }
 
-        .leaderboard-clear-btn:hover,
-        .leaderboard-clear-btn:focus {
-            color: #ffffff;
-            background: #dc2626;
-            border-color: #dc2626;
-        }
+    .leaderboard-search-clear-inside:hover,
+    .leaderboard-search-clear-inside:focus {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .leaderboard-search-no-native-clear::-webkit-search-decoration,
+    .leaderboard-search-no-native-clear::-webkit-search-cancel-button,
+    .leaderboard-search-no-native-clear::-webkit-search-results-button,
+    .leaderboard-search-no-native-clear::-webkit-search-results-decoration {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    .leaderboard-search-no-native-clear {
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .leaderboard-sort-btn {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font-weight: 800;
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+    .leaderboard-sort-btn:hover,
+    .leaderboard-sort-btn:focus {
+        color: #0d6efd;
+    }
+
+    .leaderboard-sl-badge {
+        min-width: 38px;
+        height: 30px;
+        border-radius: 999px;
+        background: #eef6ff;
+        color: #0d6efd;
+        border: 1px solid #bfdbfe;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .8rem;
+        font-weight: 800;
+    }
 
     @@media (max-width: 767.98px) {
         .leaderboard-topbar {
@@ -122,6 +203,19 @@
             font-size: .82rem;
         }
 
+        .leaderboard-range-filter {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .leaderboard-range-filter .btn {
+            width: 100%;
+            font-size: .76rem;
+            padding: 6px 5px;
+        }
+
         .leaderboard-search-toolbar {
             display: flex !important;
             flex-direction: row !important;
@@ -135,24 +229,36 @@
             min-width: 0;
         }
 
-            .leaderboard-search-box .form-control {
-                min-height: 40px;
-                font-size: .86rem;
-                padding-left: 34px;
-            }
+        .leaderboard-search-box .form-control {
+            min-height: 40px;
+            font-size: .86rem;
+            padding-left: 34px;
+            padding-right: 38px;
+        }
 
         .leaderboard-search-icon {
             left: 10px;
         }
 
-        .leaderboard-clear-btn {
-            flex: 0 0 auto;
-            width: auto !important;
-            min-width: 74px;
-            min-height: 40px;
-            padding-left: 9px;
-            padding-right: 9px;
-            font-size: .8rem;
+        .leaderboard-search-clear-inside {
+            right: 7px;
+            width: 24px;
+            height: 24px;
+            font-size: .82rem;
+        }
+    }
+
+    @@media (max-width: 390px) {
+        .leaderboard-range-filter .btn {
+            font-size: .7rem;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+
+        .leaderboard-sl-badge {
+            min-width: 34px;
+            height: 28px;
+            font-size: .74rem;
         }
     }
 </style>
@@ -164,7 +270,7 @@
         <div class="leaderboard-header-line">
             <span class="pill leaderboard-title-pill">
                 <i class="bi bi-trophy"></i>
-                Leaderboard Top 100
+                Leaderboard
             </span>
 
             <button type="button"
@@ -177,6 +283,32 @@
 
     </div>
 
+    <div class="leaderboard-range-filter">
+        <a asp-action="Index"
+           asp-route-range="1-50"
+           class="btn btn-sm leaderboard-range-link @(selectedRange == "1-50" ? "btn-primary" : "btn-outline-primary")">
+            1 - 50
+        </a>
+
+        <a asp-action="Index"
+           asp-route-range="51-100"
+           class="btn btn-sm leaderboard-range-link @(selectedRange == "51-100" ? "btn-primary" : "btn-outline-primary")">
+            51 - 100
+        </a>
+
+        <a asp-action="Index"
+           asp-route-range="101-150"
+           class="btn btn-sm leaderboard-range-link @(selectedRange == "101-150" ? "btn-primary" : "btn-outline-primary")">
+            101 - 150
+        </a>
+
+        <a asp-action="Index"
+           asp-route-range="rest"
+           class="btn btn-sm leaderboard-range-link @(selectedRange == "rest" ? "btn-primary" : "btn-outline-primary")">
+            Rest
+        </a>
+    </div>
+
     <div class="leaderboard-search-toolbar mb-3">
         <div class="leaderboard-search-box">
             <span class="leaderboard-search-icon">
@@ -185,28 +317,73 @@
 
             <input type="search"
                    id="leaderboardSearch"
-                   class="form-control"
+                   class="form-control leaderboard-search-no-native-clear"
                    placeholder="Search" />
-        </div>
 
-        <button type="button"
-                class="btn leaderboard-clear-btn"
-                id="leaderboardClearSearch">
-            <i class="bi bi-x-circle"></i>
-            Clear
-        </button>
+            <button type="button"
+                    class="leaderboard-search-clear-inside"
+                    id="leaderboardClearSearch"
+                    title="Clear search"
+                    aria-label="Clear search">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
     </div>
 
     <div class="leaderboard-table-wrap">
         <table class="table table-clean table-hover align-middle mb-0 leaderboard-table">
             <thead>
                 <tr>
-                    <th>Rank</th>
+                    <th>
+                        <button type="button"
+                                class="leaderboard-sort-btn"
+                                data-sort-field="sl"
+                                data-sort-direction="asc">
+                            SL
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="leaderboard-sort-btn"
+                                data-sort-field="rank"
+                                data-sort-direction="asc">
+                            Rank
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
                     <th>Player</th>
-                    <th class="leaderboard-designation-col">Designation</th>
-                    <th class="leaderboard-department-col">Department</th>
-                    <th>Total Score</th>
-                    <th>Exact</th>
+
+                    <th class="leaderboard-designation-col">
+                        Designation
+                    </th>
+
+                    <th class="leaderboard-department-col">
+                        Department
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="leaderboard-sort-btn"
+                                data-sort-field="score"
+                                data-sort-direction="desc">
+                            Total Score
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="leaderboard-sort-btn"
+                                data-sort-field="exact"
+                                data-sort-direction="desc">
+                            Exact
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
                     <th>Detail</th>
                 </tr>
             </thead>
@@ -215,21 +392,37 @@
                 @if (Model == null || !Model.Any())
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
+                        <td colspan="8" class="text-center text-muted py-4">
                             No active user found.
                         </td>
                     </tr>
                 }
                 else
                 {
+                    var index = 0;
+
                     foreach (var user in Model)
                     {
+                        var sl = startSl + index;
                         var designation = string.IsNullOrWhiteSpace(user.Designation) ? "-" : user.Designation;
                         var department = string.IsNullOrWhiteSpace(user.Department) ? "-" : user.Department;
-                        var searchableText = $"{user.RankText} {user.FullName} {designation} {department} {user.TotalScore} {user.ExactPredictionCount}".ToLowerInvariant();
+                        var rankSort = RankSortValue(user.RankText);
+
+                        var searchableText = $"{sl} {user.RankText} {user.FullName} {designation} {department} {user.TotalScore} {user.ExactPredictionCount}".ToLowerInvariant();
 
                         <tr class="leaderboard-row-item"
-                            data-search="@searchableText">
+                            data-search="@searchableText"
+                            data-sl="@sl"
+                            data-rank="@rankSort"
+                            data-score="@user.TotalScore"
+                            data-exact="@user.ExactPredictionCount">
+
+                            <td>
+                                <span class="leaderboard-sl-badge">
+                                    @sl
+                                </span>
+                            </td>
+
                             <td>
                                 <span class="rank-circle">
                                     @user.RankText
@@ -282,6 +475,8 @@
                                 </a>
                             </td>
                         </tr>
+
+                        index++;
                     }
                 }
             </tbody>
@@ -298,7 +493,23 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             bindLeaderboardSearch();
+            bindLeaderboardSort();
+            bindLeaderboardRangeLinks();
         });
+
+        function bindLeaderboardRangeLinks() {
+            document.querySelectorAll(".leaderboard-range-link").forEach(function (link) {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+
+                    const url = link.getAttribute("href");
+
+                    if (url) {
+                        window.location.replace(url);
+                    }
+                });
+            });
+        }
 
         function goBackOrDashboard() {
             if (window.history.length > 1) {
@@ -328,6 +539,61 @@
 
                     applyLeaderboardSearch();
                 });
+            }
+        }
+
+        function bindLeaderboardSort() {
+            document.querySelectorAll(".leaderboard-sort-btn").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const field = button.getAttribute("data-sort-field");
+                    const currentDirection = button.getAttribute("data-sort-direction") || "asc";
+                    const nextDirection = currentDirection === "asc" ? "desc" : "asc";
+
+                    button.setAttribute("data-sort-direction", nextDirection);
+
+                    sortLeaderboardRows(field, nextDirection);
+                    applyLeaderboardSearch();
+                    updateSortIcons(button, nextDirection);
+                });
+            });
+        }
+
+        function sortLeaderboardRows(field, direction) {
+            const tbody = document.getElementById("leaderboardTableBody");
+
+            if (!tbody || !field) {
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll(".leaderboard-row-item"));
+
+            rows.sort(function (a, b) {
+                const aValue = parseInt(a.getAttribute("data-" + field) || "0");
+                const bValue = parseInt(b.getAttribute("data-" + field) || "0");
+
+                if (direction === "asc") {
+                    return aValue - bValue;
+                }
+
+                return bValue - aValue;
+            });
+
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateSortIcons(activeButton, direction) {
+            document.querySelectorAll(".leaderboard-sort-btn i").forEach(function (icon) {
+                icon.className = "bi bi-arrow-down-up";
+            });
+
+            const activeIcon = activeButton.querySelector("i");
+
+            if (activeIcon) {
+                activeIcon.className = direction === "asc"
+                    ? "bi bi-arrow-up-short"
+                    : "bi bi-arrow-down-short";
             }
         }
 

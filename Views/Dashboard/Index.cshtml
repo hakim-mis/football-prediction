@@ -31,6 +31,7 @@
 
     var upcomingCount = Model.PredictionFixtures?.Count(f => f.Status == MatchStatus.Upcoming) ?? 0;
     var liveCount = Model.PredictionFixtures?.Count(f => f.Status == MatchStatus.Live) ?? 0;
+    var upcomingLiveCount = upcomingCount + liveCount;
     var finishedCount = Model.PredictionFixtures?.Count(f => f.Status == MatchStatus.Finished) ?? 0;
 
     var today = DateTime.Today;
@@ -101,42 +102,61 @@
         min-width: 0;
     }
 
-        .dashboard-fixture-search-box span {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #64748b;
-            z-index: 2;
-        }
-
-        .dashboard-fixture-search-box .form-control {
-            padding-left: 38px;
-            min-height: 42px;
-            border-radius: 12px;
-            width: 100%;
-        }
-
-    .dashboard-fixture-clear-btn {
-        flex: 0 0 auto;
-        width: auto !important;
-        border: 1px solid #fecaca;
-        color: #dc2626;
-        background: #ffffff;
-        font-weight: 700;
-        white-space: nowrap;
-        min-height: 42px;
-        border-radius: 12px;
-        padding-left: 14px;
-        padding-right: 14px;
+    .dashboard-fixture-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        z-index: 2;
     }
 
-        .dashboard-fixture-clear-btn:hover,
-        .dashboard-fixture-clear-btn:focus {
-            color: #ffffff;
-            background: #dc2626;
-            border-color: #dc2626;
+    .dashboard-fixture-search-box .form-control {
+        padding-left: 38px;
+        padding-right: 42px;
+        min-height: 42px;
+        border-radius: 12px;
+        width: 100%;
+    }
+
+    .dashboard-fixture-search-clear-inside {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 26px;
+        height: 26px;
+        border: 0;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        padding: 0;
+        font-size: .9rem;
+        line-height: 1;
+    }
+
+        .dashboard-fixture-search-clear-inside:hover,
+        .dashboard-fixture-search-clear-inside:focus {
+            background: #fee2e2;
+            color: #b91c1c;
         }
+
+    .dashboard-fixture-search-no-native-clear::-webkit-search-decoration,
+    .dashboard-fixture-search-no-native-clear::-webkit-search-cancel-button,
+    .dashboard-fixture-search-no-native-clear::-webkit-search-results-button,
+    .dashboard-fixture-search-no-native-clear::-webkit-search-results-decoration {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    .dashboard-fixture-search-no-native-clear {
+        appearance: none;
+        -webkit-appearance: none;
+    }
 
     @@media (max-width: 767.98px) {
         .dashboard-fixture-search-toolbar {
@@ -152,24 +172,22 @@
             min-width: 0;
         }
 
-            .dashboard-fixture-search-box span {
-                left: 10px;
-            }
+        .dashboard-fixture-search-icon {
+            left: 10px;
+        }
 
-            .dashboard-fixture-search-box .form-control {
-                min-height: 40px;
-                font-size: .86rem;
-                padding-left: 34px;
-            }
-
-        .dashboard-fixture-clear-btn {
-            flex: 0 0 auto;
-            width: auto !important;
-            min-width: 74px;
+        .dashboard-fixture-search-box .form-control {
             min-height: 40px;
-            padding-left: 9px;
-            padding-right: 9px;
-            font-size: .8rem;
+            font-size: .86rem;
+            padding-left: 34px;
+            padding-right: 38px;
+        }
+
+        .dashboard-fixture-search-clear-inside {
+            right: 7px;
+            width: 24px;
+            height: 24px;
+            font-size: .82rem;
         }
     }
 </style>
@@ -239,19 +257,18 @@
                 </a>
 
                 <a asp-controller="Dashboard"
-                   asp-action="Rules"
-                   class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-journal-check"></i>
-                    Rules
-                </a>
-
-                <a asp-controller="Dashboard"
                    asp-action="PredictionScore"
                    class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-clipboard-data"></i>
                     Prediction Score
                 </a>
 
+                <a asp-controller="Dashboard"
+                   asp-action="Rules"
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-journal-check"></i>
+                    Rules
+                </a>
             </div>
 
         </div>
@@ -356,27 +373,11 @@
     <div class="dashboard-fixture-filter-bar">
 
         <button type="button"
-                class="dashboard-filter-chip filter-all active"
-                data-filter="all">
-            <i class="bi bi-grid"></i>
-            All
-            <span id="fixtureAllCount">@totalFixtureCount</span>
-        </button>
-
-        <button type="button"
-                class="dashboard-filter-chip filter-upcoming"
-                data-filter="Upcoming">
+                class="dashboard-filter-chip filter-upcoming active"
+                data-filter="upcominglive">
             <i class="bi bi-calendar-event"></i>
-            Upcoming
-            <span id="fixtureUpcomingCount">@upcomingCount</span>
-        </button>
-
-        <button type="button"
-                class="dashboard-filter-chip filter-live"
-                data-filter="Live">
-            <i class="bi bi-broadcast"></i>
-            Live
-            <span id="fixtureLiveCount">@liveCount</span>
+            Upcoming + Live
+            <span id="fixtureUpcomingLiveCount">@upcomingLiveCount</span>
         </button>
 
         <button type="button"
@@ -385,6 +386,14 @@
             <i class="bi bi-check-circle"></i>
             Finished
             <span id="fixtureFinishedCount">@finishedCount</span>
+        </button>
+
+        <button type="button"
+                class="dashboard-filter-chip filter-all"
+                data-filter="all">
+            <i class="bi bi-grid"></i>
+            All
+            <span id="fixtureAllCount">@totalFixtureCount</span>
         </button>
 
         <button type="button"
@@ -432,22 +441,23 @@
     <div class="dashboard-fixture-search-toolbar mt-3">
 
         <div class="dashboard-fixture-search-box">
-            <span>
+            <span class="dashboard-fixture-search-icon">
                 <i class="bi bi-search"></i>
             </span>
 
             <input type="search"
                    id="dashboardFixtureSearch"
-                   class="form-control"
+                   class="form-control dashboard-fixture-search-no-native-clear"
                    placeholder="Search" />
-        </div>
 
-        <button type="button"
-                class="btn dashboard-fixture-clear-btn"
-                id="dashboardFixtureClearSearch">
-            <i class="bi bi-x-circle"></i>
-            Clear
-        </button>
+            <button type="button"
+                    class="dashboard-fixture-search-clear-inside"
+                    id="dashboardFixtureClearSearch"
+                    title="Clear search"
+                    aria-label="Clear search">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
 
     </div>
 
@@ -747,7 +757,7 @@
             });
         }
 
-        let activeDashboardFixtureFilter = "all";
+        let activeDashboardFixtureFilter = "upcominglive";
 
         document.addEventListener("DOMContentLoaded", function () {
             bindDashboardFixtureFilters();
@@ -820,14 +830,12 @@
 
                 let matchesFilter = false;
 
-                if (activeDashboardFixtureFilter === "all") {
+                if (activeDashboardFixtureFilter === "upcominglive") {
+                    matchesFilter = status === "Upcoming" || status === "Live";
+                } else if (activeDashboardFixtureFilter === "all") {
                     matchesFilter = true;
-                } else if (
-                    activeDashboardFixtureFilter === "Upcoming" ||
-                    activeDashboardFixtureFilter === "Live" ||
-                    activeDashboardFixtureFilter === "Finished"
-                ) {
-                    matchesFilter = status === activeDashboardFixtureFilter;
+                } else if (activeDashboardFixtureFilter === "Finished") {
+                    matchesFilter = status === "Finished";
                 } else if (
                     activeDashboardFixtureFilter === "predicted" ||
                     activeDashboardFixtureFilter === "noprediction" ||

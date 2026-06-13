@@ -43,6 +43,20 @@
                 : "text-bg-warning";
     }
 
+    int RankSortValue(string? rankText)
+    {
+        if (string.IsNullOrWhiteSpace(rankText))
+        {
+            return 999999;
+        }
+
+        var clean = rankText.Replace("#", "").Trim();
+
+        return int.TryParse(clean, out var value)
+            ? value
+            : 999999;
+    }
+
     var actualScore = Model.TeamOneActualGoal.HasValue && Model.TeamTwoActualGoal.HasValue
         ? $"{Model.TeamOneActualGoal} - {Model.TeamTwoActualGoal}"
         : "Pending";
@@ -72,10 +86,10 @@
         min-width: 0;
     }
 
-        .prediction-detail-title-row h2 {
-            margin: 0;
-            font-weight: 800;
-        }
+    .prediction-detail-title-row h2 {
+        margin: 0;
+        font-weight: 800;
+    }
 
     .prediction-detail-action-row {
         display: flex;
@@ -86,24 +100,20 @@
         margin-left: auto;
     }
 
-        .prediction-detail-action-row .btn {
-            font-weight: 700;
-            border-radius: 10px;
-            white-space: nowrap;
-        }
+    .prediction-detail-action-row .btn {
+        font-weight: 700;
+        border-radius: 10px;
+        white-space: nowrap;
+    }
+
+    .prediction-mobile-action-row {
+        display: none;
+    }
 
     .prediction-history-back-btn {
         border-radius: 999px !important;
         font-weight: 700;
         white-space: nowrap;
-    }
-
-    .prediction-history-back-mobile {
-        display: none !important;
-    }
-
-    .prediction-history-back-desktop {
-        display: inline-flex !important;
     }
 
     .match-prediction-summary {
@@ -127,16 +137,16 @@
         text-align: center;
     }
 
-        .match-summary-team strong {
-            display: block;
-            width: 100%;
-            font-size: .9rem;
-            color: #111827;
-            line-height: 1.2;
-            white-space: normal;
-            overflow-wrap: anywhere;
-            word-break: normal;
-        }
+    .match-summary-team strong {
+        display: block;
+        width: 100%;
+        font-size: .9rem;
+        color: #111827;
+        line-height: 1.2;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: normal;
+    }
 
     .match-summary-flag {
         width: 52px;
@@ -190,12 +200,12 @@
         white-space: nowrap;
     }
 
-        .match-summary-date i {
-            display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            line-height: 1;
-        }
+    .match-summary-date i {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        line-height: 1;
+    }
 
     .match-summary-score {
         font-size: 1.55rem;
@@ -203,6 +213,97 @@
         color: #020617;
         line-height: 1.1;
         margin-bottom: 6px;
+    }
+
+    .match-prediction-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .match-prediction-search-box {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .match-prediction-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        z-index: 2;
+    }
+
+    .match-prediction-search-box .form-control {
+        padding-left: 38px;
+        padding-right: 42px;
+        min-height: 42px;
+        border-radius: 12px;
+        width: 100%;
+    }
+
+    .match-prediction-search-clear {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 26px;
+        height: 26px;
+        border: 0;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        padding: 0;
+        font-size: .9rem;
+        line-height: 1;
+    }
+
+    .match-prediction-search-clear:hover,
+    .match-prediction-search-clear:focus {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .match-prediction-search-no-native-clear::-webkit-search-decoration,
+    .match-prediction-search-no-native-clear::-webkit-search-cancel-button,
+    .match-prediction-search-no-native-clear::-webkit-search-results-button,
+    .match-prediction-search-no-native-clear::-webkit-search-results-decoration {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    .match-prediction-search-no-native-clear {
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .match-prediction-mobile-excel-btn {
+        display: none;
+    }
+
+    .match-prediction-sort-btn {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font-weight: 800;
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+    .match-prediction-sort-btn:hover,
+    .match-prediction-sort-btn:focus {
+        color: #0d6efd;
     }
 
     .match-prediction-table-wrap {
@@ -222,55 +323,52 @@
             grid-template-columns: minmax(0, 1fr) auto;
             align-items: center;
             gap: 10px;
+            margin-bottom: 12px !important;
         }
 
         .prediction-detail-title-row {
             min-width: 0;
         }
 
-            .prediction-detail-title-row h2 {
-                font-size: 1.25rem;
-                line-height: 1.2;
-            }
-
-        .prediction-history-back-mobile {
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            padding: 6px 12px;
-            font-size: .82rem;
-        }
-
-        .prediction-history-back-desktop {
-            display: none !important;
+        .prediction-detail-title-row h2 {
+            font-size: 1.25rem;
+            line-height: 1.2;
         }
 
         .prediction-detail-action-row {
-            grid-column: 1 / -1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            width: 100%;
-            gap: 8px;
-            margin-top: 2px;
-            margin-left: 0;
+            display: none !important;
         }
 
-            .prediction-detail-action-row .btn {
-                width: 100%;
-                min-height: 40px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 5px;
-                font-size: .82rem;
-            }
+        .prediction-mobile-action-row {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .prediction-mobile-icon-btn {
+            min-width: 42px;
+            height: 34px;
+            border-radius: 999px;
+            padding: 6px 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            font-size: .8rem;
+            font-weight: 700;
+        }
+
+        .prediction-mobile-back-btn {
+            min-width: 64px;
+        }
 
         .match-prediction-summary {
             grid-template-columns: minmax(0, 1fr) minmax(104px, auto) minmax(0, 1fr);
             gap: 8px;
             padding: 14px 10px;
             border-radius: 16px;
+            margin-bottom: 12px !important;
         }
 
         .match-summary-flag {
@@ -282,14 +380,14 @@
             gap: 5px;
         }
 
-            .match-summary-team strong {
-                font-size: .78rem;
-                line-height: 1.12;
-                max-width: 96px;
-                white-space: normal;
-                overflow-wrap: anywhere;
-                word-break: normal;
-            }
+        .match-summary-team strong {
+            font-size: .78rem;
+            line-height: 1.12;
+            max-width: 96px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
 
         .match-summary-center {
             min-width: 104px;
@@ -306,24 +404,73 @@
             padding: 3px 6px;
         }
 
-            .match-summary-date i {
-                display: inline-block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                font-size: .68rem;
-                margin-right: 2px;
-            }
+        .match-summary-date i {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            font-size: .68rem;
+            margin-right: 2px;
+        }
 
         .match-summary-score {
             font-size: 1.32rem;
         }
+
+        .match-prediction-toolbar {
+            gap: 6px !important;
+            margin-bottom: 12px !important;
+        }
+
+        .match-prediction-search-icon {
+            left: 10px;
+        }
+
+        .match-prediction-search-box .form-control {
+            min-height: 40px;
+            font-size: .86rem;
+            padding-left: 34px;
+            padding-right: 38px;
+        }
+
+        .match-prediction-search-clear {
+            right: 7px;
+            width: 24px;
+            height: 24px;
+            font-size: .82rem;
+        }
+
+        .match-prediction-mobile-excel-btn {
+            flex: 0 0 auto;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            width: 42px !important;
+            min-width: 42px !important;
+            height: 40px !important;
+            min-height: 40px !important;
+            border-radius: 12px;
+            padding: 0 !important;
+            line-height: 1;
+        }
+
+        .match-prediction-mobile-excel-btn i {
+            margin: 0 !important;
+            line-height: 1;
+            font-size: .82rem;
+        }
     }
 
     @@media (max-width: 390px) {
-        .prediction-detail-action-row .btn {
-            font-size: .78rem;
+        .prediction-mobile-icon-btn {
+            min-width: 40px;
             padding-left: 8px;
             padding-right: 8px;
+            font-size: .76rem;
+        }
+
+        .prediction-mobile-back-btn {
+            min-width: 58px;
         }
 
         .match-prediction-summary {
@@ -353,9 +500,18 @@
             padding-right: 5px;
         }
 
-            .match-summary-date i {
-                font-size: .62rem;
-            }
+        .match-summary-date i {
+            font-size: .62rem;
+        }
+
+        .match-prediction-mobile-excel-btn {
+            width: 40px !important;
+            min-width: 40px !important;
+        }
+
+        .match-prediction-mobile-excel-btn i {
+            font-size: .78rem;
+        }
     }
 </style>
 
@@ -370,12 +526,22 @@
             </h2>
         </div>
 
-        <button type="button"
-                class="btn btn-outline-primary btn-sm prediction-history-back-btn prediction-history-back-mobile"
-                onclick="window.history.back();">
-            <i class="bi bi-arrow-left"></i>
-            Back
-        </button>
+        <div class="prediction-mobile-action-row">
+            <a asp-action="Index"
+               class="btn btn-outline-primary btn-sm prediction-mobile-icon-btn"
+               title="Back to Dashboard"
+               aria-label="Back to Dashboard">
+                <i class="bi bi-arrow-left"></i>
+                <i class="bi bi-speedometer2"></i>
+            </a>
+
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm prediction-mobile-icon-btn prediction-mobile-back-btn"
+                    onclick="window.history.back();">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </button>
+        </div>
 
         <div class="prediction-detail-action-row">
 
@@ -393,7 +559,7 @@
             </a>
 
             <button type="button"
-                    class="btn btn-outline-primary btn-sm prediction-history-back-btn prediction-history-back-desktop"
+                    class="btn btn-outline-primary btn-sm prediction-history-back-btn"
                     onclick="window.history.back();">
                 <i class="bi bi-arrow-left"></i>
                 Back
@@ -403,7 +569,6 @@
 
     </div>
 
-    <!-- Smart Compact Fixture Summary -->
     <div class="match-prediction-summary mb-4">
 
         <div class="match-summary-team">
@@ -446,21 +611,80 @@
 
     </div>
 
-    <!-- Responsive Prediction User List -->
+    <div class="match-prediction-toolbar mb-3">
+
+        <div class="match-prediction-search-box">
+            <span class="match-prediction-search-icon">
+                <i class="bi bi-search"></i>
+            </span>
+
+            <input type="search"
+                   id="matchPredictionSearch"
+                   class="form-control match-prediction-search-no-native-clear"
+                   placeholder="Search" />
+
+            <button type="button"
+                    class="match-prediction-search-clear"
+                    id="matchPredictionClearSearch"
+                    title="Clear search"
+                    aria-label="Clear search">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
+
+        <a asp-action="DownloadFixturePredictionsExcel"
+           asp-route-fixtureId="@Model.FixtureId"
+           class="btn btn-success match-prediction-mobile-excel-btn"
+           title="Download Excel"
+           aria-label="Download Excel">
+            <i class="bi bi-download"></i>
+            <i class="bi bi-file-earmark-excel"></i>
+        </a>
+
+    </div>
+
     <div class="match-prediction-table-wrap">
         <table class="table table-clean table-hover align-middle mb-0 match-prediction-table">
             <thead>
                 <tr>
-                    <th>Rank</th>
+                    <th>
+                        <button type="button"
+                                class="match-prediction-sort-btn"
+                                data-sort-field="rank"
+                                data-sort-direction="asc">
+                            Rank
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
                     <th>Player</th>
                     <th>Prediction</th>
-                    <th>Point</th>
-                    <th>Total Score</th>
+
+                    <th>
+                        <button type="button"
+                                class="match-prediction-sort-btn"
+                                data-sort-field="point"
+                                data-sort-direction="desc">
+                            Point
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="match-prediction-sort-btn"
+                                data-sort-field="score"
+                                data-sort-direction="desc">
+                            Total Score
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
                     <th>Detail</th>
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody id="matchPredictionTableBody">
                 @if (Model.Predictions == null || !Model.Predictions.Any())
                 {
                     <tr>
@@ -473,7 +697,17 @@
                 {
                     foreach (var item in Model.Predictions)
                     {
-                        <tr>
+                        var userInfo = UserInfo(item.Designation, item.Department);
+                        var predictionText = $"{item.TeamOnePredictedGoal} - {item.TeamTwoPredictedGoal}";
+                        var rankSort = RankSortValue(item.RankText);
+
+                        var searchableText = $"{item.RankText} {item.UserName} {userInfo} {predictionText} {item.EarnedPoint} {item.TotalScore}".ToLowerInvariant();
+
+                        <tr class="match-prediction-row"
+                            data-search="@searchableText"
+                            data-rank="@rankSort"
+                            data-point="@item.EarnedPoint"
+                            data-score="@item.TotalScore">
                             <td>
                                 <span class="rank-circle">
                                     @item.RankText
@@ -490,7 +724,7 @@
                                         <strong>@item.UserName</strong>
 
                                         <div class="small text-muted match-prediction-subtitle">
-                                            @UserInfo(item.Designation, item.Department)
+                                            @userInfo
                                         </div>
                                     </div>
                                 </div>
@@ -498,7 +732,7 @@
 
                             <td>
                                 <span class="prediction-score-pill">
-                                    @item.TeamOnePredictedGoal - @item.TeamTwoPredictedGoal
+                                    @predictionText
                                 </span>
                             </td>
 
@@ -519,7 +753,7 @@
                                    asp-route-userId="@item.UserId"
                                    class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-list-check"></i>
-                                    User Predictions
+                                    Detail
                                 </a>
                             </td>
                         </tr>
@@ -529,4 +763,125 @@
         </table>
     </div>
 
+    <div id="matchPredictionNoResult" class="empty-state mt-3 d-none">
+        No player matched your search.
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            bindMatchPredictionSearch();
+            bindMatchPredictionSort();
+        });
+
+        function bindMatchPredictionSearch() {
+            const searchInput = document.getElementById("matchPredictionSearch");
+            const clearButton = document.getElementById("matchPredictionClearSearch");
+
+            if (searchInput) {
+                searchInput.addEventListener("input", function () {
+                    applyMatchPredictionSearch();
+                });
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener("click", function () {
+                    if (searchInput) {
+                        searchInput.value = "";
+                        searchInput.focus();
+                    }
+
+                    applyMatchPredictionSearch();
+                });
+            }
+        }
+
+        function bindMatchPredictionSort() {
+            document.querySelectorAll(".match-prediction-sort-btn").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const field = button.getAttribute("data-sort-field");
+                    const currentDirection = button.getAttribute("data-sort-direction") || "asc";
+                    const nextDirection = currentDirection === "asc" ? "desc" : "asc";
+
+                    button.setAttribute("data-sort-direction", nextDirection);
+
+                    sortMatchPredictionRows(field, nextDirection);
+                    applyMatchPredictionSearch();
+                    updateMatchPredictionSortIcons(button, nextDirection);
+                });
+            });
+        }
+
+        function sortMatchPredictionRows(field, direction) {
+            const tbody = document.getElementById("matchPredictionTableBody");
+
+            if (!tbody || !field) {
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll(".match-prediction-row"));
+
+            rows.sort(function (a, b) {
+                const aValue = parseInt(a.getAttribute("data-" + field) || "0");
+                const bValue = parseInt(b.getAttribute("data-" + field) || "0");
+
+                if (direction === "asc") {
+                    return aValue - bValue;
+                }
+
+                return bValue - aValue;
+            });
+
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateMatchPredictionSortIcons(activeButton, direction) {
+            document.querySelectorAll(".match-prediction-sort-btn i").forEach(function (icon) {
+                icon.className = "bi bi-arrow-down-up";
+            });
+
+            const activeIcon = activeButton.querySelector("i");
+
+            if (activeIcon) {
+                activeIcon.className = direction === "asc"
+                    ? "bi bi-arrow-up-short"
+                    : "bi bi-arrow-down-short";
+            }
+        }
+
+        function applyMatchPredictionSearch() {
+            const searchInput = document.getElementById("matchPredictionSearch");
+            const noResult = document.getElementById("matchPredictionNoResult");
+
+            const searchText = searchInput
+                ? searchInput.value.trim().toLowerCase()
+                : "";
+
+            let visibleCount = 0;
+
+            document.querySelectorAll(".match-prediction-row").forEach(function (row) {
+                const searchable = row.getAttribute("data-search") || "";
+                const shouldShow = searchText === "" || searchable.includes(searchText);
+
+                if (shouldShow) {
+                    row.classList.remove("d-none");
+                    visibleCount++;
+                } else {
+                    row.classList.add("d-none");
+                }
+            });
+
+            if (noResult) {
+                if (visibleCount === 0 && document.querySelectorAll(".match-prediction-row").length > 0) {
+                    noResult.classList.remove("d-none");
+                } else {
+                    noResult.classList.add("d-none");
+                }
+            }
+        }
+    </script>
+}

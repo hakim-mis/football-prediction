@@ -34,6 +34,7 @@
 
     var upcomingCount = Model.PredictionFixtures?.Count(f => f.Status == MatchStatus.Upcoming) ?? 0;
     var liveCount = Model.PredictionFixtures?.Count(f => f.Status == MatchStatus.Live) ?? 0;
+    var upcomingLiveCount = upcomingCount + liveCount;
     var finishedCount = Model.PredictionFixtures?.Count(f => f.Status == MatchStatus.Finished) ?? 0;
 }
 
@@ -121,7 +122,7 @@
         min-width: 0;
     }
 
-        .prediction-score-search-box span {
+        .prediction-score-search-box .prediction-score-search-icon {
             position: absolute;
             left: 12px;
             top: 50%;
@@ -132,31 +133,50 @@
 
         .prediction-score-search-box .form-control {
             padding-left: 38px;
+            padding-right: 42px;
             min-height: 42px;
             border-radius: 12px;
             width: 100%;
         }
 
-    .prediction-score-clear-btn {
-        flex: 0 0 auto;
-        width: auto !important;
-        border: 1px solid #fecaca;
-        color: #dc2626;
+    .prediction-score-search-clear-inside {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 26px;
+        height: 26px;
+        border: 0;
+        border-radius: 50%;
         background: #ffffff;
-        font-weight: 700;
-        white-space: nowrap;
-        min-height: 42px;
-        border-radius: 12px;
-        padding-left: 14px;
-        padding-right: 14px;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        padding: 0;
+        font-size: .9rem;
+        line-height: 1;
     }
 
-        .prediction-score-clear-btn:hover,
-        .prediction-score-clear-btn:focus {
-            color: #ffffff;
-            background: #dc2626;
-            border-color: #dc2626;
+        .prediction-score-search-clear-inside:hover,
+        .prediction-score-search-clear-inside:focus {
+            background: #fee2e2;
+            color: #b91c1c;
         }
+
+    .prediction-score-search-no-native-clear::-webkit-search-decoration,
+    .prediction-score-search-no-native-clear::-webkit-search-cancel-button,
+    .prediction-score-search-no-native-clear::-webkit-search-results-button,
+    .prediction-score-search-no-native-clear::-webkit-search-results-decoration {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    .prediction-score-search-no-native-clear {
+        appearance: none;
+        -webkit-appearance: none;
+    }
 
     @@media (max-width: 767.98px) {
         .prediction-score-page-card {
@@ -175,13 +195,11 @@
         .prediction-score-title-block h2 {
             font-size: 1.14rem;
             line-height: 1.2;
-            margin-bottom: 4px;
+            margin-bottom: 0;
         }
 
         .prediction-score-title-block .text-muted {
-            font-size: .8rem;
-            line-height: 1.35;
-            max-width: 210px;
+            display: none !important;
         }
 
         .prediction-score-back-btn {
@@ -207,7 +225,7 @@
             min-width: 0;
         }
 
-            .prediction-score-search-box span {
+            .prediction-score-search-box .prediction-score-search-icon {
                 left: 10px;
             }
 
@@ -215,16 +233,14 @@
                 min-height: 40px;
                 font-size: .86rem;
                 padding-left: 34px;
+                padding-right: 38px;
             }
 
-        .prediction-score-clear-btn {
-            flex: 0 0 auto;
-            width: auto !important;
-            min-width: 74px;
-            min-height: 40px;
-            padding-left: 9px;
-            padding-right: 9px;
-            font-size: .8rem;
+        .prediction-score-search-clear-inside {
+            right: 7px;
+            width: 24px;
+            height: 24px;
+            font-size: .82rem;
         }
     }
 
@@ -233,20 +249,8 @@
             font-size: 1.08rem;
         }
 
-        .prediction-score-title-block .text-muted {
-            max-width: 190px;
-            font-size: .78rem;
-        }
-
         .prediction-score-back-btn {
             font-size: .72rem;
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-
-        .prediction-score-clear-btn {
-            min-width: 68px;
-            font-size: .76rem;
             padding-left: 8px;
             padding-right: 8px;
         }
@@ -330,27 +334,11 @@
     <div class="prediction-filter-buttons prediction-filter-buttons-smart mb-3">
 
         <button type="button"
-                class="prediction-filter-btn-smart filter-smart-all active"
-                data-filter="all">
-            <i class="bi bi-grid"></i>
-            All
-            <span id="countAll">@totalFixtureCount</span>
-        </button>
-
-        <button type="button"
-                class="prediction-filter-btn-smart filter-smart-upcoming"
-                data-filter="Upcoming">
+                class="prediction-filter-btn-smart filter-smart-upcoming active"
+                data-filter="upcominglive">
             <i class="bi bi-calendar-event"></i>
-            Upcoming
-            <span id="countUpcoming">@upcomingCount</span>
-        </button>
-
-        <button type="button"
-                class="prediction-filter-btn-smart filter-smart-live"
-                data-filter="Live">
-            <i class="bi bi-broadcast"></i>
-            Live
-            <span id="countLive">@liveCount</span>
+            Upcoming + Live
+            <span id="countUpcomingLive">@upcomingLiveCount</span>
         </button>
 
         <button type="button"
@@ -359,6 +347,14 @@
             <i class="bi bi-check-circle"></i>
             Finished
             <span id="countFinished">@finishedCount</span>
+        </button>
+
+        <button type="button"
+                class="prediction-filter-btn-smart filter-smart-all"
+                data-filter="all">
+            <i class="bi bi-grid"></i>
+            All
+            <span id="countAll">@totalFixtureCount</span>
         </button>
 
         <button type="button"
@@ -390,22 +386,23 @@
     <div class="prediction-score-toolbar mb-3">
 
         <div class="prediction-score-search-box">
-            <span>
+            <span class="prediction-score-search-icon">
                 <i class="bi bi-search"></i>
             </span>
 
             <input type="search"
                    id="predictionScoreSearch"
-                   class="form-control"
+                   class="form-control prediction-score-search-no-native-clear"
                    placeholder="Search" />
-        </div>
 
-        <button type="button"
-                class="btn prediction-score-clear-btn"
-                id="predictionScoreClearSearch">
-            <i class="bi bi-x-circle"></i>
-            Clear
-        </button>
+            <button type="button"
+                    class="prediction-score-search-clear-inside"
+                    id="predictionScoreClearSearch"
+                    title="Clear search"
+                    aria-label="Clear search">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
 
     </div>
 
@@ -468,11 +465,11 @@
                         Prediction? prediction = null;
 
                         var hasPrediction = Model.UserPredictionLookup != null &&
-                        Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
+                                            Model.UserPredictionLookup.TryGetValue(fixture.Id, out prediction);
 
                         var canPredict = fixture.Status == MatchStatus.Upcoming &&
-                        !fixture.IsProcessed &&
-                        DateTime.Now < fixture.MatchDateTime;
+                                         !fixture.IsProcessed &&
+                                         DateTime.Now < fixture.MatchDateTime;
 
                         var participation = ParticipationText(hasPrediction, canPredict);
 
@@ -480,27 +477,27 @@
                         var teamTwoFlag = ToImageUrl(Url, fixture.TeamTwoFlagPath, "/img/default-flag.svg");
 
                         var actualText = fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue
-                        ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
-                        : "Pending";
+                            ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
+                            : "Pending";
 
                         var pointSortValue = hasPrediction && prediction != null && prediction.IsProcessed
-                        ? prediction.EarnedPoint
-                        : -1;
+                            ? prediction.EarnedPoint
+                            : -1;
 
                         var predictionTextForSearch = hasPrediction && prediction != null
-                        ? $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}"
-                        : canPredict
-                        ? "Not Predict"
-                        : "Not Participated";
+                            ? $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}"
+                            : canPredict
+                                ? "Not Predict"
+                                : "Not Participated";
 
                         var pointTextForSearch = hasPrediction && prediction != null && prediction.IsProcessed
-                        ? prediction.EarnedPoint.ToString()
-                        : hasPrediction
-                        ? "Pending"
-                        : "-";
+                            ? prediction.EarnedPoint.ToString()
+                            : hasPrediction
+                                ? "Pending"
+                                : "-";
 
                         var searchText = $"{fixture.TeamOneName} {fixture.TeamTwoName} {fixture.Stage.GetDisplayName()} {fixture.Status} {predictionTextForSearch} {actualText} {pointTextForSearch} {fixture.MatchDateTime:dd MMM yyyy hh:mm tt}"
-                        .ToLowerInvariant();
+                            .ToLowerInvariant();
 
                         <tr id="fixture-row-@fixture.Id"
                             class="prediction-fixture-row"
@@ -646,8 +643,8 @@
                                     </button>
                                 }
                                 else if (fixture.Status == MatchStatus.Live ||
-                                fixture.Status == MatchStatus.Finished ||
-                                DateTime.Now >= fixture.MatchDateTime)
+                                         fixture.Status == MatchStatus.Finished ||
+                                         DateTime.Now >= fixture.MatchDateTime)
                                 {
                                     <a asp-controller="Dashboard"
                                        asp-action="PredictionDetail"
@@ -821,7 +818,7 @@
 
     <script>
         let predictionModal;
-        let activePredictionScoreFilter = "all";
+        let activePredictionScoreFilter = "upcominglive";
 
         document.addEventListener("DOMContentLoaded", function () {
             const modalElement = document.getElementById("predictionModal");
@@ -861,7 +858,7 @@
         function bindPredictionFilterButtons() {
             document.querySelectorAll(".prediction-filter-btn-smart").forEach(function (button) {
                 button.addEventListener("click", function () {
-                    const filter = button.getAttribute("data-filter") || "all";
+                    const filter = button.getAttribute("data-filter") || "upcominglive";
 
                     activePredictionScoreFilter = filter;
 
@@ -987,14 +984,12 @@
 
                 let matchesFilter = false;
 
-                if (activePredictionScoreFilter === "all") {
+                if (activePredictionScoreFilter === "upcominglive") {
+                    matchesFilter = status === "Upcoming" || status === "Live";
+                } else if (activePredictionScoreFilter === "all") {
                     matchesFilter = true;
-                } else if (
-                    activePredictionScoreFilter === "Upcoming" ||
-                    activePredictionScoreFilter === "Live" ||
-                    activePredictionScoreFilter === "Finished"
-                ) {
-                    matchesFilter = status === activePredictionScoreFilter;
+                } else if (activePredictionScoreFilter === "Finished") {
+                    matchesFilter = status === "Finished";
                 } else if (
                     activePredictionScoreFilter === "predicted" ||
                     activePredictionScoreFilter === "notpredict" ||
