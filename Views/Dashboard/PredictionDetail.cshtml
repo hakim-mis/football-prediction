@@ -86,10 +86,10 @@
         min-width: 0;
     }
 
-    .prediction-detail-title-row h2 {
-        margin: 0;
-        font-weight: 800;
-    }
+        .prediction-detail-title-row h2 {
+            margin: 0;
+            font-weight: 800;
+        }
 
     .prediction-detail-action-row {
         display: flex;
@@ -100,11 +100,11 @@
         margin-left: auto;
     }
 
-    .prediction-detail-action-row .btn {
-        font-weight: 700;
-        border-radius: 10px;
-        white-space: nowrap;
-    }
+        .prediction-detail-action-row .btn {
+            font-weight: 700;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
 
     .prediction-mobile-action-row {
         display: none;
@@ -137,16 +137,16 @@
         text-align: center;
     }
 
-    .match-summary-team strong {
-        display: block;
-        width: 100%;
-        font-size: .9rem;
-        color: #111827;
-        line-height: 1.2;
-        white-space: normal;
-        overflow-wrap: anywhere;
-        word-break: normal;
-    }
+        .match-summary-team strong {
+            display: block;
+            width: 100%;
+            font-size: .9rem;
+            color: #111827;
+            line-height: 1.2;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
 
     .match-summary-flag {
         width: 52px;
@@ -200,12 +200,12 @@
         white-space: nowrap;
     }
 
-    .match-summary-date i {
-        display: inline-block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        line-height: 1;
-    }
+        .match-summary-date i {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            line-height: 1;
+        }
 
     .match-summary-score {
         font-size: 1.55rem;
@@ -266,11 +266,11 @@
         line-height: 1;
     }
 
-    .match-prediction-search-clear:hover,
-    .match-prediction-search-clear:focus {
-        background: #fee2e2;
-        color: #b91c1c;
-    }
+        .match-prediction-search-clear:hover,
+        .match-prediction-search-clear:focus {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
 
     .match-prediction-search-no-native-clear::-webkit-search-decoration,
     .match-prediction-search-no-native-clear::-webkit-search-cancel-button,
@@ -301,16 +301,61 @@
         white-space: nowrap;
     }
 
-    .match-prediction-sort-btn:hover,
-    .match-prediction-sort-btn:focus {
-        color: #0d6efd;
-    }
+        .match-prediction-sort-btn:hover,
+        .match-prediction-sort-btn:focus {
+            color: #0d6efd;
+        }
 
     .match-prediction-table-wrap {
         width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
+
+    .match-prediction-scroll-top-btn {
+        position: fixed;
+        right: 18px;
+        bottom: 22px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: 1px solid #bfdbfe;
+        background: #0d6efd;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5000;
+        box-shadow: 0 10px 24px rgba(13, 110, 253, .28);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(10px);
+        transition: transform .2s ease, opacity .2s ease, visibility .2s ease, background .2s ease;
+    }
+
+        .match-prediction-scroll-top-btn:hover,
+        .match-prediction-scroll-top-btn:focus {
+            background: #0b5ed7;
+            color: #ffffff;
+        }
+
+        .match-prediction-scroll-top-btn.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+            .match-prediction-scroll-top-btn.show:hover,
+            .match-prediction-scroll-top-btn.show:focus {
+                transform: translateY(-2px);
+            }
+
+        .match-prediction-scroll-top-btn i {
+            font-size: 1.15rem;
+            line-height: 1;
+        }
 
     @@media (max-width: 767.98px) {
         .prediction-detail-page {
@@ -330,10 +375,10 @@
             min-width: 0;
         }
 
-        .prediction-detail-title-row h2 {
-            font-size: 1.25rem;
-            line-height: 1.2;
-        }
+            .prediction-detail-title-row h2 {
+                font-size: 1.25rem;
+                line-height: 1.2;
+            }
 
         .prediction-detail-action-row {
             display: none !important;
@@ -380,14 +425,14 @@
             gap: 5px;
         }
 
-        .match-summary-team strong {
-            font-size: .78rem;
-            line-height: 1.12;
-            max-width: 96px;
-            white-space: normal;
-            overflow-wrap: anywhere;
-            word-break: normal;
-        }
+            .match-summary-team strong {
+                font-size: .78rem;
+                line-height: 1.12;
+                max-width: 96px;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                word-break: normal;
+            }
 
         .match-summary-center {
             min-width: 104px;
@@ -404,13 +449,13 @@
             padding: 3px 6px;
         }
 
-        .match-summary-date i {
-            display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            font-size: .68rem;
-            margin-right: 2px;
-        }
+            .match-summary-date i {
+                display: inline-block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                font-size: .68rem;
+                margin-right: 2px;
+            }
 
         .match-summary-score {
             font-size: 1.32rem;
@@ -454,11 +499,23 @@
             line-height: 1;
         }
 
-        .match-prediction-mobile-excel-btn i {
-            margin: 0 !important;
-            line-height: 1;
-            font-size: .82rem;
+            .match-prediction-mobile-excel-btn i {
+                margin: 0 !important;
+                line-height: 1;
+                font-size: .82rem;
+            }
+
+        .match-prediction-scroll-top-btn {
+            right: 14px;
+            bottom: 16px;
+            width: 38px;
+            height: 38px;
+            z-index: 6000;
         }
+
+            .match-prediction-scroll-top-btn i {
+                font-size: 1rem;
+            }
     }
 
     @@media (max-width: 390px) {
@@ -500,18 +557,18 @@
             padding-right: 5px;
         }
 
-        .match-summary-date i {
-            font-size: .62rem;
-        }
+            .match-summary-date i {
+                font-size: .62rem;
+            }
 
         .match-prediction-mobile-excel-btn {
             width: 40px !important;
             min-width: 40px !important;
         }
 
-        .match-prediction-mobile-excel-btn i {
-            font-size: .78rem;
-        }
+            .match-prediction-mobile-excel-btn i {
+                font-size: .78rem;
+            }
     }
 </style>
 
@@ -769,12 +826,113 @@
 
 </div>
 
+<button type="button"
+        class="match-prediction-scroll-top-btn"
+        id="matchPredictionScrollTopBtn"
+        title="Go to top"
+        aria-label="Go to top">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             bindMatchPredictionSearch();
             bindMatchPredictionSort();
+            bindMatchPredictionScrollTopButton();
         });
+
+        function bindMatchPredictionScrollTopButton() {
+            const scrollTopButton = document.getElementById("matchPredictionScrollTopBtn");
+
+            if (!scrollTopButton) {
+                return;
+            }
+
+            const possibleScrollContainers = [
+                window,
+                document.documentElement,
+                document.body,
+                document.querySelector("main"),
+                document.querySelector(".main-content"),
+                document.querySelector(".content-wrapper"),
+                document.querySelector(".page-content"),
+                document.querySelector(".dashboard-content"),
+                document.querySelector(".app-main"),
+                document.querySelector(".container-fluid"),
+                document.querySelector(".container"),
+                document.querySelector(".layout-main")
+            ].filter(Boolean);
+
+            function getScrollTopValue() {
+                let maxScrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+
+                possibleScrollContainers.forEach(function (container) {
+                    if (container === window) {
+                        return;
+                    }
+
+                    if (container.scrollTop && container.scrollTop > maxScrollTop) {
+                        maxScrollTop = container.scrollTop;
+                    }
+                });
+
+                return maxScrollTop;
+            }
+
+            function toggleScrollTopButton() {
+                if (getScrollTopValue() > 220) {
+                    scrollTopButton.classList.add("show");
+                } else {
+                    scrollTopButton.classList.remove("show");
+                }
+            }
+
+            possibleScrollContainers.forEach(function (container) {
+                if (container === window) {
+                    window.addEventListener("scroll", toggleScrollTopButton, { passive: true });
+                } else {
+                    container.addEventListener("scroll", toggleScrollTopButton, { passive: true });
+                }
+            });
+
+            window.addEventListener("touchmove", toggleScrollTopButton, { passive: true });
+            window.addEventListener("resize", toggleScrollTopButton, { passive: true });
+
+            scrollTopButton.addEventListener("click", function () {
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+
+                document.documentElement.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+
+                document.body.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+
+                possibleScrollContainers.forEach(function (container) {
+                    if (container === window) {
+                        return;
+                    }
+
+                    if (typeof container.scrollTo === "function") {
+                        container.scrollTo({
+                            top: 0,
+                            behavior: "smooth"
+                        });
+                    } else {
+                        container.scrollTop = 0;
+                    }
+                });
+            });
+
+            toggleScrollTopButton();
+        }
 
         function bindMatchPredictionSearch() {
             const searchInput = document.getElementById("matchPredictionSearch");

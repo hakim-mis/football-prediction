@@ -87,7 +87,7 @@
         min-width: 0;
     }
 
-        .admin-user-search-box span {
+        .admin-user-search-box .admin-user-search-icon {
             position: absolute;
             left: 12px;
             top: 50%;
@@ -98,30 +98,69 @@
 
         .admin-user-search-box .form-control {
             padding-left: 38px;
+            padding-right: 42px;
             min-height: 42px;
             border-radius: 12px;
             width: 100%;
         }
 
-    .admin-user-clear-btn {
-        flex: 0 0 auto;
-        width: auto !important;
-        border: 1px solid #fecaca;
-        color: #dc2626;
+    .admin-user-search-clear-inside {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 26px;
+        height: 26px;
+        border: 0;
+        border-radius: 50%;
         background: #ffffff;
-        font-weight: 700;
-        white-space: nowrap;
-        min-height: 42px;
-        border-radius: 12px;
-        padding-left: 14px;
-        padding-right: 14px;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        padding: 0;
+        font-size: .9rem;
+        line-height: 1;
     }
 
-        .admin-user-clear-btn:hover,
-        .admin-user-clear-btn:focus {
-            color: #ffffff;
-            background: #dc2626;
-            border-color: #dc2626;
+        .admin-user-search-clear-inside:hover,
+        .admin-user-search-clear-inside:focus {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    .admin-user-search-no-native-clear::-webkit-search-decoration,
+    .admin-user-search-no-native-clear::-webkit-search-cancel-button,
+    .admin-user-search-no-native-clear::-webkit-search-results-button,
+    .admin-user-search-no-native-clear::-webkit-search-results-decoration {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    .admin-user-search-no-native-clear {
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .admin-user-sort-btn,
+    .admin-user-date-sort-btn {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font-weight: 800;
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+        .admin-user-sort-btn:hover,
+        .admin-user-sort-btn:focus,
+        .admin-user-date-sort-btn:hover,
+        .admin-user-date-sort-btn:focus {
+            color: #0d6efd;
         }
 
     .admin-user-table-wrap {
@@ -179,7 +218,7 @@
             min-width: 0;
         }
 
-            .admin-user-search-box span {
+            .admin-user-search-box .admin-user-search-icon {
                 left: 10px;
             }
 
@@ -187,16 +226,14 @@
                 min-height: 40px;
                 font-size: .86rem;
                 padding-left: 34px;
+                padding-right: 38px;
             }
 
-        .admin-user-clear-btn {
-            flex: 0 0 auto;
-            width: auto !important;
-            min-width: 68px;
-            min-height: 40px;
-            padding-left: 9px;
-            padding-right: 9px;
-            font-size: .8rem;
+        .admin-user-search-clear-inside {
+            right: 7px;
+            width: 24px;
+            height: 24px;
+            font-size: .82rem;
         }
     }
 </style>
@@ -250,22 +287,23 @@
     <div class="admin-user-search-toolbar mb-3">
 
         <div class="admin-user-search-box">
-            <span>
+            <span class="admin-user-search-icon">
                 <i class="bi bi-search"></i>
             </span>
 
             <input type="search"
                    id="adminUserSearch"
-                   class="form-control"
+                   class="form-control admin-user-search-no-native-clear"
                    placeholder="Search" />
-        </div>
 
-        <button type="button"
-                class="btn admin-user-clear-btn"
-                id="adminUserClearSearch">
-            <i class="bi bi-x-circle"></i>
-            Clear
-        </button>
+            <button type="button"
+                    class="admin-user-search-clear-inside"
+                    id="adminUserClearSearch"
+                    title="Clear search"
+                    aria-label="Clear search">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
 
     </div>
 
@@ -275,20 +313,68 @@
                 <tr>
                     <th>Player</th>
                     <th>Contact</th>
-                    <th>Status</th>
-                    <th>Score</th>
-                    <th>Predicted</th>
-                    <th>Not Predict</th>
-                    <th>Not Participate</th>
+
+                    <th>
+                        <button type="button"
+                                class="admin-user-sort-btn"
+                                data-sort-field="status"
+                                data-sort-direction="asc">
+                            Status
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="admin-user-sort-btn"
+                                data-sort-field="score"
+                                data-sort-direction="desc">
+                            Score
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="admin-user-sort-btn"
+                                data-sort-field="predicted"
+                                data-sort-direction="desc">
+                            Predicted
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="admin-user-sort-btn"
+                                data-sort-field="notpredict"
+                                data-sort-direction="desc">
+                            Not Predict
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="admin-user-sort-btn"
+                                data-sort-field="notparticipate"
+                                data-sort-direction="desc">
+                            Not Participate
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
                     <th>
                         <button type="button"
                                 id="adminUserDateSortBtn"
                                 class="admin-user-date-sort-btn"
+                                data-sort-field="registered"
                                 data-sort-direction="desc">
                             Registered
                             <i id="adminUserDateSortIcon" class="bi bi-arrow-down-short"></i>
                         </button>
                     </th>
+
                     <th class="text-end">Action</th>
                 </tr>
             </thead>
@@ -314,12 +400,23 @@
                         ? "Active"
                         : "Pending";
 
+                        var statusSort = !user.EmailConfirmed
+                        ? 0
+                        : user.IsActive
+                        ? 2
+                        : 1;
+
                         var emailVerifiedText = user.EmailConfirmed ? "Email Verified" : "Email Not Verified";
 
                         var searchableText = $"{user.FullName} {subInfo} {user.Email} {user.MobileNo} {statusText} {emailVerifiedText} {user.TotalScore} {user.TotalPredictionCount} {user.NotPredictCount} {user.NotParticipateCount} {user.CreatedAt:dd MMM yyyy hh:mm tt}".ToLowerInvariant();
 
                         <tr class="admin-user-row"
                             data-search="@searchableText"
+                            data-status="@statusSort"
+                            data-score="@user.TotalScore"
+                            data-predicted="@user.TotalPredictionCount"
+                            data-notpredict="@user.NotPredictCount"
+                            data-notparticipate="@user.NotParticipateCount"
                             data-registered="@user.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")">
 
                             <td>
@@ -493,7 +590,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             bindAdminUserSearch();
-            bindAdminUserDateSort();
+            bindAdminUserSortButtons();
         });
 
         function goBackOrDashboard() {
@@ -558,33 +655,28 @@
             }
         }
 
-        function bindAdminUserDateSort() {
-            const sortButton = document.getElementById("adminUserDateSortBtn");
+        function bindAdminUserSortButtons() {
+            document.querySelectorAll(".admin-user-sort-btn, .admin-user-date-sort-btn").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const field = button.getAttribute("data-sort-field");
 
-            if (!sortButton) {
-                return;
-            }
+                    if (!field) {
+                        return;
+                    }
 
-            sortButton.addEventListener("click", function () {
-                const currentDirection = sortButton.getAttribute("data-sort-direction") || "desc";
-                const nextDirection = currentDirection === "desc" ? "asc" : "desc";
+                    const currentDirection = button.getAttribute("data-sort-direction") || "asc";
+                    const nextDirection = currentDirection === "asc" ? "desc" : "asc";
 
-                sortButton.setAttribute("data-sort-direction", nextDirection);
+                    button.setAttribute("data-sort-direction", nextDirection);
 
-                const icon = document.getElementById("adminUserDateSortIcon");
-
-                if (icon) {
-                    icon.className = nextDirection === "asc"
-                        ? "bi bi-arrow-up-short"
-                        : "bi bi-arrow-down-short";
-                }
-
-                sortAdminUserRows(nextDirection);
-                applyAdminUserSearch();
+                    sortAdminUserRows(field, nextDirection);
+                    applyAdminUserSearch();
+                    updateAdminUserSortIcons(button, nextDirection);
+                });
             });
         }
 
-        function sortAdminUserRows(direction) {
+        function sortAdminUserRows(field, direction) {
             const tbody = document.getElementById("adminUserTableBody");
 
             if (!tbody) {
@@ -594,19 +686,41 @@
             const rows = Array.from(tbody.querySelectorAll(".admin-user-row"));
 
             rows.sort(function (a, b) {
-                const aTime = new Date(a.getAttribute("data-registered")).getTime();
-                const bTime = new Date(b.getAttribute("data-registered")).getTime();
+                let aValue = 0;
+                let bValue = 0;
 
-                if (direction === "asc") {
-                    return aTime - bTime;
+                if (field === "registered") {
+                    aValue = new Date(a.getAttribute("data-registered") || "").getTime();
+                    bValue = new Date(b.getAttribute("data-registered") || "").getTime();
+                } else {
+                    aValue = parseInt(a.getAttribute("data-" + field) || "0");
+                    bValue = parseInt(b.getAttribute("data-" + field) || "0");
                 }
 
-                return bTime - aTime;
+                if (direction === "asc") {
+                    return aValue - bValue;
+                }
+
+                return bValue - aValue;
             });
 
             rows.forEach(function (row) {
                 tbody.appendChild(row);
             });
+        }
+
+        function updateAdminUserSortIcons(activeButton, direction) {
+            document.querySelectorAll(".admin-user-sort-btn i, .admin-user-date-sort-btn i").forEach(function (icon) {
+                icon.className = "bi bi-arrow-down-up";
+            });
+
+            const activeIcon = activeButton.querySelector("i");
+
+            if (activeIcon) {
+                activeIcon.className = direction === "asc"
+                    ? "bi bi-arrow-up-short"
+                    : "bi bi-arrow-down-short";
+            }
         }
     </script>
 }
