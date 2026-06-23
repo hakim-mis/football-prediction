@@ -60,8 +60,27 @@
 
     .leaderboard-title-pill {
         margin: 0;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        color: #111827 !important;
+        font-size: 1.55rem;
+        font-weight: 900;
+        line-height: 1.15;
+        letter-spacing: -.02em;
         white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
+
+        .leaderboard-title-pill i {
+            color: #0d6efd;
+            font-size: 1.55rem;
+            line-height: 1;
+        }
 
     .leaderboard-back-btn {
         border-radius: 999px;
@@ -153,6 +172,12 @@
         -webkit-appearance: none;
     }
 
+    .leaderboard-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .leaderboard-sort-btn {
         border: 0;
         background: transparent;
@@ -182,6 +207,49 @@
         justify-content: center;
         font-size: .8rem;
         font-weight: 800;
+    }
+
+    .leaderboard-count-badge {
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 42px;
+        border: 1px solid transparent;
+        line-height: 1;
+    }
+
+    .leaderboard-exact-count {
+        background: #eef6ff;
+        color: #0d6efd;
+        border-color: #bfdbfe;
+    }
+
+    .leaderboard-win-count {
+        background: #fff7ed;
+        color: #b45309;
+        border-color: #fed7aa;
+    }
+
+    .leaderboard-count-badge.is-zero {
+        background: #f1f5f9;
+        color: #64748b;
+        border-color: #e2e8f0;
+    }
+
+    .leaderboard-page .score-pill {
+        min-width: 46px;
+        min-height: 32px;
+        padding: 7px 14px;
+        border-radius: 999px;
+        font-size: .92rem;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
     }
 
     .leaderboard-scroll-top-btn {
@@ -239,9 +307,13 @@
         }
 
         .leaderboard-title-pill {
-            font-size: .85rem;
-            padding: 8px 12px;
+            font-size: 1.35rem;
+            gap: 7px;
         }
+
+            .leaderboard-title-pill i {
+                font-size: 1.35rem;
+            }
 
         .leaderboard-back-btn {
             padding: 6px 12px;
@@ -292,6 +364,19 @@
             font-size: .82rem;
         }
 
+        .leaderboard-count-badge {
+            padding: 5px 8px;
+            min-width: 36px;
+            font-size: .75rem;
+        }
+
+        .leaderboard-page .score-pill {
+            min-width: 42px;
+            min-height: 30px;
+            padding: 7px 12px;
+            font-size: .85rem;
+        }
+
         .leaderboard-scroll-top-btn {
             right: 14px;
             bottom: 16px;
@@ -306,6 +391,14 @@
     }
 
     @@media (max-width: 390px) {
+        .leaderboard-title-pill {
+            font-size: 1.18rem;
+        }
+
+            .leaderboard-title-pill i {
+                font-size: 1.18rem;
+            }
+
         .leaderboard-range-filter .btn {
             font-size: .7rem;
             padding-left: 3px;
@@ -317,6 +410,19 @@
             height: 28px;
             font-size: .74rem;
         }
+
+        .leaderboard-count-badge {
+            padding: 5px 7px;
+            min-width: 34px;
+            font-size: .72rem;
+        }
+
+        .leaderboard-page .score-pill {
+            min-width: 40px;
+            min-height: 28px;
+            padding: 6px 11px;
+            font-size: .8rem;
+        }
     }
 </style>
 
@@ -325,7 +431,7 @@
     <div class="leaderboard-topbar mb-3">
 
         <div class="leaderboard-header-line">
-            <span class="pill leaderboard-title-pill">
+            <span class="leaderboard-title-pill">
                 <i class="bi bi-trophy"></i>
                 Leaderboard
             </span>
@@ -441,6 +547,16 @@
                         </button>
                     </th>
 
+                    <th>
+                        <button type="button"
+                                class="leaderboard-sort-btn"
+                                data-sort-field="win"
+                                data-sort-direction="desc">
+                            Win
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
                     <th>Detail</th>
                 </tr>
             </thead>
@@ -449,7 +565,7 @@
                 @if (Model == null || !Model.Any())
                 {
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
+                        <td colspan="9" class="text-center text-muted py-4">
                             No active user found.
                         </td>
                     </tr>
@@ -465,14 +581,15 @@
                         var department = string.IsNullOrWhiteSpace(user.Department) ? "-" : user.Department;
                         var rankSort = RankSortValue(user.RankText);
 
-                        var searchableText = $"{sl} {user.RankText} {user.FullName} {designation} {department} {user.TotalScore} {user.ExactPredictionCount}".ToLowerInvariant();
+                        var searchableText = $"{sl} {user.RankText} {user.FullName} {designation} {department} {user.TotalScore} {user.ExactPredictionCount} {user.WinMatchPredictionCount}".ToLowerInvariant();
 
                         <tr class="leaderboard-row-item"
                             data-search="@searchableText"
                             data-sl="@sl"
                             data-rank="@rankSort"
                             data-score="@user.TotalScore"
-                            data-exact="@user.ExactPredictionCount">
+                            data-exact="@user.ExactPredictionCount"
+                            data-win="@user.WinMatchPredictionCount">
 
                             <td>
                                 <span class="leaderboard-sl-badge">
@@ -512,13 +629,19 @@
 
                             <td>
                                 <span class="score-pill">
-                                    @user.TotalScore pts
+                                    @user.TotalScore
                                 </span>
                             </td>
 
                             <td>
-                                <span class="badge @(user.ExactPredictionCount == 0 ? "text-bg-secondary" : "text-bg-primary")">
+                                <span class="leaderboard-count-badge leaderboard-exact-count @(user.ExactPredictionCount == 0 ? "is-zero" : "")">
                                     @user.ExactPredictionCount
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="leaderboard-count-badge leaderboard-win-count @(user.WinMatchPredictionCount == 0 ? "is-zero" : "")">
+                                    @user.WinMatchPredictionCount
                                 </span>
                             </td>
 
@@ -561,6 +684,8 @@
             bindLeaderboardSort();
             bindLeaderboardRangeLinks();
             bindLeaderboardScrollTopButton();
+            sortLeaderboardRows("score", "desc");
+            highlightDefaultSortIcon();
         });
 
         function bindLeaderboardScrollTopButton() {
@@ -716,6 +841,57 @@
             });
         }
 
+        function getRowNumber(row, field) {
+            return parseInt(row.getAttribute("data-" + field) || "0");
+        }
+
+        function compareRowsByField(a, b, field, direction) {
+            const aValue = getRowNumber(a, field);
+            const bValue = getRowNumber(b, field);
+
+            if (aValue === bValue) {
+                return 0;
+            }
+
+            if (direction === "asc") {
+                return aValue - bValue;
+            }
+
+            return bValue - aValue;
+        }
+
+        function compareRowsByPriority(a, b, primaryField, direction) {
+            let priorityFields = [];
+
+            if (primaryField === "score") {
+                priorityFields = ["score", "exact", "win", "rank"];
+            } else if (primaryField === "exact") {
+                priorityFields = ["exact", "score", "win", "rank"];
+            } else if (primaryField === "win") {
+                priorityFields = ["win", "score", "exact", "rank"];
+            } else {
+                priorityFields = [primaryField];
+            }
+
+            for (let i = 0; i < priorityFields.length; i++) {
+                const field = priorityFields[i];
+
+                let fieldDirection = direction;
+
+                if (field === "rank" || field === "sl") {
+                    fieldDirection = "asc";
+                }
+
+                const result = compareRowsByField(a, b, field, fieldDirection);
+
+                if (result !== 0) {
+                    return result;
+                }
+            }
+
+            return compareRowsByField(a, b, "sl", "asc");
+        }
+
         function sortLeaderboardRows(field, direction) {
             const tbody = document.getElementById("leaderboardTableBody");
 
@@ -726,14 +902,7 @@
             const rows = Array.from(tbody.querySelectorAll(".leaderboard-row-item"));
 
             rows.sort(function (a, b) {
-                const aValue = parseInt(a.getAttribute("data-" + field) || "0");
-                const bValue = parseInt(b.getAttribute("data-" + field) || "0");
-
-                if (direction === "asc") {
-                    return aValue - bValue;
-                }
-
-                return bValue - aValue;
+                return compareRowsByPriority(a, b, field, direction);
             });
 
             rows.forEach(function (row) {
@@ -753,6 +922,17 @@
                     ? "bi bi-arrow-up-short"
                     : "bi bi-arrow-down-short";
             }
+        }
+
+        function highlightDefaultSortIcon() {
+            const scoreButton = document.querySelector('.leaderboard-sort-btn[data-sort-field="score"]');
+
+            if (!scoreButton) {
+                return;
+            }
+
+            scoreButton.setAttribute("data-sort-direction", "asc");
+            updateSortIcons(scoreButton, "desc");
         }
 
         function applyLeaderboardSearch() {

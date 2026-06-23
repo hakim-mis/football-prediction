@@ -29,7 +29,7 @@ public class DashboardViewModel
     public string? QuickFilter { get; set; }
 
     public int TopScore { get; set; }
-
+    public int WinMatchPredictionCount { get; set; }
     public int PredictedCount { get; set; }
     public int NotParticipateCount { get; set; }
     public int TodaysMatchCount { get; set; }

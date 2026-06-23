@@ -1,0 +1,807 @@
+﻿@model FootballPredictionGame.ViewModels.AdsRenderViewModel
+@using System.Text.Json
+
+@if (!Model.ShouldRender || Model.Slides == null || !Model.Slides.Any())
+{
+    return;
+}
+
+@{
+    var slidesJson = JsonSerializer.Serialize(Model.Slides, new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    });
+
+    var configJson = JsonSerializer.Serialize(new
+    {
+        isPreview = Model.IsPreview,
+        adId = Model.AdId,
+        adTitle = Model.AdTitle,
+        triggerMode = Model.TriggerMode,
+        showAfterPredictionSubmit = Model.ShowAfterPredictionSubmit,
+        showOnlyIfUserHasNoUpcomingPrediction = Model.ShowOnlyIfUserHasNoUpcomingPrediction,
+        showAfterSeconds = Model.ShowAfterSeconds,
+        mandatoryWatchSeconds = Model.MandatoryWatchSeconds,
+        autoCloseSeconds = Model.AutoCloseSeconds,
+        defaultSlideDurationSeconds = Model.DefaultSlideDurationSeconds,
+        showSkipButton = Model.ShowSkipButton,
+        showCountdown = Model.ShowCountdown,
+        showMuteButton = Model.ShowMuteButton,
+        requireTapForSound = Model.RequireTapForSound,
+        showOncePerSession = Model.ShowOncePerSession,
+        showOncePerDay = Model.ShowOncePerDay,
+        maxImpressionsPerDayPerUser = Model.MaxImpressionsPerDayPerUser,
+        trackImpression = Model.TrackImpression,
+        trackSkip = Model.TrackSkip,
+        trackClick = Model.TrackClick,
+        trackComplete = Model.TrackComplete,
+        trackSoundEnabled = Model.TrackSoundEnabled,
+        pageName = Model.PageName
+    }, new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    });
+}
+
+<style>
+    .site-ads-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 7000;
+        background: rgba(15, 23, 42, .78);
+        backdrop-filter: blur(7px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+    }
+
+        .site-ads-overlay.show {
+            display: flex;
+        }
+
+    .site-ads-card {
+        width: min(760px, 100%);
+        background: #ffffff;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 26px 80px rgba(0, 0, 0, .35);
+        position: relative;
+        animation: siteAdsPop .22s ease-out;
+    }
+
+    @@keyframes siteAdsPop {
+        from {
+            transform: translateY(14px) scale(.98);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .site-ads-topbar {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        pointer-events: none;
+    }
+
+    .site-ads-label {
+        pointer-events: auto;
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: rgba(15, 23, 42, .72);
+        color: #ffffff;
+        font-size: .78rem;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        backdrop-filter: blur(5px);
+    }
+
+    .site-ads-top-actions {
+        pointer-events: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .site-ads-sound-btn,
+    .site-ads-skip-btn,
+    .site-ads-close-btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: .78rem;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        line-height: 1;
+    }
+
+    .site-ads-sound-btn {
+        background: rgba(255, 255, 255, .92);
+        color: #0f172a;
+    }
+
+    .site-ads-skip-btn {
+        background: #0d6efd;
+        color: #ffffff;
+        min-width: 84px;
+    }
+
+        .site-ads-skip-btn:disabled {
+            background: rgba(15, 23, 42, .78);
+            color: #ffffff;
+            cursor: not-allowed;
+        }
+
+    .site-ads-close-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        background: rgba(255, 255, 255, .92);
+        color: #dc2626;
+    }
+
+    .site-ads-media {
+        position: relative;
+        background: #0f172a;
+    }
+
+    .site-ads-image {
+        width: 100%;
+        aspect-ratio: 16 / 8.5;
+        object-fit: cover;
+        display: block;
+        background: #e2e8f0;
+    }
+
+    .site-ads-progress {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 4px;
+        background: rgba(255, 255, 255, .35);
+        overflow: hidden;
+    }
+
+    .site-ads-progress-bar {
+        width: 0%;
+        height: 100%;
+        background: #ffc107;
+        transition: width .2s linear;
+    }
+
+    .site-ads-body {
+        padding: 18px 20px 20px;
+    }
+
+    .site-ads-title {
+        font-size: 1.35rem;
+        line-height: 1.25;
+        font-weight: 900;
+        color: #0f172a;
+        margin-bottom: 6px;
+    }
+
+    .site-ads-description {
+        color: #475569;
+        line-height: 1.45;
+        font-size: .95rem;
+        margin-bottom: 14px;
+    }
+
+    .site-ads-bottom-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .site-ads-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .site-ads-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #cbd5e1;
+        transition: width .2s ease, background .2s ease;
+    }
+
+        .site-ads-dot.active {
+            width: 20px;
+            border-radius: 999px;
+            background: #0d6efd;
+        }
+
+    .site-ads-cta {
+        border-radius: 999px;
+        font-weight: 800;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    @@media (max-width: 767.98px) {
+        .site-ads-overlay {
+            padding: 0;
+            align-items: stretch;
+            justify-content: stretch;
+        }
+
+        .site-ads-card {
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .site-ads-media {
+            flex: 0 0 auto;
+        }
+
+        .site-ads-image {
+            aspect-ratio: 9 / 12;
+            min-height: 55vh;
+            max-height: 68vh;
+        }
+
+        .site-ads-body {
+            flex: 1 1 auto;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .site-ads-title {
+            font-size: 1.25rem;
+        }
+
+        .site-ads-description {
+            font-size: .92rem;
+        }
+
+        .site-ads-topbar {
+            top: 10px;
+            left: 10px;
+            right: 10px;
+        }
+
+        .site-ads-label {
+            font-size: .72rem;
+            padding: 6px 9px;
+        }
+
+        .site-ads-sound-btn,
+        .site-ads-skip-btn {
+            font-size: .72rem;
+            padding: 7px 9px;
+        }
+
+        .site-ads-close-btn {
+            width: 31px;
+            height: 31px;
+        }
+
+        .site-ads-bottom-row {
+            gap: 10px;
+        }
+
+        .site-ads-cta {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="site-ads-overlay" id="siteAdsOverlay" aria-hidden="true">
+    <div class="site-ads-card" role="dialog" aria-modal="true" aria-label="Advertisement">
+
+        <div class="site-ads-topbar">
+            <div class="site-ads-label">
+                <i class="bi bi-megaphone"></i>
+                Ad
+            </div>
+
+            <div class="site-ads-top-actions">
+                <button type="button"
+                        class="site-ads-sound-btn"
+                        id="siteAdsSoundBtn">
+                    <i class="bi bi-volume-mute"></i>
+                    Sound
+                </button>
+
+                <button type="button"
+                        class="site-ads-skip-btn"
+                        id="siteAdsSkipBtn"
+                        disabled>
+                    Skip in 5
+                </button>
+
+                <button type="button"
+                        class="site-ads-close-btn"
+                        id="siteAdsCloseBtn"
+                        title="Close"
+                        aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="site-ads-media">
+            <img src=""
+                 alt=""
+                 class="site-ads-image"
+                 id="siteAdsImage" />
+
+            <div class="site-ads-progress">
+                <div class="site-ads-progress-bar" id="siteAdsProgressBar"></div>
+            </div>
+        </div>
+
+        <div class="site-ads-body">
+            <div>
+                <h3 class="site-ads-title" id="siteAdsTitle"></h3>
+                <p class="site-ads-description" id="siteAdsDescription"></p>
+            </div>
+
+            <div class="site-ads-bottom-row">
+                <div class="site-ads-dots" id="siteAdsDots"></div>
+
+                <a href="#"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn btn-primary site-ads-cta d-none"
+                   id="siteAdsCta">
+                    Learn More
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <audio id="siteAdsAudio"></audio>
+    </div>
+</div>
+
+<script>
+    window.siteAdsConfig = @Html.Raw(configJson);
+    window.siteAdsSlides = @Html.Raw(slidesJson);
+
+    (function () {
+        const config = window.siteAdsConfig || {};
+        const slides = window.siteAdsSlides || [];
+
+        if (!config.adId || slides.length === 0) {
+            return;
+        }
+
+        const overlay = document.getElementById("siteAdsOverlay");
+        const image = document.getElementById("siteAdsImage");
+        const title = document.getElementById("siteAdsTitle");
+        const description = document.getElementById("siteAdsDescription");
+        const cta = document.getElementById("siteAdsCta");
+        const dots = document.getElementById("siteAdsDots");
+        const progressBar = document.getElementById("siteAdsProgressBar");
+        const skipBtn = document.getElementById("siteAdsSkipBtn");
+        const closeBtn = document.getElementById("siteAdsCloseBtn");
+        const soundBtn = document.getElementById("siteAdsSoundBtn");
+        const audio = document.getElementById("siteAdsAudio");
+
+        if (!overlay || !image || !title || !description || !skipBtn || !closeBtn) {
+            return;
+        }
+
+        let currentSlideIndex = 0;
+        let slideTimer = null;
+        let progressTimer = null;
+        let mandatoryTimer = null;
+        let autoCloseTimer = null;
+        let progressStart = null;
+        let currentSlideDurationMs = 4000;
+        let soundEnabled = false;
+        let hasOpened = false;
+        let hasClosed = false;
+        let currentDevice = getDeviceType();
+
+        if (!isPlatformAllowed()) {
+            return;
+        }
+
+        if (!config.isPreview && !canShowByFrequency()) {
+            return;
+        }
+
+            if (config.triggerMode === "AfterPredictionSubmit") {
+        window.showPredictionSubmitAd = function () {
+            openAd();
+        };
+    } else {
+        const showDelay = Math.max(parseInt(config.showAfterSeconds || 0), 0) * 1000;
+
+        window.setTimeout(function () {
+            openAd();
+        }, showDelay);
+    }
+
+        function isPlatformAllowed() {
+            return true;
+        }
+
+        function getDeviceType() {
+            const width = window.innerWidth || document.documentElement.clientWidth || 1200;
+
+            if (width <= 767) {
+                return "Mobile";
+            }
+
+            if (width <= 1024) {
+                return "Tablet";
+            }
+
+            return "Desktop";
+        }
+
+        function todayKey() {
+            const now = new Date();
+            return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+        }
+
+        function canShowByFrequency() {
+            const frequencyPrefix = "siteAds_" + (config.triggerMode || "Timer") + "_" + config.adId;
+            const sessionKey = frequencyPrefix + "_Session";
+            const dayKey = frequencyPrefix + "_Day";
+            const dayCountKey = frequencyPrefix + "_DayCount_" + todayKey();
+
+            if (config.showOncePerSession && sessionStorage.getItem(sessionKey) === "1") {
+                return false;
+            }
+
+            if (config.showOncePerDay && localStorage.getItem(dayKey) === todayKey()) {
+                return false;
+            }
+
+            const currentCount = parseInt(localStorage.getItem(dayCountKey) || "0");
+            const maxCount = parseInt(config.maxImpressionsPerDayPerUser || "0");
+
+            if (maxCount > 0 && currentCount >= maxCount) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function markFrequencyShown() {
+            const sessionKey = "siteAdsShownSession_" + config.adId;
+            const dayKey = "siteAdsShownDay_" + config.adId;
+            const dayCountKey = "siteAdsDayCount_" + config.adId + "_" + todayKey();
+
+            if (config.showOncePerSession) {
+                sessionStorage.setItem(sessionKey, "1");
+            }
+
+            if (config.showOncePerDay) {
+                localStorage.setItem(dayKey, todayKey());
+            }
+
+            const currentCount = parseInt(localStorage.getItem(dayCountKey) || "0");
+            localStorage.setItem(dayCountKey, String(currentCount + 1));
+        }
+
+        function openAd() {
+            if (hasOpened || hasClosed) {
+                return;
+            }
+
+            hasOpened = true;
+            if (!config.isPreview) {
+                markFrequencyShown();
+            }
+
+            overlay.classList.add("show");
+            overlay.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+
+            buildDots();
+            renderSlide(0);
+            startMandatoryCountdown();
+            startAutoCloseTimer();
+
+            if (!config.isPreview && config.trackImpression) {
+                trackAdEvent("Impression", slides[0]?.slideId || null);
+            }
+        }
+
+        function closeAd(eventType) {
+            if (hasClosed) {
+                return;
+            }
+
+            hasClosed = true;
+
+            clearTimers();
+
+            if (audio) {
+                audio.pause();
+                audio.src = "";
+            }
+
+            overlay.classList.remove("show");
+            overlay.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+
+            if (eventType) {
+                trackAdEvent(eventType, slides[currentSlideIndex]?.slideId || null);
+            }
+        }
+
+        function clearTimers() {
+            clearTimeout(slideTimer);
+            clearInterval(progressTimer);
+            clearInterval(mandatoryTimer);
+            clearTimeout(autoCloseTimer);
+        }
+
+        function renderSlide(index) {
+            if (!slides[index]) {
+                return;
+            }
+
+            currentSlideIndex = index;
+
+            const slide = slides[index];
+
+            image.src = slide.imageUrl || "";
+            image.alt = slide.title || "Ad";
+            title.innerText = slide.title || "";
+            description.innerText = slide.description || "";
+
+            if (slide.buttonText && slide.buttonUrl) {
+                cta.classList.remove("d-none");
+                cta.href = slide.buttonUrl;
+                cta.innerHTML = escapeHtml(slide.buttonText) + ' <i class="bi bi-arrow-right"></i>';
+                cta.setAttribute("data-slide-id", slide.slideId);
+            } else {
+                cta.classList.add("d-none");
+                cta.removeAttribute("href");
+                cta.removeAttribute("data-slide-id");
+            }
+
+            updateDots();
+
+            if (audio) {
+                audio.pause();
+                audio.src = "";
+
+                if (slide.audioUrl) {
+                    audio.src = slide.audioUrl;
+                    audio.muted = !soundEnabled;
+
+                    if (soundEnabled) {
+                        audio.play().catch(function () { });
+                    }
+                }
+            }
+
+            const durationSeconds = parseInt(slide.durationSeconds || config.defaultSlideDurationSeconds || 4);
+            currentSlideDurationMs = Math.max(durationSeconds, 1) * 1000;
+
+            startSlideProgress();
+        }
+
+        function startSlideProgress() {
+            clearTimeout(slideTimer);
+            clearInterval(progressTimer);
+
+            progressStart = Date.now();
+            progressBar.style.width = "0%";
+
+            progressTimer = window.setInterval(function () {
+                const elapsed = Date.now() - progressStart;
+                const percent = Math.min((elapsed / currentSlideDurationMs) * 100, 100);
+                progressBar.style.width = percent + "%";
+            }, 120);
+
+            slideTimer = window.setTimeout(function () {
+                const nextIndex = currentSlideIndex + 1;
+
+                if (nextIndex >= slides.length) {
+                    if (config.trackComplete) {
+                        trackAdEvent("Complete", slides[currentSlideIndex]?.slideId || null);
+                    }
+
+                    closeAd(null);
+                    return;
+                }
+
+                renderSlide(nextIndex);
+            }, currentSlideDurationMs);
+        }
+
+        function startMandatoryCountdown() {
+            const mandatorySeconds = Math.max(parseInt(config.mandatoryWatchSeconds || 0), 0);
+
+            if (!config.showSkipButton) {
+                skipBtn.classList.add("d-none");
+                return;
+            }
+
+            skipBtn.classList.remove("d-none");
+
+            if (mandatorySeconds <= 0) {
+                enableSkip();
+                return;
+            }
+
+            let remaining = mandatorySeconds;
+            skipBtn.disabled = true;
+            skipBtn.innerText = config.showCountdown ? "Skip in " + remaining : "Please wait";
+
+            mandatoryTimer = window.setInterval(function () {
+                remaining--;
+
+                if (remaining <= 0) {
+                    clearInterval(mandatoryTimer);
+                    enableSkip();
+                    return;
+                }
+
+                skipBtn.innerText = config.showCountdown ? "Skip in " + remaining : "Please wait";
+            }, 1000);
+        }
+
+        function enableSkip() {
+            skipBtn.disabled = false;
+            skipBtn.innerText = "Skip Ad";
+        }
+
+        function startAutoCloseTimer() {
+            const seconds = parseInt(config.autoCloseSeconds || 0);
+
+            if (seconds <= 0) {
+                return;
+            }
+
+            autoCloseTimer = window.setTimeout(function () {
+                if (!hasClosed) {
+                    if (config.trackComplete) {
+                        trackAdEvent("Complete", slides[currentSlideIndex]?.slideId || null);
+                    }
+
+                    closeAd(null);
+                }
+            }, seconds * 1000);
+        }
+
+        function buildDots() {
+            if (!dots) {
+                return;
+            }
+
+            dots.innerHTML = "";
+
+            slides.forEach(function (_, index) {
+                const dot = document.createElement("span");
+                dot.className = "site-ads-dot";
+                dot.setAttribute("data-index", index);
+                dots.appendChild(dot);
+            });
+        }
+
+        function updateDots() {
+            if (!dots) {
+                return;
+            }
+
+            dots.querySelectorAll(".site-ads-dot").forEach(function (dot) {
+                dot.classList.remove("active");
+
+                if (parseInt(dot.getAttribute("data-index") || "0") === currentSlideIndex) {
+                    dot.classList.add("active");
+                }
+            });
+        }
+
+        skipBtn.addEventListener("click", function () {
+            if (skipBtn.disabled) {
+                return;
+            }
+
+            if (config.trackSkip) {
+                closeAd("Skip");
+            } else {
+                closeAd(null);
+            }
+        });
+
+        closeBtn.addEventListener("click", function () {
+            closeAd("Close");
+        });
+
+        if (soundBtn) {
+            if (!config.showMuteButton) {
+                soundBtn.classList.add("d-none");
+            }
+
+            soundBtn.addEventListener("click", function () {
+                soundEnabled = !soundEnabled;
+
+                if (audio) {
+                    audio.muted = !soundEnabled;
+
+                    if (soundEnabled && audio.src) {
+                        audio.play().catch(function () { });
+                    } else {
+                        audio.pause();
+                    }
+                }
+
+                soundBtn.innerHTML = soundEnabled
+                    ? '<i class="bi bi-volume-up"></i> Sound On'
+                    : '<i class="bi bi-volume-mute"></i> Sound';
+
+                if (soundEnabled && config.trackSoundEnabled) {
+                    trackAdEvent("SoundEnabled", slides[currentSlideIndex]?.slideId || null);
+                }
+            });
+        }
+
+        if (cta) {
+            cta.addEventListener("click", function () {
+                if (config.trackClick) {
+                    const slideId = parseInt(cta.getAttribute("data-slide-id") || "0");
+                    trackAdEvent("Click", slideId || slides[currentSlideIndex]?.slideId || null);
+                }
+            });
+        }
+
+        function trackAdEvent(eventType, slideId) {
+
+            if (config.isPreview) {
+                return;
+            }
+            fetch("/ads-tracking/track", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    adId: config.adId,
+                    adSlideId: slideId,
+                    eventType: eventType,
+                    deviceType: currentDevice,
+                    pageName: config.pageName,
+                    pageUrl: window.location.pathname + window.location.search
+                })
+            }).catch(function () { });
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+    })();
+</script>

@@ -91,6 +91,51 @@ public class AutomationSettingsController : Controller
 
         settings.DefaultMatchDurationMinutes = model.DefaultMatchDurationMinutes;
 
+        /*
+            Ads Settings
+        */
+
+        settings.AdsEnabled = model.AdsEnabled;
+
+        settings.AdsShowOnDesktop = model.AdsShowOnDesktop;
+        settings.AdsShowOnTablet = model.AdsShowOnTablet;
+        settings.AdsShowOnMobile = model.AdsShowOnMobile;
+
+        settings.AdsShowToGuests = model.AdsShowToGuests;
+        settings.AdsShowToUsers = model.AdsShowToUsers;
+        settings.AdsShowToAdmins = model.AdsShowToAdmins;
+
+        settings.AdsShowOnDashboard = model.AdsShowOnDashboard;
+        settings.AdsShowOnPredictionScore = model.AdsShowOnPredictionScore;
+        settings.AdsShowOnLeaderboard = model.AdsShowOnLeaderboard;
+        settings.AdsShowOnRules = model.AdsShowOnRules;
+        settings.AdsShowOnLoginRegister = model.AdsShowOnLoginRegister;
+
+        settings.AdsShowAfterSeconds = model.AdsShowAfterSeconds;
+        settings.AdsMandatoryWatchSeconds = model.AdsMandatoryWatchSeconds;
+        settings.AdsAutoCloseSeconds = model.AdsAutoCloseSeconds;
+        settings.AdsDefaultSlideDurationSeconds = model.AdsDefaultSlideDurationSeconds;
+
+        settings.AdsShowSkipButton = model.AdsShowSkipButton;
+        settings.AdsShowCountdown = model.AdsShowCountdown;
+        settings.AdsShowMuteButton = model.AdsShowMuteButton;
+        settings.AdsRequireTapForSound = model.AdsRequireTapForSound;
+
+        settings.AdsShowOncePerSession = model.AdsShowOncePerSession;
+        settings.AdsShowOncePerDay = model.AdsShowOncePerDay;
+        settings.AdsMaxImpressionsPerDayPerUser = model.AdsMaxImpressionsPerDayPerUser;
+
+        settings.AdsTrackImpression = model.AdsTrackImpression;
+        settings.AdsTrackSkip = model.AdsTrackSkip;
+        settings.AdsTrackClick = model.AdsTrackClick;
+        settings.AdsTrackComplete = model.AdsTrackComplete;
+        settings.AdsTrackSoundEnabled = model.AdsTrackSoundEnabled;
+
+        settings.AdsEnableSchedule = model.AdsEnableSchedule;
+        settings.AdsStartAt = model.AdsStartAt;
+        settings.AdsEndAt = model.AdsEndAt;
+
+
         settings.UpdatedAt = DateTime.Now;
         settings.UpdatedByUserId = _userManager.GetUserId(User);
 
@@ -135,7 +180,50 @@ public class AutomationSettingsController : Controller
             ExecutionMode = AutomationExecutionMode.SuggestOnly,
             AutoActivateUserAfterEmailVerification = false,
             ShowWhatsAppJoinMenu = true,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.Now,
+
+            AdsEnabled = false,
+
+            AdsShowOnDesktop = true,
+            AdsShowOnTablet = true,
+            AdsShowOnMobile = true,
+
+            AdsShowToGuests = true,
+            AdsShowToUsers = true,
+            AdsShowToAdmins = false,
+
+            AdsShowOnDashboard = true,
+            AdsShowOnPredictionScore = true,
+            AdsShowOnLeaderboard = true,
+            AdsShowOnRules = false,
+            AdsShowOnLoginRegister = false,
+
+            AdsShowAfterSeconds = 25,
+            AdsMandatoryWatchSeconds = 5,
+            AdsAutoCloseSeconds = 20,
+            AdsDefaultSlideDurationSeconds = 4,
+
+            AdsShowSkipButton = true,
+            AdsShowCountdown = true,
+            AdsShowMuteButton = true,
+            AdsRequireTapForSound = true,
+
+            AdsShowOncePerSession = true,
+            AdsShowOncePerDay = false,
+            AdsMaxImpressionsPerDayPerUser = 3,
+
+            AdsTrackImpression = true,
+            AdsTrackSkip = true,
+            AdsTrackClick = true,
+            AdsTrackComplete = true,
+            AdsTrackSoundEnabled = true,
+
+            AdsEnableSchedule = false,
+            AdsStartAt = null,
+            AdsEndAt = null,
+
+            
+
         };
 
         _context.AutomationSettings.Add(settings);
@@ -193,7 +281,47 @@ public class AutomationSettingsController : Controller
             WeeklyEmailSendTime = settings.WeeklyEmailSendTime,
             DefaultMatchDurationMinutes = settings.DefaultMatchDurationMinutes,
 
-            UpdatedAt = settings.UpdatedAt
+            UpdatedAt = settings.UpdatedAt,
+
+            AdsEnabled = settings.AdsEnabled,
+
+            AdsShowOnDesktop = settings.AdsShowOnDesktop,
+            AdsShowOnTablet = settings.AdsShowOnTablet,
+            AdsShowOnMobile = settings.AdsShowOnMobile,
+
+            AdsShowToGuests = settings.AdsShowToGuests,
+            AdsShowToUsers = settings.AdsShowToUsers,
+            AdsShowToAdmins = settings.AdsShowToAdmins,
+
+            AdsShowOnDashboard = settings.AdsShowOnDashboard,
+            AdsShowOnPredictionScore = settings.AdsShowOnPredictionScore,
+            AdsShowOnLeaderboard = settings.AdsShowOnLeaderboard,
+            AdsShowOnRules = settings.AdsShowOnRules,
+            AdsShowOnLoginRegister = settings.AdsShowOnLoginRegister,
+
+            AdsShowAfterSeconds = settings.AdsShowAfterSeconds,
+            AdsMandatoryWatchSeconds = settings.AdsMandatoryWatchSeconds,
+            AdsAutoCloseSeconds = settings.AdsAutoCloseSeconds,
+            AdsDefaultSlideDurationSeconds = settings.AdsDefaultSlideDurationSeconds,
+
+            AdsShowSkipButton = settings.AdsShowSkipButton,
+            AdsShowCountdown = settings.AdsShowCountdown,
+            AdsShowMuteButton = settings.AdsShowMuteButton,
+            AdsRequireTapForSound = settings.AdsRequireTapForSound,
+
+            AdsShowOncePerSession = settings.AdsShowOncePerSession,
+            AdsShowOncePerDay = settings.AdsShowOncePerDay,
+            AdsMaxImpressionsPerDayPerUser = settings.AdsMaxImpressionsPerDayPerUser,
+
+            AdsTrackImpression = settings.AdsTrackImpression,
+            AdsTrackSkip = settings.AdsTrackSkip,
+            AdsTrackClick = settings.AdsTrackClick,
+            AdsTrackComplete = settings.AdsTrackComplete,
+            AdsTrackSoundEnabled = settings.AdsTrackSoundEnabled,
+
+            AdsEnableSchedule = settings.AdsEnableSchedule,
+            AdsStartAt = settings.AdsStartAt,
+            AdsEndAt = settings.AdsEndAt,
         };
     }
 }

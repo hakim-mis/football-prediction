@@ -11,6 +11,7 @@ public class UserPredictionHistoryViewModel
     public string RankText { get; set; } = "No rank";
     public int TotalScore { get; set; }
     public int ExactPredictionCount { get; set; }
+    public int WinMatchPredictionCount { get; set; }
 
     public List<UserPredictionHistoryItemViewModel> Items { get; set; } = new();
 }

@@ -3,377 +3,1470 @@
 
 @{
     ViewData["Title"] = "Automation Settings";
+
+    string StatusText(bool value)
+    {
+        return value ? "Enabled" : "Disabled";
+    }
+
+    string StatusClass(bool value)
+    {
+        return value ? "text-bg-success" : "text-bg-secondary";
+    }
+
+    string UpdatedText()
+    {
+        return Model.UpdatedAt.HasValue
+            ? Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+            : "Not updated yet";
+    }
 }
+
+<style>
+    .automation-settings-page {
+        overflow: hidden;
+    }
+
+    .automation-settings-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .automation-settings-title-block {
+        min-width: 0;
+    }
+
+        .automation-settings-title-block h1 {
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .automation-settings-title-block p {
+            max-width: 880px;
+            line-height: 1.5;
+        }
+
+    .automation-settings-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .automation-settings-actions .btn {
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+    .automation-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .automation-summary-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+    }
+
+    .automation-summary-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        background: #eef6ff;
+        color: #0d6efd;
+        font-size: 1.2rem;
+    }
+
+    .automation-summary-card span {
+        display: block;
+        color: #64748b;
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+    }
+
+    .automation-summary-card strong {
+        display: block;
+        color: #111827;
+        font-size: .96rem;
+        line-height: 1.25;
+    }
+
+    .automation-accordion .accordion-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 18px !important;
+        overflow: hidden;
+        margin-bottom: 12px;
+        background: #ffffff;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, .06);
+    }
+
+    .automation-accordion .accordion-button {
+        background: #ffffff;
+        color: #111827;
+        font-weight: 800;
+        box-shadow: none;
+        padding: 16px 18px;
+    }
+
+        .automation-accordion .accordion-button:not(.collapsed) {
+            background: #f8fbff;
+            color: #0f172a;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .automation-accordion .accordion-button:focus {
+            box-shadow: none;
+            border-color: transparent;
+        }
+
+    .automation-section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .automation-section-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: #eef6ff;
+        color: #0d6efd;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        font-size: 1.05rem;
+    }
+
+    .automation-section-text {
+        min-width: 0;
+    }
+
+        .automation-section-text strong {
+            display: block;
+            line-height: 1.2;
+        }
+
+        .automation-section-text small {
+            display: block;
+            color: #64748b;
+            font-weight: 500;
+            line-height: 1.35;
+            margin-top: 2px;
+        }
+
+    .automation-section-badge {
+        margin-left: auto;
+        margin-right: 12px;
+        font-size: .72rem;
+        border-radius: 999px;
+        padding: 6px 9px;
+    }
+
+    .automation-section-body {
+        padding: 18px;
+        background: #ffffff;
+    }
+
+    .settings-subtitle {
+        font-size: .8rem;
+        font-weight: 800;
+        color: #0f172a;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .settings-block {
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 14px;
+    }
+
+        .settings-block .row.g-3 {
+            align-items: flex-start;
+        }
+
+            .settings-block .row.g-3:has(.settings-field) > div:not(.settings-field) {
+                padding-top: 27px;
+            }
+
+    .settings-field label,
+    .settings-switch label {
+        font-weight: 700;
+        color: #334155;
+        font-size: .88rem;
+    }
+
+    .settings-field label {
+        margin-bottom: 8px;
+    }
+
+    .settings-field .form-control,
+    .settings-field .form-select {
+        border-radius: 12px;
+        min-height: 42px;
+    }
+
+    .settings-help {
+        display: block;
+        color: #64748b;
+        font-size: .78rem;
+        line-height: 1.35;
+        margin-top: 4px;
+    }
+
+    .settings-switch {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 11px 12px;
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+        .settings-switch .form-check {
+            margin-bottom: 0;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-switch .form-check-input {
+            width: 2.4em;
+            height: 1.25em;
+            margin-top: 0;
+            cursor: pointer;
+        }
+
+            .settings-switch .form-check-input:checked {
+                background-color: #198754;
+                border-color: #198754;
+            }
+
+    .automation-footer-actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: rgba(255, 255, 255, .92);
+        backdrop-filter: blur(10px);
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 14px;
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        box-shadow: 0 -10px 28px rgba(15, 23, 42, .06);
+    }
+
+        .automation-footer-actions .btn {
+            border-radius: 999px;
+            font-weight: 800;
+            min-width: 150px;
+        }
+
+    .ads-action-box {
+        border: 1px dashed #93c5fd;
+        background: #eff6ff;
+        border-radius: 16px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+        .ads-action-box strong {
+            display: block;
+            color: #1e3a8a;
+            margin-bottom: 2px;
+        }
+
+        .ads-action-box span {
+            color: #475569;
+            font-size: .85rem;
+        }
+
+        .ads-action-box .btn {
+            border-radius: 999px;
+            font-weight: 800;
+        }
+
+    @@media (max-width: 991.98px) {
+        .automation-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .automation-settings-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .automation-settings-header {
+            align-items: center;
+            gap: 10px;
+        }
+
+        .automation-settings-title-block h1 {
+            font-size: 1.22rem;
+        }
+
+        .automation-settings-title-block p {
+            font-size: .84rem;
+        }
+
+        .automation-settings-actions {
+            width: 100%;
+        }
+
+            .automation-settings-actions .btn {
+                flex: 1 1 auto;
+                font-size: .82rem;
+                padding: 7px 10px;
+            }
+
+        .automation-summary-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .automation-summary-card {
+            padding: 12px;
+        }
+
+        .automation-section-badge {
+            display: none;
+        }
+
+        .automation-accordion .accordion-button {
+            padding: 14px;
+        }
+
+        .automation-section-body {
+            padding: 14px;
+        }
+
+        .settings-block {
+            padding: 12px;
+        }
+
+            .settings-block .row.g-3:has(.settings-field) > div:not(.settings-field) {
+                padding-top: 0;
+            }
+
+        .settings-switch {
+            padding: 10px;
+            min-height: 42px;
+        }
+
+        .automation-footer-actions {
+            flex-direction: column;
+            border-radius: 16px;
+        }
+
+            .automation-footer-actions .btn {
+                width: 100%;
+            }
+    }
+</style>
 
 <div class="dashboard-card automation-settings-page p-3 p-md-4 mb-4">
 
-    <div class="automation-settings-header mb-4">
-        <div>
+    <div class="automation-settings-header">
+        <div class="automation-settings-title-block">
             <span class="pill">
                 <i class="bi bi-robot"></i>
-                AI Automation Center
+                Automation Control Center
             </span>
 
-            <h1 class="h3 fw-bold mt-3 mb-1">
+            <h1 class="h3 fw-bold mt-3">
                 Automation Settings
             </h1>
 
-            <p class="text-muted mb-0 small">
-                Control all automation and AI-assisted jobs from one place. Manual admin actions will continue to work even if automation is off.
+            <p class="text-muted mb-0">
+                Manage fixture automation, reminders, weekly emails, AI approval, login tracking, Ads settings, schedules, and execution mode from one professional control panel.
             </p>
         </div>
 
-        <a asp-area="Admin"
-           asp-controller="Dashboard"
-           asp-action="Index"
-           class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-arrow-left"></i>
-            Back to Admin Dashboard
-        </a>
+        <div class="automation-settings-actions">
+            <a asp-area="Admin"
+               asp-controller="Dashboard"
+               asp-action="Index"
+               class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </a>
+
+            <a asp-area="Admin"
+               asp-controller="AutomationSuggestions"
+               asp-action="Index"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-lightbulb"></i>
+                Suggestions
+            </a>
+        </div>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">
-            @TempData["Success"]
+    <div class="automation-summary-grid">
+
+        <div class="automation-summary-card">
+            <div class="automation-summary-icon">
+                <i class="bi bi-power"></i>
+            </div>
+            <div>
+                <span>Master</span>
+                <strong>
+                    <span class="badge @StatusClass(Model.MasterAutomationEnabled)">
+                        @StatusText(Model.MasterAutomationEnabled)
+                    </span>
+                </strong>
+            </div>
         </div>
-    }
+
+        <div class="automation-summary-card">
+            <div class="automation-summary-icon">
+                <i class="bi bi-gear-wide-connected"></i>
+            </div>
+            <div>
+                <span>Execution</span>
+                <strong>@Model.ExecutionMode</strong>
+            </div>
+        </div>
+
+        <div class="automation-summary-card">
+            <div class="automation-summary-icon">
+                <i class="bi bi-megaphone"></i>
+            </div>
+            <div>
+                <span>Ads</span>
+                <strong>
+                    <span class="badge @StatusClass(Model.AdsEnabled)">
+                        @StatusText(Model.AdsEnabled)
+                    </span>
+                </strong>
+            </div>
+        </div>
+
+        <div class="automation-summary-card">
+            <div class="automation-summary-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+                <span>Last Updated</span>
+                <strong>@UpdatedText()</strong>
+            </div>
+        </div>
+
+    </div>
 
     <form asp-action="Index" method="post">
         @Html.AntiForgeryToken()
 
+        <input asp-for="Id" type="hidden" />
+
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-        <!-- MASTER SWITCH -->
-        <div class="automation-master-card mb-4 @(Model.MasterAutomationEnabled ? "master-on" : "master-off")">
+        <div class="accordion automation-accordion" id="automationSettingsAccordion">
 
-            <div class="automation-master-left">
-                <div class="automation-master-icon">
-                    <i class="bi bi-power"></i>
-                </div>
+            <!-- MASTER -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="masterHeading">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#masterCollapse" aria-expanded="true" aria-controls="masterCollapse">
+                        <div class="automation-section-title">
+                            <span class="automation-section-icon">
+                                <i class="bi bi-power"></i>
+                            </span>
+                            <span class="automation-section-text">
+                                <strong>Master & Execution Mode</strong>
+                                <small>Main switch and automation execution behavior.</small>
+                            </span>
+                            <span class="badge automation-section-badge @StatusClass(Model.MasterAutomationEnabled)">
+                                @StatusText(Model.MasterAutomationEnabled)
+                            </span>
+                        </div>
+                    </button>
+                </h2>
 
-                <div>
-                    <h2>Master Automation Switch</h2>
+                <div id="masterCollapse" class="accordion-collapse collapse show" aria-labelledby="masterHeading" data-bs-parent="#automationSettingsAccordion">
+                    <div class="automation-section-body">
 
-                    <p>
-                        When this is OFF, all background automation and AI auto-actions will be stopped.
-                        Inner settings will be ignored until this is turned ON.
-                    </p>
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-toggle-on"></i>
+                                Main Control
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="settings-switch">
+                                        <label asp-for="MasterAutomationEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="MasterAutomationEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                    <span asp-validation-for="MasterAutomationEnabled" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-6 settings-field">
+                                    <label asp-for="ExecutionMode" class="form-label"></label>
+                                    <select asp-for="ExecutionMode"
+                                            asp-items="Html.GetEnumSelectList<AutomationExecutionMode>()"
+                                            class="form-select">
+                                    </select>
+                                    <span class="settings-help">
+                                        Suggest Only creates review items. Auto Execute runs allowed automation directly.
+                                    </span>
+                                    <span asp-validation-for="ExecutionMode" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
 
-            <div class="form-check form-switch automation-main-switch">
-                <input asp-for="MasterAutomationEnabled"
-                       class="form-check-input"
-                       role="switch" />
+            <!-- FIXTURE -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="fixtureHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#fixtureCollapse" aria-expanded="false" aria-controls="fixtureCollapse">
+                        <div class="automation-section-title">
+                            <span class="automation-section-icon">
+                                <i class="bi bi-calendar-event"></i>
+                            </span>
+                            <span class="automation-section-text">
+                                <strong>Fixture Automation</strong>
+                                <small>Automatic status update, result processing, and default match duration.</small>
+                            </span>
+                            <span class="badge automation-section-badge @StatusClass(Model.FixtureAutomationEnabled)">
+                                @StatusText(Model.FixtureAutomationEnabled)
+                            </span>
+                        </div>
+                    </button>
+                </h2>
 
-                <label asp-for="MasterAutomationEnabled"
-                       class="form-check-label">
-                    @(Model.MasterAutomationEnabled ? "ON" : "OFF")
-                </label>
+                <div id="fixtureCollapse" class="accordion-collapse collapse" aria-labelledby="fixtureHeading" data-bs-parent="#automationSettingsAccordion">
+                    <div class="automation-section-body">
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-calendar-check"></i>
+                                Fixture Status Flow
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6 col-xl-3">
+                                    <div class="settings-switch">
+                                        <label asp-for="FixtureAutomationEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="FixtureAutomationEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-xl-3">
+                                    <div class="settings-switch">
+                                        <label asp-for="AutoUpcomingToLiveEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AutoUpcomingToLiveEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-xl-3">
+                                    <div class="settings-switch">
+                                        <label asp-for="AutoLiveToFinishedEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AutoLiveToFinishedEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-xl-3">
+                                    <div class="settings-switch">
+                                        <label asp-for="AutoResultProcessingEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AutoResultProcessingEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 settings-field">
+                                    <label asp-for="DefaultMatchDurationMinutes" class="form-label"></label>
+                                    <input asp-for="DefaultMatchDurationMinutes" class="form-control" type="number" min="30" max="300" />
+                                    <span class="settings-help">Used to decide auto-finished time when actual end time is not available.</span>
+                                    <span asp-validation-for="DefaultMatchDurationMinutes" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             </div>
 
-        </div>
+            <!-- REMINDER -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="reminderHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reminderCollapse" aria-expanded="false" aria-controls="reminderCollapse">
+                        <div class="automation-section-title">
+                            <span class="automation-section-icon">
+                                <i class="bi bi-envelope-bell"></i>
+                            </span>
+                            <span class="automation-section-text">
+                                <strong>Prediction Reminder Emails</strong>
+                                <small>Send reminder emails before upcoming matches.</small>
+                            </span>
+                            <span class="badge automation-section-badge @StatusClass(Model.ReminderAutomationEnabled)">
+                                @StatusText(Model.ReminderAutomationEnabled)
+                            </span>
+                        </div>
+                    </button>
+                </h2>
 
-        <div class="row g-4">
+                <div id="reminderCollapse" class="accordion-collapse collapse" aria-labelledby="reminderHeading" data-bs-parent="#automationSettingsAccordion">
+                    <div class="automation-section-body">
 
-            <!-- EXECUTION MODE -->
-            <div class="col-lg-6">
-                <div class="automation-section-card h-100">
-                    <h3>
-                        <i class="bi bi-sliders"></i>
-                        Execution Mode
-                    </h3>
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-send"></i>
+                                Reminder Control
+                            </div>
 
-                    <p class="text-muted small">
-                        Manual means automation will not execute changes. Suggest Only creates review suggestions. Auto Execute performs allowed actions.
-                    </p>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="ReminderAutomationEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="ReminderAutomationEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
 
-                    <div class="mb-3">
-                        <label asp-for="ExecutionMode" class="form-label"></label>
-                        <select asp-for="ExecutionMode"
-                                asp-items="Html.GetEnumSelectList<AutomationExecutionMode>()"
-                                class="form-select">
-                        </select>
-                        <span asp-validation-for="ExecutionMode" class="text-danger small"></span>
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="Reminder24HourEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="Reminder24HourEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="Reminder1HourEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="Reminder1HourEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- WEEKLY -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="weeklyHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#weeklyCollapse" aria-expanded="false" aria-controls="weeklyCollapse">
+                        <div class="automation-section-title">
+                            <span class="automation-section-icon">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </span>
+                            <span class="automation-section-text">
+                                <strong>Weekly Performance Email</strong>
+                                <small>Send appreciation or improvement emails based on weekly performance.</small>
+                            </span>
+                            <span class="badge automation-section-badge @StatusClass(Model.WeeklyEmailAutomationEnabled)">
+                                @StatusText(Model.WeeklyEmailAutomationEnabled)
+                            </span>
+                        </div>
+                    </button>
+                </h2>
+
+                <div id="weeklyCollapse" class="accordion-collapse collapse" aria-labelledby="weeklyHeading" data-bs-parent="#automationSettingsAccordion">
+                    <div class="automation-section-body">
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-award"></i>
+                                Email Type
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="WeeklyEmailAutomationEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="WeeklyEmailAutomationEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="WeeklyAppreciationEmailEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="WeeklyAppreciationEmailEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="WeeklyImprovementEmailEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="WeeklyImprovementEmailEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-sliders"></i>
+                                Performance Thresholds
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="WeeklyGoodPerformancePointThreshold" class="form-label"></label>
+                                    <input asp-for="WeeklyGoodPerformancePointThreshold" class="form-control" type="number" min="0" max="100" />
+                                    <span asp-validation-for="WeeklyGoodPerformancePointThreshold" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="WeeklyPoorPerformancePointThreshold" class="form-label"></label>
+                                    <input asp-for="WeeklyPoorPerformancePointThreshold" class="form-control" type="number" min="0" max="100" />
+                                    <span asp-validation-for="WeeklyPoorPerformancePointThreshold" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="WeeklyMissedPredictionThreshold" class="form-label"></label>
+                                    <input asp-for="WeeklyMissedPredictionThreshold" class="form-control" type="number" min="0" max="100" />
+                                    <span asp-validation-for="WeeklyMissedPredictionThreshold" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-calendar-week"></i>
+                                Weekly Schedule
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6 settings-field">
+                                    <label asp-for="WeeklyEmailSendDay" class="form-label"></label>
+                                    <select asp-for="WeeklyEmailSendDay"
+                                            asp-items="Html.GetEnumSelectList<DayOfWeek>()"
+                                            class="form-select">
+                                    </select>
+                                    <span asp-validation-for="WeeklyEmailSendDay" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-6 settings-field">
+                                    <label asp-for="WeeklyEmailSendTime" class="form-label"></label>
+                                    <input asp-for="WeeklyEmailSendTime" class="form-control" type="time" />
+                                    <span asp-validation-for="WeeklyEmailSendTime" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI AND USER ACTIVATION -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="aiHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#aiCollapse" aria-expanded="false" aria-controls="aiCollapse">
+                        <div class="automation-section-title">
+                            <span class="automation-section-icon">
+                                <i class="bi bi-person-check"></i>
+                            </span>
+                            <span class="automation-section-text">
+                                <strong>User Approval, AI Review & WhatsApp</strong>
+                                <small>Control user activation flow, AI approval suggestions, and WhatsApp group URL.</small>
+                            </span>
+                            <span class="badge automation-section-badge @StatusClass(Model.AiUserApprovalEnabled || Model.AutoActivateUserAfterEmailVerification)">
+                                @StatusText(Model.AiUserApprovalEnabled || Model.AutoActivateUserAfterEmailVerification)
+                            </span>
+                        </div>
+                    </button>
+                </h2>
+
+                <div id="aiCollapse" class="accordion-collapse collapse" aria-labelledby="aiHeading" data-bs-parent="#automationSettingsAccordion">
+                    <div class="automation-section-body">
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-person-gear"></i>
+                                User Activation
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="settings-switch">
+                                        <label asp-for="AutoActivateUserAfterEmailVerification"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AutoActivateUserAfterEmailVerification" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                    <span class="settings-help">
+                                        If enabled, user becomes active automatically after email verification.
+                                    </span>
+                                </div>
+
+                                <div class="col-md-6 settings-field">
+                                    <label asp-for="WhatsAppGroupUrl" class="form-label"></label>
+                                    <input asp-for="WhatsAppGroupUrl" class="form-control" placeholder="https://chat.whatsapp.com/..." />
+                                    <span class="settings-help">
+                                        This URL can be shown as a Join WhatsApp Group button.
+                                    </span>
+                                    <span asp-validation-for="WhatsAppGroupUrl" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-robot"></i>
+                                AI Approval
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AiUserApprovalEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AiUserApprovalEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AiAutoApproveEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AiAutoApproveEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="AiAutoApproveRiskThreshold" class="form-label"></label>
+                                    <input asp-for="AiAutoApproveRiskThreshold" class="form-control" type="number" min="0" max="100" />
+                                    <span asp-validation-for="AiAutoApproveRiskThreshold" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOGIN -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="loginHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#loginCollapse" aria-expanded="false" aria-controls="loginCollapse">
+                        <div class="automation-section-title">
+                            <span class="automation-section-icon">
+                                <i class="bi bi-shield-lock"></i>
+                            </span>
+                            <span class="automation-section-text">
+                                <strong>Login & Session Tracking</strong>
+                                <small>Track login history, active sessions, and cleanup timeout.</small>
+                            </span>
+                            <span class="badge automation-section-badge @StatusClass(Model.LoginTrackingEnabled)">
+                                @StatusText(Model.LoginTrackingEnabled)
+                            </span>
+                        </div>
+                    </button>
+                </h2>
+
+                <div id="loginCollapse" class="accordion-collapse collapse" aria-labelledby="loginHeading" data-bs-parent="#automationSettingsAccordion">
+                    <div class="automation-section-body">
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-clock-history"></i>
+                                Session Control
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="LoginTrackingEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="LoginTrackingEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="ActiveSessionTrackingEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="ActiveSessionTrackingEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="SessionTimeoutMinutes" class="form-label"></label>
+                                    <input asp-for="SessionTimeoutMinutes" class="form-control" type="number" min="1" max="120" />
+                                    <span asp-validation-for="SessionTimeoutMinutes" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADS -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="adsHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#adsCollapse" aria-expanded="false" aria-controls="adsCollapse">
+                        <div class="automation-section-title">
+                            <span class="automation-section-icon">
+                                <i class="bi bi-megaphone"></i>
+                            </span>
+                            <span class="automation-section-text">
+                                <strong>Ads Settings</strong>
+                                <small>Control promotional Ads shown across desktop, tablet, and mobile.</small>
+                            </span>
+                            <span class="badge automation-section-badge @StatusClass(Model.AdsEnabled)">
+                                @StatusText(Model.AdsEnabled)
+                            </span>
+                        </div>
+                    </button>
+                </h2>
+
+                <div id="adsCollapse" class="accordion-collapse collapse" aria-labelledby="adsHeading" data-bs-parent="#automationSettingsAccordion">
+                    <div class="automation-section-body">
+
+                        <div class="ads-action-box mb-3">
+                            <div>
+                                <strong>
+                                    <i class="bi bi-megaphone"></i>
+                                    Ads Campaign Management
+                                </strong>
+                                <span>
+                                    Global Ads behavior is configured here. Campaigns and slides will be managed from the Ads module.
+                                </span>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                <a asp-area="Admin"
+                                   asp-controller="Ads"
+                                   asp-action="Index"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-card-image"></i>
+                                    Manage Ads
+                                </a>
+
+                                <a asp-area="Admin"
+                                   asp-controller="Ads"
+                                   asp-action="Analytics"
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-graph-up"></i>
+                                    Analytics
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-power"></i>
+                                Main Control
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowSkipButton"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowSkipButton" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowCountdown"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowCountdown" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-display"></i>
+                                Platform
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOnDesktop"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOnDesktop" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOnTablet"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOnTablet" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOnMobile"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOnMobile" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-people"></i>
+                                Audience
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowToGuests"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowToGuests" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowToUsers"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowToUsers" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowToAdmins"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowToAdmins" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-window-stack"></i>
+                                Pages
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOnDashboard"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOnDashboard" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOnPredictionScore"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOnPredictionScore" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOnLeaderboard"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOnLeaderboard" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOnRules"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOnRules" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOnLoginRegister"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOnLoginRegister" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-stopwatch"></i>
+                                Timing
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-3 settings-field">
+                                    <label asp-for="AdsShowAfterSeconds" class="form-label"></label>
+                                    <input asp-for="AdsShowAfterSeconds" class="form-control" type="number" min="0" max="300" />
+                                    <span asp-validation-for="AdsShowAfterSeconds" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-3 settings-field">
+                                    <label asp-for="AdsMandatoryWatchSeconds" class="form-label"></label>
+                                    <input asp-for="AdsMandatoryWatchSeconds" class="form-control" type="number" min="0" max="120" />
+                                    <span asp-validation-for="AdsMandatoryWatchSeconds" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-3 settings-field">
+                                    <label asp-for="AdsAutoCloseSeconds" class="form-label"></label>
+                                    <input asp-for="AdsAutoCloseSeconds" class="form-control" type="number" min="5" max="300" />
+                                    <span asp-validation-for="AdsAutoCloseSeconds" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-3 settings-field">
+                                    <label asp-for="AdsDefaultSlideDurationSeconds" class="form-label"></label>
+                                    <input asp-for="AdsDefaultSlideDurationSeconds" class="form-control" type="number" min="1" max="60" />
+                                    <span asp-validation-for="AdsDefaultSlideDurationSeconds" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-volume-up"></i>
+                                Sound & Frequency
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowMuteButton"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowMuteButton" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsRequireTapForSound"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsRequireTapForSound" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOncePerSession"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOncePerSession" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsShowOncePerDay"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsShowOncePerDay" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="AdsMaxImpressionsPerDayPerUser" class="form-label"></label>
+                                    <input asp-for="AdsMaxImpressionsPerDayPerUser" class="form-control" type="number" min="1" max="100" />
+                                    <span asp-validation-for="AdsMaxImpressionsPerDayPerUser" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-bar-chart"></i>
+                                Tracking
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsTrackImpression"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsTrackImpression" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsTrackSkip"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsTrackSkip" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsTrackClick"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsTrackClick" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsTrackComplete"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsTrackComplete" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsTrackSoundEnabled"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsTrackSoundEnabled" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-calendar-range"></i>
+                                Schedule
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="settings-switch">
+                                        <label asp-for="AdsEnableSchedule"></label>
+                                        <div class="form-check form-switch">
+                                            <input asp-for="AdsEnableSchedule" class="form-check-input" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="AdsStartAt" class="form-label"></label>
+                                    <input asp-for="AdsStartAt" class="form-control" type="datetime-local" value="@(Model.AdsStartAt?.ToString("yyyy-MM-ddTHH:mm"))" />
+                                    <span asp-validation-for="AdsStartAt" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="AdsEndAt" class="form-label"></label>
+                                    <input asp-for="AdsEndAt" class="form-control" type="datetime-local" value="@(Model.AdsEndAt?.ToString("yyyy-MM-ddTHH:mm"))" />
+                                    <span asp-validation-for="AdsEndAt" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
 
             <!-- INTERVALS -->
-            <div class="col-lg-6">
-                <div class="automation-section-card h-100">
-                    <h3>
-                        <i class="bi bi-clock-history"></i>
-                        Job Intervals
-                    </h3>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="intervalHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#intervalCollapse" aria-expanded="false" aria-controls="intervalCollapse">
+                        <div class="automation-section-title">
+                            <span class="automation-section-icon">
+                                <i class="bi bi-stopwatch"></i>
+                            </span>
+                            <span class="automation-section-text">
+                                <strong>Scheduler Intervals</strong>
+                                <small>Control how frequently background jobs check for work.</small>
+                            </span>
+                            <span class="badge automation-section-badge text-bg-info">
+                                Configure
+                            </span>
+                        </div>
+                    </button>
+                </h2>
 
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label asp-for="FixtureCheckIntervalMinutes" class="form-label"></label>
-                            <input asp-for="FixtureCheckIntervalMinutes" class="form-control" />
-                            <span asp-validation-for="FixtureCheckIntervalMinutes" class="text-danger small"></span>
+                <div id="intervalCollapse" class="accordion-collapse collapse" aria-labelledby="intervalHeading" data-bs-parent="#automationSettingsAccordion">
+                    <div class="automation-section-body">
+
+                        <div class="settings-block">
+                            <div class="settings-subtitle">
+                                <i class="bi bi-clock"></i>
+                                Job Intervals
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="FixtureCheckIntervalMinutes" class="form-label"></label>
+                                    <input asp-for="FixtureCheckIntervalMinutes" class="form-control" type="number" min="1" max="1440" />
+                                    <span asp-validation-for="FixtureCheckIntervalMinutes" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="ReminderCheckIntervalMinutes" class="form-label"></label>
+                                    <input asp-for="ReminderCheckIntervalMinutes" class="form-control" type="number" min="1" max="1440" />
+                                    <span asp-validation-for="ReminderCheckIntervalMinutes" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="ScoreSyncIntervalMinutes" class="form-label"></label>
+                                    <input asp-for="ScoreSyncIntervalMinutes" class="form-control" type="number" min="1" max="1440" />
+                                    <span asp-validation-for="ScoreSyncIntervalMinutes" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="AiUserReviewIntervalMinutes" class="form-label"></label>
+                                    <input asp-for="AiUserReviewIntervalMinutes" class="form-control" type="number" min="1" max="1440" />
+                                    <span asp-validation-for="AiUserReviewIntervalMinutes" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-4 settings-field">
+                                    <label asp-for="SessionCleanupIntervalMinutes" class="form-label"></label>
+                                    <input asp-for="SessionCleanupIntervalMinutes" class="form-control" type="number" min="1" max="1440" />
+                                    <span asp-validation-for="SessionCleanupIntervalMinutes" class="text-danger small"></span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label asp-for="ReminderCheckIntervalMinutes" class="form-label"></label>
-                            <input asp-for="ReminderCheckIntervalMinutes" class="form-control" />
-                            <span asp-validation-for="ReminderCheckIntervalMinutes" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="ScoreSyncIntervalMinutes" class="form-label"></label>
-                            <input asp-for="ScoreSyncIntervalMinutes" class="form-control" />
-                            <span asp-validation-for="ScoreSyncIntervalMinutes" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="AiUserReviewIntervalMinutes" class="form-label"></label>
-                            <input asp-for="AiUserReviewIntervalMinutes" class="form-control" />
-                            <span asp-validation-for="AiUserReviewIntervalMinutes" class="text-danger small"></span>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- FIXTURE AUTOMATION -->
-            <div class="col-lg-6">
-                <div class="automation-section-card h-100">
-                    <h3>
-                        <i class="bi bi-calendar-event"></i>
-                        Fixture Automation
-                    </h3>
-
-                    <div class="automation-switch-list">
-                        <partial name="_AutomationSwitch" model='("FixtureAutomationEnabled", "Fixture Automation Enabled", Model.FixtureAutomationEnabled)' />
-                        <partial name="_AutomationSwitch" model='("AutoUpcomingToLiveEnabled", "Auto Upcoming to Live", Model.AutoUpcomingToLiveEnabled)' />
-                        <partial name="_AutomationSwitch" model='("AutoLiveToFinishedEnabled", "Auto Live to Finished", Model.AutoLiveToFinishedEnabled)' />
-                        <partial name="_AutomationSwitch" model='("AutoResultProcessingEnabled", "Auto Result Processing", Model.AutoResultProcessingEnabled)' />
-                    </div>
-                    <div class="mt-3">
-                        <label asp-for="DefaultMatchDurationMinutes" class="form-label"></label>
-                        <input asp-for="DefaultMatchDurationMinutes" class="form-control" />
-                        <span asp-validation-for="DefaultMatchDurationMinutes" class="text-danger small"></span>
-
-                        <div class="form-text">
-                            Used for suggesting or auto-changing Live fixtures to Finished when no external score API is connected.
+            <!-- AUDIT -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="auditHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#auditCollapse" aria-expanded="false" aria-controls="auditCollapse">
+                        <div class="automation-section-title">
+                            <span class="automation-section-icon">
+                                <i class="bi bi-journal-text"></i>
+                            </span>
+                            <span class="automation-section-text">
+                                <strong>Audit Information</strong>
+                                <small>Last saved information for this settings record.</small>
+                            </span>
+                            <span class="badge automation-section-badge text-bg-light text-muted">
+                                Info
+                            </span>
                         </div>
-                    </div>
-                </div>
-            </div>
+                    </button>
+                </h2>
 
-            <!-- REMINDERS -->
-            <div class="col-lg-6">
-                <div class="automation-section-card h-100">
-                    <h3>
-                        <i class="bi bi-envelope-bell"></i>
-                        Prediction Reminder
-                    </h3>
+                <div id="auditCollapse" class="accordion-collapse collapse" aria-labelledby="auditHeading" data-bs-parent="#automationSettingsAccordion">
+                    <div class="automation-section-body">
 
-                    <div class="automation-switch-list">
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="ReminderAutomationEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="ReminderAutomationEnabled" class="form-check-label"></label>
+                        <div class="settings-block">
+                            <div class="row g-3">
+                                <div class="col-md-6 settings-field">
+                                    <label class="form-label">Settings ID</label>
+                                    <input value="@Model.Id" class="form-control" readonly />
+                                </div>
+
+                                <div class="col-md-6 settings-field">
+                                    <label class="form-label">Last Updated</label>
+                                    <input value="@UpdatedText()" class="form-control" readonly />
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="Reminder24HourEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="Reminder24HourEnabled" class="form-check-label"></label>
-                        </div>
-
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="Reminder1HourEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="Reminder1HourEnabled" class="form-check-label"></label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- PORTAL / REGISTRATION SETTINGS -->
-            <div class="col-lg-6">
-                <div class="automation-section-card h-100">
-                    <h3>
-                        <i class="bi bi-globe2"></i>
-                        Portal & Registration Settings
-                    </h3>
-
-                    <p class="text-muted small">
-                        Control user activation flow after email verification and WhatsApp group menu visibility.
-                    </p>
-
-                    <div class="automation-switch-list mb-3">
-
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="AutoActivateUserAfterEmailVerification"
-                                   class="form-check-input"
-                                   role="switch" />
-                            <label asp-for="AutoActivateUserAfterEmailVerification"
-                                   class="form-check-label"></label>
-                        </div>
-
-                        <div class="small text-muted mb-3">
-                            <strong>OFF:</strong> User must wait for admin activation after email verification.<br />
-                            <strong>ON:</strong> User will be activated automatically after email verification.
-                        </div>
-
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="ShowWhatsAppJoinMenu"
-                                   class="form-check-input"
-                                   role="switch" />
-                            <label asp-for="ShowWhatsAppJoinMenu"
-                                   class="form-check-label"></label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label asp-for="WhatsAppGroupUrl" class="form-label"></label>
-                        <input asp-for="WhatsAppGroupUrl"
-                               class="form-control"
-                               placeholder="https://chat.whatsapp.com/your-group-link" />
-                        <span asp-validation-for="WhatsAppGroupUrl" class="text-danger small"></span>
-
-                        <div class="form-text">
-                            If enabled, all users will see a WhatsApp group button in the top menu.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- WEEKLY EMAIL -->
-            <div class="col-lg-6">
-                <div class="automation-section-card h-100">
-                    <h3>
-                        <i class="bi bi-envelope-heart"></i>
-                        Weekly Performance Email
-                    </h3>
-
-                    <div class="automation-switch-list mb-3">
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="WeeklyEmailAutomationEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="WeeklyEmailAutomationEnabled" class="form-check-label"></label>
-                        </div>
-
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="WeeklyAppreciationEmailEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="WeeklyAppreciationEmailEnabled" class="form-check-label"></label>
-                        </div>
-
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="WeeklyImprovementEmailEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="WeeklyImprovementEmailEnabled" class="form-check-label"></label>
-                        </div>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label asp-for="WeeklyGoodPerformancePointThreshold" class="form-label"></label>
-                            <input asp-for="WeeklyGoodPerformancePointThreshold" class="form-control" />
-                            <span asp-validation-for="WeeklyGoodPerformancePointThreshold" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="WeeklyPoorPerformancePointThreshold" class="form-label"></label>
-                            <input asp-for="WeeklyPoorPerformancePointThreshold" class="form-control" />
-                            <span asp-validation-for="WeeklyPoorPerformancePointThreshold" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="WeeklyMissedPredictionThreshold" class="form-label"></label>
-                            <input asp-for="WeeklyMissedPredictionThreshold" class="form-control" />
-                            <span asp-validation-for="WeeklyMissedPredictionThreshold" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="WeeklyEmailSendDay" class="form-label"></label>
-                            <select asp-for="WeeklyEmailSendDay"
-                                    asp-items="Html.GetEnumSelectList<DayOfWeek>()"
-                                    class="form-select">
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="WeeklyEmailSendTime" class="form-label"></label>
-                            <input asp-for="WeeklyEmailSendTime" class="form-control" type="time" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI USER APPROVAL -->
-            <div class="col-lg-6">
-                <div class="automation-section-card h-100">
-                    <h3>
-                        <i class="bi bi-person-check"></i>
-                        AI User Approval
-                    </h3>
-
-                    <p class="text-muted small">
-                        Recommended mode is Suggest Only first. Auto approval should be enabled only after testing.
-                    </p>
-
-                    <div class="automation-switch-list mb-3">
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="AiUserApprovalEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="AiUserApprovalEnabled" class="form-check-label"></label>
-                        </div>
-
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="AiAutoApproveEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="AiAutoApproveEnabled" class="form-check-label"></label>
-                        </div>
-                    </div>
-
-                    <label asp-for="AiAutoApproveRiskThreshold" class="form-label"></label>
-                    <input asp-for="AiAutoApproveRiskThreshold" class="form-control" />
-                    <span asp-validation-for="AiAutoApproveRiskThreshold" class="text-danger small"></span>
-                </div>
-            </div>
-
-            <!-- LOGIN TRACKING -->
-            <div class="col-lg-6">
-                <div class="automation-section-card h-100">
-                    <h3>
-                        <i class="bi bi-box-arrow-in-right"></i>
-                        Login Tracking
-                    </h3>
-
-                    <div class="automation-switch-list mb-3">
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="LoginTrackingEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="LoginTrackingEnabled" class="form-check-label"></label>
-                        </div>
-
-                        <div class="form-check form-switch automation-switch-row">
-                            <input asp-for="ActiveSessionTrackingEnabled" class="form-check-input" role="switch" />
-                            <label asp-for="ActiveSessionTrackingEnabled" class="form-check-label"></label>
-                        </div>
-                    </div>
-
-                    <label asp-for="SessionTimeoutMinutes" class="form-label"></label>
-                    <input asp-for="SessionTimeoutMinutes" class="form-control" />
-                    <span asp-validation-for="SessionTimeoutMinutes" class="text-danger small"></span>
-
-                    <div class="mt-3">
-                        <label asp-for="SessionCleanupIntervalMinutes" class="form-label"></label>
-                        <input asp-for="SessionCleanupIntervalMinutes" class="form-control" />
-                        <span asp-validation-for="SessionCleanupIntervalMinutes" class="text-danger small"></span>
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <div class="automation-save-bar mt-4">
-            <button type="submit" class="btn btn-primary btn-lg fw-bold">
+        <div class="automation-footer-actions">
+            <a asp-area="Admin"
+               asp-controller="Dashboard"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+
+            <button type="submit" class="btn btn-primary">
                 <i class="bi bi-save"></i>
-                Save Automation Settings
+                Save Settings
             </button>
         </div>
-
-        @if (Model.UpdatedAt.HasValue)
-        {
-            <div class="text-muted small mt-3">
-                Last updated: @Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
-            </div>
-        }
 
     </form>
 
@@ -384,16 +1477,42 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const masterSwitch = document.getElementById("MasterAutomationEnabled");
-
-            if (masterSwitch) {
-                masterSwitch.addEventListener("change", function () {
-                    const label = document.querySelector('label[for="MasterAutomationEnabled"]');
-                    if (label) {
-                        label.innerText = masterSwitch.checked ? "ON" : "OFF";
-                    }
-                });
-            }
+            rememberAutomationAccordionState();
         });
+
+        function rememberAutomationAccordionState() {
+            const storageKey = "automationSettingsActiveAccordion";
+            const accordionItems = document.querySelectorAll("#automationSettingsAccordion .accordion-collapse");
+
+            accordionItems.forEach(function (item) {
+                item.addEventListener("shown.bs.collapse", function () {
+                    sessionStorage.setItem(storageKey, item.id);
+                });
+            });
+
+            const activeId = sessionStorage.getItem(storageKey);
+
+            if (!activeId) {
+                return;
+            }
+
+            const activeElement = document.getElementById(activeId);
+
+            if (!activeElement || typeof bootstrap === "undefined") {
+                return;
+            }
+
+            accordionItems.forEach(function (item) {
+                const instance = bootstrap.Collapse.getOrCreateInstance(item, {
+                    toggle: false
+                });
+
+                if (item.id === activeId) {
+                    instance.show();
+                } else {
+                    instance.hide();
+                }
+            });
+        }
     </script>
 }

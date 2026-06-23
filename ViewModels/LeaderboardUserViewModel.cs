@@ -11,5 +11,6 @@ public class LeaderboardUserViewModel
     public string? PhotoPath { get; set; }
     public int TotalScore { get; set; }
     public int ExactPredictionCount { get; set; }
+    public int WinMatchPredictionCount { get; set; }
     public DateTime CreatedAt { get; set; }
 }

@@ -1,0 +1,277 @@
+﻿@model FootballPredictionGame.ViewModels.AdSlideIndexViewModel
+
+@{
+    ViewData["Title"] = "Ad Slides";
+
+    string MediaUrl(string? path)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? ""
+            : Url.Content("~/" + path.TrimStart('/', '~'));
+    }
+}
+
+<style>
+    .ad-slide-page {
+        overflow: hidden;
+    }
+
+    .ad-slide-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .ad-slide-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .ad-slide-actions .btn {
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+    .ad-slide-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .ad-slide-card {
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ad-slide-image {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+        background: #f1f5f9;
+    }
+
+    .ad-slide-body {
+        padding: 14px;
+        flex: 1 1 auto;
+    }
+
+    .ad-slide-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .ad-slide-footer {
+        border-top: 1px solid #e2e8f0;
+        padding: 12px;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+        .ad-slide-footer .btn {
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+    @@media (max-width: 991.98px) {
+        .ad-slide-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .ad-slide-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .ad-slide-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .ad-slide-actions {
+            width: 100%;
+        }
+
+            .ad-slide-actions .btn {
+                flex: 1 1 auto;
+                font-size: .82rem;
+            }
+
+        .ad-slide-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="dashboard-card ad-slide-page p-3 p-md-4 mb-4">
+
+    <div class="ad-slide-header">
+        <div>
+            <span class="pill">
+                <i class="bi bi-images"></i>
+                Slides
+            </span>
+
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                @Model.AdTitle
+            </h1>
+
+            <p class="text-muted mb-0">
+                Manage slides for this ad campaign. Each slide can have image, text, CTA, and optional audio.
+            </p>
+        </div>
+
+        <div class="ad-slide-actions">
+
+            <a asp-action="Preview"
+               asp-route-id="@Model.AdId"
+               class="btn btn-outline-success btn-sm">
+                <i class="bi bi-eye"></i>
+                Preview
+            </a>
+            <a asp-action="CreateSlide"
+               asp-route-adId="@Model.AdId"
+               class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i>
+                Add Slide
+            </a>
+
+            <a asp-action="Edit"
+               asp-route-id="@Model.AdId"
+               class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-pencil"></i>
+                Edit Ad
+            </a>
+
+            <a asp-action="Index"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i>
+                Back to Ads
+            </a>
+        </div>
+    </div>
+
+    @if (Model.Slides == null || !Model.Slides.Any())
+    {
+        <div class="empty-state">
+            No slide added yet.
+        </div>
+    }
+    else
+    {
+        <div class="ad-slide-grid">
+            @foreach (var slide in Model.Slides)
+            {
+                <div class="ad-slide-card">
+                    <img src="@MediaUrl(slide.ImagePath)"
+                         alt="@slide.Title"
+                         class="ad-slide-image" />
+
+                    <div class="ad-slide-body">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div>
+                                <h5 class="fw-bold mb-1">@slide.Title</h5>
+
+                                @if (!string.IsNullOrWhiteSpace(slide.Description))
+                                {
+                                    <div class="text-muted small">
+                                        @slide.Description
+                                    </div>
+                                }
+                            </div>
+
+                            <span class="badge @(slide.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                @(slide.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </div>
+
+                        <div class="ad-slide-meta">
+                            <span class="badge text-bg-light text-muted">
+                                Order: @slide.DisplayOrder
+                            </span>
+
+                            <span class="badge text-bg-primary">
+                                @slide.DurationSeconds sec
+                            </span>
+
+                            @if (!string.IsNullOrWhiteSpace(slide.AudioPath))
+                            {
+                                <span class="badge text-bg-info">
+                                    <i class="bi bi-volume-up"></i>
+                                    Audio
+                                </span>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(slide.ButtonText))
+                            {
+                                <span class="badge text-bg-warning">
+                                    CTA
+                                </span>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(slide.AudioPath))
+                        {
+                            <audio controls class="w-100 mt-3">
+                                <source src="@MediaUrl(slide.AudioPath)" type="audio/mpeg" />
+                            </audio>
+                        }
+                    </div>
+
+                    <div class="ad-slide-footer">
+                        <a asp-action="EditSlide"
+                           asp-route-id="@slide.Id"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil"></i>
+                            Edit
+                        </a>
+
+                        <form asp-action="ToggleSlideActive"
+                              asp-route-id="@slide.Id"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-sm @(slide.IsActive ? "btn-outline-warning" : "btn-outline-success")">
+                                <i class="bi @(slide.IsActive ? "bi-pause-circle" : "bi-play-circle")"></i>
+                                @(slide.IsActive ? "Disable" : "Enable")
+                            </button>
+                        </form>
+
+                        <form asp-action="DeleteSlide"
+                              asp-route-id="@slide.Id"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-outline-danger btn-sm"
+                                    onclick="return confirm('Delete this slide?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>

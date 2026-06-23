@@ -737,6 +737,26 @@
                         </button>
                     </th>
 
+                    <th>
+                        <button type="button"
+                                class="match-prediction-sort-btn"
+                                data-sort-field="exact"
+                                data-sort-direction="desc">
+                            Exact
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="match-prediction-sort-btn"
+                                data-sort-field="win"
+                                data-sort-direction="desc">
+                            Win
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
                     <th>Detail</th>
                 </tr>
             </thead>
@@ -745,7 +765,7 @@
                 @if (Model.Predictions == null || !Model.Predictions.Any())
                 {
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="8" class="text-center text-muted py-4">
                             No prediction submitted for this fixture.
                         </td>
                     </tr>
@@ -758,13 +778,15 @@
                         var predictionText = $"{item.TeamOnePredictedGoal} - {item.TeamTwoPredictedGoal}";
                         var rankSort = RankSortValue(item.RankText);
 
-                        var searchableText = $"{item.RankText} {item.UserName} {userInfo} {predictionText} {item.EarnedPoint} {item.TotalScore}".ToLowerInvariant();
+                        var searchableText = $"{item.RankText} {item.UserName} {userInfo} {predictionText} {item.EarnedPoint} {item.TotalScore} {item.ExactPredictionCount} {item.WinMatchPredictionCount}".ToLowerInvariant();
 
                         <tr class="match-prediction-row"
                             data-search="@searchableText"
                             data-rank="@rankSort"
                             data-point="@item.EarnedPoint"
-                            data-score="@item.TotalScore">
+                            data-score="@item.TotalScore"
+                            data-exact="@item.ExactPredictionCount"
+                            data-win="@item.WinMatchPredictionCount">
                             <td>
                                 <span class="rank-circle">
                                     @item.RankText
@@ -801,7 +823,19 @@
 
                             <td>
                                 <span class="score-pill">
-                                    @item.TotalScore pts
+                                    @item.TotalScore
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-primary">
+                                    @item.ExactPredictionCount
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-warning">
+                                    @item.WinMatchPredictionCount
                                 </span>
                             </td>
 

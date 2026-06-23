@@ -35,5 +35,9 @@
 
         public int EarnedPoint { get; set; }
         public int TotalScore { get; set; }
+        public int ExactPredictionCount { get; set; }
+
+        public int WinMatchPredictionCount { get; set; }
+
     }
 }

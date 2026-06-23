@@ -71,6 +71,72 @@
         display: none;
     }
 
+    .user-history-profile-card {
+        border: 1px solid #bfdbfe;
+        background: #fffdf8;
+        border-radius: 16px;
+        padding: 22px 18px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .user-history-photo {
+        width: 82px;
+        height: 82px;
+        border-radius: 14px;
+        object-fit: cover;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        flex: 0 0 auto;
+    }
+
+    .user-history-info {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+        .user-history-info h3 {
+            margin: 0;
+            color: #111827;
+            font-size: 1.75rem;
+            font-weight: 900;
+            line-height: 1.08;
+        }
+
+    .user-history-name-block {
+        min-width: 0;
+    }
+
+    .user-history-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+        .user-history-meta span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 32px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid #bfdbfe;
+            background: #eef6ff;
+            color: #111827;
+            font-size: .86rem;
+            font-weight: 900;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .user-history-meta strong {
+            color: #0d6efd;
+            font-weight: 900;
+            margin-left: 4px;
+        }
+
     .user-history-search-toolbar {
         display: flex !important;
         flex-direction: row !important;
@@ -249,7 +315,75 @@
 
         .user-history-profile-card {
             margin-bottom: 14px !important;
+            padding: 12px !important;
+            display: grid;
+            grid-template-columns: 72px minmax(0, 1fr);
+            align-items: start;
+            column-gap: 10px;
+            row-gap: 7px;
+            border-radius: 14px;
         }
+
+        .user-history-photo {
+            grid-column: 1;
+            grid-row: 1;
+            width: 72px;
+            height: 72px;
+            border-radius: 12px;
+        }
+
+        .user-history-info {
+            display: contents;
+        }
+
+        .user-history-name-block {
+            grid-column: 2;
+            grid-row: 1;
+            min-width: 0;
+            align-self: start;
+        }
+
+        .user-history-info h3 {
+            font-size: 1.05rem;
+            line-height: 1.15;
+            margin: 0;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+        }
+
+        .user-history-name-block .text-muted {
+            font-size: .78rem;
+            line-height: 1.25;
+            margin-top: 3px;
+        }
+
+        .user-history-meta {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            margin-top: 0 !important;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 4px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+            .user-history-meta span {
+                flex: 1 1 0;
+                min-width: 0;
+                min-height: 27px;
+                padding: 5px 5px;
+                font-size: .66rem;
+                white-space: nowrap;
+            }
+
+            .user-history-meta strong {
+                margin-left: 2px;
+                min-width: 0;
+            }
 
         .user-history-search-toolbar {
             display: flex !important;
@@ -333,8 +467,38 @@
         }
 
         .user-history-profile-card {
+            grid-template-columns: 70px minmax(0, 1fr);
+            column-gap: 9px;
+            row-gap: 7px;
             margin-bottom: 12px !important;
         }
+
+        .user-history-photo {
+            width: 70px;
+            height: 70px;
+        }
+
+        .user-history-info h3 {
+            font-size: 1rem;
+        }
+
+        .user-history-name-block .text-muted {
+            font-size: .74rem;
+        }
+
+        .user-history-meta {
+            gap: 4px;
+        }
+
+            .user-history-meta span {
+                min-height: 26px;
+                padding: 5px 4px;
+                font-size: .62rem;
+            }
+
+            .user-history-meta strong {
+                margin-left: 1px;
+            }
 
         .user-history-mobile-download-btn {
             width: 40px !important;
@@ -344,6 +508,14 @@
             .user-history-mobile-download-btn i {
                 font-size: .78rem;
             }
+    }
+
+    @@media (max-width: 350px) {
+        .user-history-meta span {
+            font-size: .58rem;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
     }
 </style>
 
@@ -388,18 +560,20 @@
              alt="@Model.FullName" />
 
         <div class="user-history-info">
-            <h3>@Model.FullName</h3>
+            <div class="user-history-name-block">
+                <h3>@Model.FullName</h3>
 
-            <div class="text-muted small">
-                @if (!string.IsNullOrWhiteSpace(Model.Designation))
-                {
-                    <span>@Model.Designation</span>
-                }
+                <div class="text-muted small">
+                    @if (!string.IsNullOrWhiteSpace(Model.Designation))
+                    {
+                        <span>@Model.Designation</span>
+                    }
 
-                @if (!string.IsNullOrWhiteSpace(Model.Department))
-                {
-                    <span> • @Model.Department</span>
-                }
+                    @if (!string.IsNullOrWhiteSpace(Model.Department))
+                    {
+                        <span> • @Model.Department</span>
+                    }
+                </div>
             </div>
 
             <div class="user-history-meta mt-2">
@@ -409,13 +583,18 @@
                 </span>
 
                 <span>
-                    Total Score:
+                    Score:
                     <strong>@Model.TotalScore</strong>
                 </span>
 
                 <span>
                     Exact:
                     <strong>@Model.ExactPredictionCount</strong>
+                </span>
+
+                <span>
+                    Win:
+                    <strong>@Model.WinMatchPredictionCount</strong>
                 </span>
             </div>
         </div>

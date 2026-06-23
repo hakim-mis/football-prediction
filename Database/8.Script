@@ -1,0 +1,683 @@
+﻿/* ============================================================
+   ADS MODULE - STEP 1 SQL SCHEMA
+   Football Prediction Game
+   Purpose:
+   1. Add Ads global settings into AutomationSettings
+   2. Create Ads campaign table
+   3. Create Ads slide table
+   4. Create Ads analytics/log table
+   ============================================================ */
+
+
+/* ============================================================
+   PART 1: ADD ADS SETTINGS TO AutomationSettings
+   ============================================================ */
+
+IF COL_LENGTH('AutomationSettings', 'AdsEnabled') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsEnabled BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsEnabled DEFAULT 0 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOnDesktop') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOnDesktop BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOnDesktop DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOnTablet') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOnTablet BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOnTablet DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOnMobile') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOnMobile BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOnMobile DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowToGuests') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowToGuests BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowToGuests DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowToUsers') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowToUsers BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowToUsers DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowToAdmins') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowToAdmins BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowToAdmins DEFAULT 0 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOnDashboard') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOnDashboard BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOnDashboard DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOnPredictionScore') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOnPredictionScore BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOnPredictionScore DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOnLeaderboard') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOnLeaderboard BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOnLeaderboard DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOnRules') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOnRules BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOnRules DEFAULT 0 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOnLoginRegister') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOnLoginRegister BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOnLoginRegister DEFAULT 0 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowAfterSeconds') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowAfterSeconds INT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowAfterSeconds DEFAULT 25 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsMandatoryWatchSeconds') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsMandatoryWatchSeconds INT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsMandatoryWatchSeconds DEFAULT 5 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsAutoCloseSeconds') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsAutoCloseSeconds INT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsAutoCloseSeconds DEFAULT 20 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsDefaultSlideDurationSeconds') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsDefaultSlideDurationSeconds INT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsDefaultSlideDurationSeconds DEFAULT 4 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowSkipButton') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowSkipButton BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowSkipButton DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowCountdown') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowCountdown BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowCountdown DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowMuteButton') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowMuteButton BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowMuteButton DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsRequireTapForSound') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsRequireTapForSound BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsRequireTapForSound DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOncePerSession') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOncePerSession BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOncePerSession DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsShowOncePerDay') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsShowOncePerDay BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsShowOncePerDay DEFAULT 0 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsMaxImpressionsPerDayPerUser') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsMaxImpressionsPerDayPerUser INT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsMaxImpressionsPerDayPerUser DEFAULT 3 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsTrackImpression') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsTrackImpression BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsTrackImpression DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsTrackSkip') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsTrackSkip BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsTrackSkip DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsTrackClick') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsTrackClick BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsTrackClick DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsTrackComplete') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsTrackComplete BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsTrackComplete DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsTrackSoundEnabled') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsTrackSoundEnabled BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsTrackSoundEnabled DEFAULT 1 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsEnableSchedule') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsEnableSchedule BIT NOT NULL
+        CONSTRAINT DF_AutomationSettings_AdsEnableSchedule DEFAULT 0 WITH VALUES;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsStartAt') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsStartAt DATETIME2 NULL;
+END
+GO
+
+IF COL_LENGTH('AutomationSettings', 'AdsEndAt') IS NULL
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD AdsEndAt DATETIME2 NULL;
+END
+GO
+
+
+/* ============================================================
+   PART 2: ADD CHECK CONSTRAINTS FOR ADS SETTINGS
+   ============================================================ */
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = 'CK_AutomationSettings_AdsShowAfterSeconds'
+)
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD CONSTRAINT CK_AutomationSettings_AdsShowAfterSeconds
+    CHECK (AdsShowAfterSeconds >= 0 AND AdsShowAfterSeconds <= 300);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = 'CK_AutomationSettings_AdsMandatoryWatchSeconds'
+)
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD CONSTRAINT CK_AutomationSettings_AdsMandatoryWatchSeconds
+    CHECK (AdsMandatoryWatchSeconds >= 0 AND AdsMandatoryWatchSeconds <= 120);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = 'CK_AutomationSettings_AdsAutoCloseSeconds'
+)
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD CONSTRAINT CK_AutomationSettings_AdsAutoCloseSeconds
+    CHECK (AdsAutoCloseSeconds >= 5 AND AdsAutoCloseSeconds <= 300);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = 'CK_AutomationSettings_AdsDefaultSlideDurationSeconds'
+)
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD CONSTRAINT CK_AutomationSettings_AdsDefaultSlideDurationSeconds
+    CHECK (AdsDefaultSlideDurationSeconds >= 1 AND AdsDefaultSlideDurationSeconds <= 60);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = 'CK_AutomationSettings_AdsMaxImpressionsPerDayPerUser'
+)
+BEGIN
+    ALTER TABLE AutomationSettings
+    ADD CONSTRAINT CK_AutomationSettings_AdsMaxImpressionsPerDayPerUser
+    CHECK (AdsMaxImpressionsPerDayPerUser >= 1 AND AdsMaxImpressionsPerDayPerUser <= 100);
+END
+GO
+
+
+/* ============================================================
+   PART 3: CREATE Ads TABLE
+   ============================================================ */
+
+IF OBJECT_ID('Ads', 'U') IS NULL
+BEGIN
+    CREATE TABLE Ads
+    (
+        Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
+        Title NVARCHAR(150) NOT NULL,
+        Description NVARCHAR(500) NULL,
+
+        IsActive BIT NOT NULL
+            CONSTRAINT DF_Ads_IsActive DEFAULT 1,
+
+        IsDeleted BIT NOT NULL
+            CONSTRAINT DF_Ads_IsDeleted DEFAULT 0,
+
+        DisplayOrder INT NOT NULL
+            CONSTRAINT DF_Ads_DisplayOrder DEFAULT 0,
+
+        Priority INT NOT NULL
+            CONSTRAINT DF_Ads_Priority DEFAULT 0,
+
+        SelectionMode NVARCHAR(30) NOT NULL
+            CONSTRAINT DF_Ads_SelectionMode DEFAULT 'Ordered',
+            -- Ordered, Random, Priority
+
+        StartAt DATETIME2 NULL,
+        EndAt DATETIME2 NULL,
+
+        ShowOnDesktop BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowOnDesktop DEFAULT 1,
+
+        ShowOnTablet BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowOnTablet DEFAULT 1,
+
+        ShowOnMobile BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowOnMobile DEFAULT 1,
+
+        ShowToGuests BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowToGuests DEFAULT 1,
+
+        ShowToUsers BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowToUsers DEFAULT 1,
+
+        ShowToAdmins BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowToAdmins DEFAULT 0,
+
+        ShowOnDashboard BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowOnDashboard DEFAULT 1,
+
+        ShowOnPredictionScore BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowOnPredictionScore DEFAULT 1,
+
+        ShowOnLeaderboard BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowOnLeaderboard DEFAULT 1,
+
+        ShowOnRules BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowOnRules DEFAULT 0,
+
+        ShowOnLoginRegister BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowOnLoginRegister DEFAULT 0,
+
+        ShowAfterPredictionSubmit BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowAfterPredictionSubmit DEFAULT 0,
+
+        ShowOnlyIfUserHasNoUpcomingPrediction BIT NOT NULL
+            CONSTRAINT DF_Ads_ShowOnlyIfUserHasNoUpcomingPrediction DEFAULT 0,
+
+        ButtonText NVARCHAR(80) NULL,
+        ButtonUrl NVARCHAR(800) NULL,
+
+        CreatedAt DATETIME2 NOT NULL
+            CONSTRAINT DF_Ads_CreatedAt DEFAULT GETDATE(),
+
+        UpdatedAt DATETIME2 NULL,
+
+        CreatedByUserId NVARCHAR(450) NULL,
+        UpdatedByUserId NVARCHAR(450) NULL
+    );
+END
+GO
+
+
+/* ============================================================
+   PART 4: CREATE AdSlides TABLE
+   ============================================================ */
+
+IF OBJECT_ID('AdSlides', 'U') IS NULL
+BEGIN
+    CREATE TABLE AdSlides
+    (
+        Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
+        AdId INT NOT NULL,
+
+        Title NVARCHAR(150) NOT NULL,
+        Description NVARCHAR(500) NULL,
+
+        ImagePath NVARCHAR(500) NOT NULL,
+        AudioPath NVARCHAR(500) NULL,
+
+        ButtonText NVARCHAR(80) NULL,
+        ButtonUrl NVARCHAR(800) NULL,
+
+        DurationSeconds INT NOT NULL
+            CONSTRAINT DF_AdSlides_DurationSeconds DEFAULT 4,
+
+        DisplayOrder INT NOT NULL
+            CONSTRAINT DF_AdSlides_DisplayOrder DEFAULT 0,
+
+        IsActive BIT NOT NULL
+            CONSTRAINT DF_AdSlides_IsActive DEFAULT 1,
+
+        IsDeleted BIT NOT NULL
+            CONSTRAINT DF_AdSlides_IsDeleted DEFAULT 0,
+
+        CreatedAt DATETIME2 NOT NULL
+            CONSTRAINT DF_AdSlides_CreatedAt DEFAULT GETDATE(),
+
+        UpdatedAt DATETIME2 NULL,
+
+        CONSTRAINT FK_AdSlides_Ads_AdId
+            FOREIGN KEY (AdId) REFERENCES Ads(Id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT CK_AdSlides_DurationSeconds
+            CHECK (DurationSeconds >= 1 AND DurationSeconds <= 60)
+    );
+END
+GO
+
+
+/* ============================================================
+   PART 5: CREATE AdLogs TABLE
+   ============================================================ */
+
+IF OBJECT_ID('AdLogs', 'U') IS NULL
+BEGIN
+    CREATE TABLE AdLogs
+    (
+        Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
+        AdId INT NULL,
+        AdSlideId INT NULL,
+
+        UserId NVARCHAR(450) NULL,
+        SessionId NVARCHAR(120) NULL,
+
+        EventType NVARCHAR(50) NOT NULL,
+        -- Impression, Skip, Complete, Click, SoundEnabled, Close
+
+        DeviceType NVARCHAR(50) NULL,
+        -- Desktop, Tablet, Mobile
+
+        PageName NVARCHAR(100) NULL,
+        PageUrl NVARCHAR(800) NULL,
+
+        IpAddress NVARCHAR(80) NULL,
+        UserAgent NVARCHAR(1000) NULL,
+
+        ExtraDataJson NVARCHAR(MAX) NULL,
+
+        CreatedAt DATETIME2 NOT NULL
+            CONSTRAINT DF_AdLogs_CreatedAt DEFAULT GETDATE(),
+
+        CONSTRAINT FK_AdLogs_Ads_AdId
+            FOREIGN KEY (AdId) REFERENCES Ads(Id)
+            ON DELETE SET NULL,
+
+        CONSTRAINT FK_AdLogs_AdSlides_AdSlideId
+            FOREIGN KEY (AdSlideId) REFERENCES AdSlides(Id)
+            ON DELETE NO ACTION
+    );
+END
+GO
+
+
+/* ============================================================
+   PART 6: ADD CHECK CONSTRAINTS FOR Ads TABLE
+   ============================================================ */
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = 'CK_Ads_SelectionMode'
+)
+BEGIN
+    ALTER TABLE Ads
+    ADD CONSTRAINT CK_Ads_SelectionMode
+    CHECK (SelectionMode IN ('Ordered', 'Random', 'Priority'));
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = 'CK_Ads_Priority'
+)
+BEGIN
+    ALTER TABLE Ads
+    ADD CONSTRAINT CK_Ads_Priority
+    CHECK (Priority >= 0 AND Priority <= 100);
+END
+GO
+
+
+/* ============================================================
+   PART 7: CREATE INDEXES
+   ============================================================ */
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_Ads_IsActive_IsDeleted_DisplayOrder'
+      AND object_id = OBJECT_ID('Ads')
+)
+BEGIN
+    CREATE INDEX IX_Ads_IsActive_IsDeleted_DisplayOrder
+    ON Ads (IsActive, IsDeleted, DisplayOrder);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_Ads_StartAt_EndAt'
+      AND object_id = OBJECT_ID('Ads')
+)
+BEGIN
+    CREATE INDEX IX_Ads_StartAt_EndAt
+    ON Ads (StartAt, EndAt);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_Ads_Priority'
+      AND object_id = OBJECT_ID('Ads')
+)
+BEGIN
+    CREATE INDEX IX_Ads_Priority
+    ON Ads (Priority);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_AdSlides_AdId_IsActive_IsDeleted_DisplayOrder'
+      AND object_id = OBJECT_ID('AdSlides')
+)
+BEGIN
+    CREATE INDEX IX_AdSlides_AdId_IsActive_IsDeleted_DisplayOrder
+    ON AdSlides (AdId, IsActive, IsDeleted, DisplayOrder);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_AdLogs_AdId_EventType_CreatedAt'
+      AND object_id = OBJECT_ID('AdLogs')
+)
+BEGIN
+    CREATE INDEX IX_AdLogs_AdId_EventType_CreatedAt
+    ON AdLogs (AdId, EventType, CreatedAt);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_AdLogs_UserId_CreatedAt'
+      AND object_id = OBJECT_ID('AdLogs')
+)
+BEGIN
+    CREATE INDEX IX_AdLogs_UserId_CreatedAt
+    ON AdLogs (UserId, CreatedAt);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_AdLogs_SessionId_CreatedAt'
+      AND object_id = OBJECT_ID('AdLogs')
+)
+BEGIN
+    CREATE INDEX IX_AdLogs_SessionId_CreatedAt
+    ON AdLogs (SessionId, CreatedAt);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_AdLogs_DeviceType_CreatedAt'
+      AND object_id = OBJECT_ID('AdLogs')
+)
+BEGIN
+    CREATE INDEX IX_AdLogs_DeviceType_CreatedAt
+    ON AdLogs (DeviceType, CreatedAt);
+END
+GO
+
+
+/* ============================================================
+   PART 8: OPTIONAL DEFAULT UPDATE FOR EXISTING SETTINGS ROW
+   This does not enable Ads automatically.
+   It only makes sure default values are consistent.
+   ============================================================ */
+
+UPDATE AutomationSettings
+SET
+    AdsEnabled = ISNULL(AdsEnabled, 0),
+    AdsShowOnDesktop = ISNULL(AdsShowOnDesktop, 1),
+    AdsShowOnTablet = ISNULL(AdsShowOnTablet, 1),
+    AdsShowOnMobile = ISNULL(AdsShowOnMobile, 1),
+    AdsShowToGuests = ISNULL(AdsShowToGuests, 1),
+    AdsShowToUsers = ISNULL(AdsShowToUsers, 1),
+    AdsShowToAdmins = ISNULL(AdsShowToAdmins, 0),
+    AdsShowAfterSeconds = CASE
+        WHEN AdsShowAfterSeconds < 0 THEN 25
+        WHEN AdsShowAfterSeconds > 300 THEN 25
+        ELSE AdsShowAfterSeconds
+    END,
+    AdsMandatoryWatchSeconds = CASE
+        WHEN AdsMandatoryWatchSeconds < 0 THEN 5
+        WHEN AdsMandatoryWatchSeconds > 120 THEN 5
+        ELSE AdsMandatoryWatchSeconds
+    END,
+    AdsAutoCloseSeconds = CASE
+        WHEN AdsAutoCloseSeconds < 5 THEN 20
+        WHEN AdsAutoCloseSeconds > 300 THEN 20
+        ELSE AdsAutoCloseSeconds
+    END,
+    AdsDefaultSlideDurationSeconds = CASE
+        WHEN AdsDefaultSlideDurationSeconds < 1 THEN 4
+        WHEN AdsDefaultSlideDurationSeconds > 60 THEN 4
+        ELSE AdsDefaultSlideDurationSeconds
+    END
+WHERE Id IN
+(
+    SELECT Id
+    FROM AutomationSettings
+);
+GO
+
+
+/* ============================================================
+   DONE
+   ============================================================ */

@@ -118,4 +118,105 @@ public class AutomationSettingsViewModel
     [Range(30, 300)]
     [Display(Name = "Default Match Duration Minutes")]
     public int DefaultMatchDurationMinutes { get; set; }
+
+    [Display(Name = "Ads Enabled")]
+    public bool AdsEnabled { get; set; }
+
+    [Display(Name = "Show Ads on Desktop")]
+    public bool AdsShowOnDesktop { get; set; }
+
+    [Display(Name = "Show Ads on Tablet")]
+    public bool AdsShowOnTablet { get; set; }
+
+    [Display(Name = "Show Ads on Mobile")]
+    public bool AdsShowOnMobile { get; set; }
+
+    [Display(Name = "Show Ads to Guests")]
+    public bool AdsShowToGuests { get; set; }
+
+    [Display(Name = "Show Ads to Users")]
+    public bool AdsShowToUsers { get; set; }
+
+    [Display(Name = "Show Ads to Admins")]
+    public bool AdsShowToAdmins { get; set; }
+
+    [Display(Name = "Show Ads on Dashboard")]
+    public bool AdsShowOnDashboard { get; set; }
+
+    [Display(Name = "Show Ads on Prediction Score")]
+    public bool AdsShowOnPredictionScore { get; set; }
+
+    [Display(Name = "Show Ads on Leaderboard")]
+    public bool AdsShowOnLeaderboard { get; set; }
+
+    [Display(Name = "Show Ads on Rules Page")]
+    public bool AdsShowOnRules { get; set; }
+
+    [Display(Name = "Show Ads on Login/Register")]
+    public bool AdsShowOnLoginRegister { get; set; }
+
+    [Range(0, 300)]
+    [Display(Name = "Show After Seconds")]
+    public int AdsShowAfterSeconds { get; set; }
+
+    [Range(0, 120)]
+    [Display(Name = "Mandatory Watch Seconds")]
+    public int AdsMandatoryWatchSeconds { get; set; }
+
+    [Range(5, 300)]
+    [Display(Name = "Auto Close Seconds")]
+    public int AdsAutoCloseSeconds { get; set; }
+
+    [Range(1, 60)]
+    [Display(Name = "Default Slide Duration Seconds")]
+    public int AdsDefaultSlideDurationSeconds { get; set; }
+
+    [Display(Name = "Show Skip Button")]
+    public bool AdsShowSkipButton { get; set; }
+
+    [Display(Name = "Show Countdown")]
+    public bool AdsShowCountdown { get; set; }
+
+    [Display(Name = "Show Mute Button")]
+    public bool AdsShowMuteButton { get; set; }
+
+    [Display(Name = "Require Tap for Sound")]
+    public bool AdsRequireTapForSound { get; set; }
+
+    [Display(Name = "Show Once Per Session")]
+    public bool AdsShowOncePerSession { get; set; }
+
+    [Display(Name = "Show Once Per Day")]
+    public bool AdsShowOncePerDay { get; set; }
+
+    [Range(1, 100)]
+    [Display(Name = "Max Impressions Per Day Per User")]
+    public int AdsMaxImpressionsPerDayPerUser { get; set; }
+
+    [Display(Name = "Track Impression")]
+    public bool AdsTrackImpression { get; set; }
+
+    [Display(Name = "Track Skip")]
+    public bool AdsTrackSkip { get; set; }
+
+    [Display(Name = "Track Click")]
+    public bool AdsTrackClick { get; set; }
+
+    [Display(Name = "Track Complete")]
+    public bool AdsTrackComplete { get; set; }
+
+    [Display(Name = "Track Sound Enabled")]
+    public bool AdsTrackSoundEnabled { get; set; }
+
+    [Display(Name = "Enable Ads Schedule")]
+    public bool AdsEnableSchedule { get; set; }
+
+    [DataType(DataType.DateTime)]
+    [Display(Name = "Ads Start At")]
+    public DateTime? AdsStartAt { get; set; }
+
+    [DataType(DataType.DateTime)]
+    [Display(Name = "Ads End At")]
+    public DateTime? AdsEndAt { get; set; }
+
 }

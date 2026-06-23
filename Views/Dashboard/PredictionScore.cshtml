@@ -324,7 +324,7 @@
             </h2>
 
             <div class="text-muted small">
-                All fixtures are shown date-time wise ascending.
+                Upcoming and live fixtures are shown nearest first. Finished fixtures are shown latest first.
             </div>
         </div>
 
@@ -858,6 +858,8 @@
     </button>
 </div>
 
+@await Component.InvokeAsync("Ads", new { triggerMode = "AfterPredictionSubmit" })
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -1026,6 +1028,14 @@
 
                     button.classList.add("active");
 
+                    if (filter === "Finished") {
+                        setPredictionDateSortDirection("desc");
+                        sortPredictionScoreRows("date", "desc");
+                    } else if (filter === "upcominglive") {
+                        setPredictionDateSortDirection("asc");
+                        sortPredictionScoreRows("date", "asc");
+                    }
+
                     applyPredictionScoreSearchAndFilter();
                 });
             });
@@ -1057,6 +1067,9 @@
             bindSinglePredictionSort("predictionDateSortBtn", "predictionDateSortIcon", "date");
             bindSinglePredictionSort("predictionStatusSortBtn", "predictionStatusSortIcon", "status");
             bindSinglePredictionSort("predictionPointSortBtn", "predictionPointSortIcon", "point");
+
+            setPredictionDateSortDirection("asc");
+            sortPredictionScoreRows("date", "asc");
         }
 
         function bindSinglePredictionSort(buttonId, iconId, sortBy) {
@@ -1085,6 +1098,21 @@
             });
         }
 
+        function setPredictionDateSortDirection(direction) {
+            const sortButton = document.getElementById("predictionDateSortBtn");
+            const sortIcon = document.getElementById("predictionDateSortIcon");
+
+            if (sortButton) {
+                sortButton.setAttribute("data-sort-direction", direction);
+            }
+
+            if (sortIcon) {
+                sortIcon.className = direction === "asc"
+                    ? "bi bi-arrow-up-short"
+                    : "bi bi-arrow-down-short";
+            }
+        }
+
         function sortPredictionScoreRows(sortBy, direction) {
             const tbody = document.getElementById("predictionTableBody");
 
@@ -1107,6 +1135,8 @@
                 } else if (sortBy === "status") {
                     aValue = a.getAttribute("data-status-sort") || "";
                     bValue = b.getAttribute("data-status-sort") || "";
+                } else {
+                    return 0;
                 }
 
                 if (aValue < bValue) {
@@ -1291,6 +1321,10 @@
                 }
 
                 showCustomToast(data.message || "Prediction saved successfully.", "success");
+
+                if (typeof window.showPredictionSubmitAd === "function") {
+                    window.showPredictionSubmitAd();
+                }
 
                 resetSaveButton();
             }

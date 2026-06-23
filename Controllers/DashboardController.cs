@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using FootballPredictionGame.Data;
 using FootballPredictionGame.Helpers;
 using FootballPredictionGame.Models;
@@ -6,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ClosedXML.Excel;
 
 namespace FootballPredictionGame.Controllers;
 
@@ -88,6 +88,7 @@ public class DashboardController : Controller
         }
 
         var fixture = await _context.Fixtures
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == fixtureId && x.IsPublished);
 
         if (fixture == null)
@@ -105,15 +106,46 @@ public class DashboardController : Controller
             .Include(x => x.User)
             .Include(x => x.Fixture)
             .Where(x => x.FixtureId == fixtureId)
-            .OrderByDescending(x => x.EarnedPoint)
-            .ThenByDescending(x => x.User.TotalScore)
-            .ThenBy(x => x.User.CreatedAt)
+            .AsNoTracking()
             .ToListAsync();
 
         var rankedUsers = await GetRankedUsersAsync();
 
         var rankLookup = rankedUsers
-            .ToDictionary(x => x.UserId, x => x.RankText);
+            .ToDictionary(x => x.UserId, x => x);
+
+        var predictionItems = predictions
+            .Select(x =>
+            {
+                rankLookup.TryGetValue(x.UserId, out var rankInfo);
+
+                return new FixturePredictionUserDetailViewModel
+                {
+                    UserId = x.UserId,
+
+                    UserName = x.User.FullName,
+                    PhotoPath = x.User.ProfilePhotoPath ?? "/img/default-avatar.svg",
+                    RankText = rankInfo?.RankText ?? "No rank",
+
+                    Designation = x.User.Designation,
+                    Department = x.User.Department,
+
+                    TeamOnePredictedGoal = x.TeamOnePredictedGoal,
+                    TeamTwoPredictedGoal = x.TeamTwoPredictedGoal,
+
+                    EarnedPoint = x.EarnedPoint,
+                    TotalScore = x.User.TotalScore,
+                    ExactPredictionCount = x.User.ExactPredictionCount,
+                    WinMatchPredictionCount = rankInfo?.WinMatchPredictionCount ?? 0
+                };
+            })
+            .OrderBy(x => RankSortValue(x.RankText))
+            .ThenByDescending(x => x.EarnedPoint)
+            .ThenByDescending(x => x.TotalScore)
+            .ThenByDescending(x => x.ExactPredictionCount)
+            .ThenByDescending(x => x.WinMatchPredictionCount)
+            .ThenBy(x => x.UserName)
+            .ToList();
 
         var model = new FixturePredictionDetailViewModel
         {
@@ -131,27 +163,12 @@ public class DashboardController : Controller
             TeamOneActualGoal = fixture.TeamOneActualGoal,
             TeamTwoActualGoal = fixture.TeamTwoActualGoal,
 
-            Predictions = predictions.Select(x => new FixturePredictionUserDetailViewModel
-            {
-                UserId = x.UserId,
-
-                UserName = x.User.FullName,
-                PhotoPath = x.User.ProfilePhotoPath ?? "/img/default-avatar.svg",
-                RankText = rankLookup.ContainsKey(x.UserId) ? rankLookup[x.UserId] : "No rank",
-
-                Designation = x.User.Designation,
-                Department = x.User.Department,
-
-                TeamOnePredictedGoal = x.TeamOnePredictedGoal,
-                TeamTwoPredictedGoal = x.TeamTwoPredictedGoal,
-
-                EarnedPoint = x.EarnedPoint,
-                TotalScore = x.User.TotalScore
-            }).ToList()
+            Predictions = predictionItems
         };
 
         return View(model);
     }
+
     [HttpGet]
     public async Task<IActionResult> UserPredictionDetail(string userId)
     {
@@ -180,6 +197,10 @@ public class DashboardController : Controller
         var rankText = rankedUsers
             .FirstOrDefault(x => x.UserId == targetUser.Id)?
             .RankText ?? "No rank";
+
+        var winMatchPredictionCount = rankedUsers
+            .FirstOrDefault(x => x.UserId == targetUser.Id)?
+            .WinMatchPredictionCount ?? 0;
 
         var finishedAndLiveFixtures = await _context.Fixtures
             .Where(x =>
@@ -210,6 +231,7 @@ public class DashboardController : Controller
             RankText = rankText,
             TotalScore = targetUser.TotalScore,
             ExactPredictionCount = targetUser.ExactPredictionCount,
+            WinMatchPredictionCount = winMatchPredictionCount,
 
             Items = finishedAndLiveFixtures.Select(fixture =>
             {
@@ -264,6 +286,7 @@ public class DashboardController : Controller
 
         var rankedUsers = await GetRankedUsersAsync();
         var currentRank = rankedUsers.FirstOrDefault(x => x.UserId == currentUser.Id)?.Rank;
+        var currentWinMatchCount = rankedUsers.FirstOrDefault(x => x.UserId == currentUser.Id)?.WinMatchPredictionCount ?? 0;
 
         var now = DateTime.Now;
         var today = DateTime.Today;
@@ -272,15 +295,6 @@ public class DashboardController : Controller
 
         var baseFixtureQuery = _context.Fixtures
             .Where(x => x.IsPublished);
-
-        /*
-            IMPORTANT:
-            For the new dashboard and PredictionScore page,
-            we load ALL published fixtures by default.
-
-            Filtering will be handled by JavaScript/AJAX-style buttons in the view.
-            So we do not apply old server-side status/date/group filters here.
-        */
 
         var allPublishedFixtures = await baseFixtureQuery
             .OrderBy(x => x.MatchDateTime)
@@ -330,13 +344,6 @@ public class DashboardController : Controller
         var tomorrowMatchCount = allPublishedFixtures.Count(x =>
             x.MatchDateTime >= tomorrow &&
             x.MatchDateTime < dayAfterTomorrow);
-
-        /*
-            PredictionFixtures:
-            - Normally all published fixtures.
-            - If fixtureId is provided, only show that one fixture.
-              This keeps your previous Predict button redirect support if needed.
-        */
 
         var predictionFixturesQuery = baseFixtureQuery.AsQueryable();
 
@@ -405,6 +412,7 @@ public class DashboardController : Controller
 
             TotalScore = currentUser.TotalScore,
             ExactPredictionCount = currentUser.ExactPredictionCount,
+            WinMatchPredictionCount = currentWinMatchCount,
 
             Rank = currentRank,
             TopScore = rankedUsers.Any() ? rankedUsers.Max(x => x.TotalScore) : 0,
@@ -418,10 +426,6 @@ public class DashboardController : Controller
             SegmentPoints = segmentPoints,
             UserPredictionLookup = predictionLookup,
 
-            /*
-                We keep these properties for compatibility,
-                but the new dashboard view does not use server-side filtering.
-            */
             FilterStatus = status,
             FilterStage = stage,
             FilterDate = matchDate,
@@ -447,92 +451,6 @@ public class DashboardController : Controller
         return model;
     }
 
-    private async Task<ApplicationUser?> GetCurrentValidUserAsync()
-    {
-        var userId = _userManager.GetUserId(User);
-
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return null;
-        }
-
-        var currentUser = await _userManager.Users
-            .FirstOrDefaultAsync(x => x.Id == userId);
-
-        if (currentUser == null)
-        {
-            return null;
-        }
-
-        if (!currentUser.IsActive)
-        {
-            await _signInManager.SignOutAsync();
-            TempData["Error"] = "Your account is inactive. Please contact the administrator.";
-            return null;
-        }
-
-        if (currentUser.MustChangePassword)
-        {
-            TempData["Error"] = "Please change your default password first.";
-            return null;
-        }
-
-        return currentUser;
-    }
-
-    private List<DashboardBannerViewModel> GetDashboardBanners()
-    {
-        return new List<DashboardBannerViewModel>
-        {
-            new DashboardBannerViewModel
-            {
-                Title = "Transtec 360° Football Prediction",
-                Subtitle = "Predict fixtures, track points, and climb the leaderboard.",
-                ImageUrl = "/img/banner1.png",
-                ButtonText = "More Info",
-                RedirectUrl = "https://transcomdigital.com/"
-            },
-            new DashboardBannerViewModel
-            {
-                Title = "World Cup Prediction Challenge",
-                Subtitle = "Follow live, upcoming, and finished fixtures with smart prediction tracking.",
-                ImageUrl = "/img/banner2.png",
-                ButtonText = "Explore",
-                RedirectUrl = "https://transcomdigital.com/"
-            },
-            new DashboardBannerViewModel
-            {
-                Title = "Compete with Colleagues",
-                Subtitle = "Submit predictions, earn points, and win bragging rights.",
-                ImageUrl = "/img/banner3.png",
-                ButtonText = "Get More",
-                RedirectUrl = "https://www.transteclighting.com/"
-            }
-        };
-    }
-
-    private static string GetStageName(FixtureStage stage) => stage switch
-    {
-        FixtureStage.GroupA => "Group A",
-        FixtureStage.GroupB => "Group B",
-        FixtureStage.GroupC => "Group C",
-        FixtureStage.GroupD => "Group D",
-        FixtureStage.GroupE => "Group E",
-        FixtureStage.GroupF => "Group F",
-        FixtureStage.GroupG => "Group G",
-        FixtureStage.GroupH => "Group H",
-        FixtureStage.GroupI => "Group I",
-        FixtureStage.GroupJ => "Group J",
-        FixtureStage.GroupK => "Group K",
-        FixtureStage.GroupL => "Group L",
-        FixtureStage.Roundof32 => "Round of 32",
-        FixtureStage.Roundof16 => "Round of 16",
-        FixtureStage.QuarterFinal => "Quarter Final",
-        FixtureStage.SemiFinal => "Semi Final",
-        FixtureStage.Final => "Final",
-        _ => stage.ToString()
-    };
-
     [HttpGet]
     public async Task<IActionResult> DownloadFixturePredictionsExcel(int fixtureId)
     {
@@ -544,6 +462,7 @@ public class DashboardController : Controller
         }
 
         var fixture = await _context.Fixtures
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == fixtureId && x.IsPublished);
 
         if (fixture == null)
@@ -555,35 +474,56 @@ public class DashboardController : Controller
             .Include(x => x.User)
             .Include(x => x.Fixture)
             .Where(x => x.FixtureId == fixtureId)
-            .OrderByDescending(x => x.EarnedPoint)
-            .ThenByDescending(x => x.User.TotalScore)
-            .ThenBy(x => x.User.CreatedAt)
+            .AsNoTracking()
             .ToListAsync();
 
         var rankedUsers = await GetRankedUsersAsync();
 
-        var rankLookup = rankedUsers
-            .ToDictionary(x => x.UserId, x => x.RankText);
+        var rankMap = rankedUsers
+            .ToDictionary(x => x.UserId, x => x);
 
         var actualScore = fixture.TeamOneActualGoal.HasValue && fixture.TeamTwoActualGoal.HasValue
             ? $"{fixture.TeamOneActualGoal} - {fixture.TeamTwoActualGoal}"
             : "Pending";
 
-        using var workbook = new XLWorkbook();
+        var exportRows = predictions
+            .Select(prediction =>
+            {
+                rankMap.TryGetValue(prediction.UserId, out var rankInfo);
 
+                return new
+                {
+                    RankText = rankInfo?.RankText ?? "No rank",
+                    RankSort = RankSortValue(rankInfo?.RankText),
+                    UserName = prediction.User.FullName,
+                    Designation = prediction.User.Designation ?? "-",
+                    Department = prediction.User.Department ?? "-",
+                    Prediction = $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}",
+                    Point = prediction.EarnedPoint,
+                    TotalScore = prediction.User.TotalScore,
+                    Exact = prediction.User.ExactPredictionCount,
+                    Win = rankInfo?.WinMatchPredictionCount ?? 0
+                };
+            })
+            .OrderBy(x => x.RankSort)
+            .ThenByDescending(x => x.Point)
+            .ThenByDescending(x => x.TotalScore)
+            .ThenByDescending(x => x.Exact)
+            .ThenByDescending(x => x.Win)
+            .ThenBy(x => x.UserName)
+            .ToList();
+
+        using var workbook = new XLWorkbook();
         var worksheet = workbook.Worksheets.Add("Match Predictions");
 
-        /*
-            Fixture Info Section
-        */
         worksheet.Cell(1, 1).Value = "Transtec 360° Football Prediction";
-        worksheet.Range(1, 1, 1, 12).Merge();
+        worksheet.Range(1, 1, 1, 14).Merge();
         worksheet.Cell(1, 1).Style.Font.Bold = true;
         worksheet.Cell(1, 1).Style.Font.FontSize = 16;
         worksheet.Cell(1, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
         worksheet.Cell(3, 1).Value = "Fixture Info";
-        worksheet.Range(3, 1, 3, 12).Merge();
+        worksheet.Range(3, 1, 3, 14).Merge();
         worksheet.Cell(3, 1).Style.Font.Bold = true;
         worksheet.Cell(3, 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
 
@@ -607,13 +547,9 @@ public class DashboardController : Controller
 
         worksheet.Range(4, 1, 6, 5).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
         worksheet.Range(4, 1, 6, 5).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-
         worksheet.Range(4, 1, 6, 1).Style.Font.Bold = true;
         worksheet.Range(4, 4, 6, 4).Style.Font.Bold = true;
 
-        /*
-            Prediction List Header
-        */
         var headerRow = 9;
 
         worksheet.Cell(headerRow, 1).Value = "SL";
@@ -625,56 +561,53 @@ public class DashboardController : Controller
         worksheet.Cell(headerRow, 7).Value = "Actual Score";
         worksheet.Cell(headerRow, 8).Value = "Earned Point";
         worksheet.Cell(headerRow, 9).Value = "Total Score";
-        worksheet.Cell(headerRow, 10).Value = "Segment";
-        worksheet.Cell(headerRow, 11).Value = "Match Date & Time";
-        worksheet.Cell(headerRow, 12).Value = "Status";
+        worksheet.Cell(headerRow, 10).Value = "Exact";
+        worksheet.Cell(headerRow, 11).Value = "Win";
+        worksheet.Cell(headerRow, 12).Value = "Segment";
+        worksheet.Cell(headerRow, 13).Value = "Match Date & Time";
+        worksheet.Cell(headerRow, 14).Value = "Status";
 
-        var headerRange = worksheet.Range(headerRow, 1, headerRow, 12);
+        var headerRange = worksheet.Range(headerRow, 1, headerRow, 14);
         headerRange.Style.Font.Bold = true;
         headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#EEF6FF");
         headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
         headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
-        /*
-            Prediction Rows
-        */
         var row = headerRow + 1;
         var sl = 1;
 
-        if (!predictions.Any())
+        if (!exportRows.Any())
         {
             worksheet.Cell(row, 1).Value = "No prediction submitted for this fixture.";
-            worksheet.Range(row, 1, row, 12).Merge();
+            worksheet.Range(row, 1, row, 14).Merge();
             worksheet.Cell(row, 1).Style.Font.Italic = true;
             worksheet.Cell(row, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         }
         else
         {
-            foreach (var prediction in predictions)
+            foreach (var item in exportRows)
             {
-                var rankText = rankLookup.ContainsKey(prediction.UserId)
-                    ? rankLookup[prediction.UserId]
-                    : "No rank";
-
                 worksheet.Cell(row, 1).Value = sl;
-                worksheet.Cell(row, 2).Value = rankText;
-                worksheet.Cell(row, 3).Value = prediction.User.FullName;
-                worksheet.Cell(row, 4).Value = prediction.User.Designation ?? "-";
-                worksheet.Cell(row, 5).Value = prediction.User.Department ?? "-";
-                worksheet.Cell(row, 6).Value = $"{prediction.TeamOnePredictedGoal} - {prediction.TeamTwoPredictedGoal}";
+                worksheet.Cell(row, 2).Value = item.RankText;
+                worksheet.Cell(row, 3).Value = item.UserName;
+                worksheet.Cell(row, 4).Value = item.Designation;
+                worksheet.Cell(row, 5).Value = item.Department;
+                worksheet.Cell(row, 6).Value = item.Prediction;
                 worksheet.Cell(row, 7).Value = actualScore;
-                worksheet.Cell(row, 8).Value = prediction.EarnedPoint;
-                worksheet.Cell(row, 9).Value = prediction.User.TotalScore;
-                worksheet.Cell(row, 10).Value = GetStageName(fixture.Stage);
-                worksheet.Cell(row, 11).Value = fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt");
-                worksheet.Cell(row, 12).Value = fixture.Status.ToString();
+                worksheet.Cell(row, 8).Value = item.Point;
+                worksheet.Cell(row, 9).Value = item.TotalScore;
+                worksheet.Cell(row, 10).Value = item.Exact;
+                worksheet.Cell(row, 11).Value = item.Win;
+                worksheet.Cell(row, 12).Value = GetStageName(fixture.Stage);
+                worksheet.Cell(row, 13).Value = fixture.MatchDateTime.ToString("dd MMM yyyy, hh:mm tt");
+                worksheet.Cell(row, 14).Value = fixture.Status.ToString();
 
-                if (prediction.EarnedPoint == 3)
+                if (item.Point == 3)
                 {
                     worksheet.Cell(row, 8).Style.Fill.BackgroundColor = XLColor.FromHtml("#DBEAFE");
                     worksheet.Cell(row, 8).Style.Font.FontColor = XLColor.FromHtml("#1D4ED8");
                 }
-                else if (prediction.EarnedPoint == 0)
+                else if (item.Point == 0)
                 {
                     worksheet.Cell(row, 8).Style.Fill.BackgroundColor = XLColor.FromHtml("#E2E8F0");
                     worksheet.Cell(row, 8).Style.Font.FontColor = XLColor.FromHtml("#475569");
@@ -705,7 +638,7 @@ public class DashboardController : Controller
         worksheet.Column(3).Width = 28;
         worksheet.Column(4).Width = 22;
         worksheet.Column(5).Width = 22;
-        worksheet.Column(11).Width = 24;
+        worksheet.Column(13).Width = 24;
 
         worksheet.SheetView.FreezeRows(headerRow);
 
@@ -713,8 +646,8 @@ public class DashboardController : Controller
         workbook.SaveAs(stream);
         stream.Position = 0;
 
-        var safeTeamOne = fixture.TeamOneName.Replace(" ", "_");
-        var safeTeamTwo = fixture.TeamTwoName.Replace(" ", "_");
+        var safeTeamOne = string.Join("_", fixture.TeamOneName.Split(Path.GetInvalidFileNameChars()));
+        var safeTeamTwo = string.Join("_", fixture.TeamTwoName.Split(Path.GetInvalidFileNameChars()));
 
         var fileName = $"Match_Predictions_{safeTeamOne}_vs_{safeTeamTwo}_{fixture.MatchDateTime:yyyyMMdd_HHmm}.xlsx";
 
@@ -750,9 +683,11 @@ public class DashboardController : Controller
 
         var rankedUsers = await GetRankedUsersAsync();
 
-        var rankText = rankedUsers
-            .FirstOrDefault(x => x.UserId == targetUser.Id)?
-            .RankText ?? "No rank";
+        var targetRankInfo = rankedUsers
+            .FirstOrDefault(x => x.UserId == targetUser.Id);
+
+        var rankText = targetRankInfo?.RankText ?? "No rank";
+        var winMatchPredictionCount = targetRankInfo?.WinMatchPredictionCount ?? 0;
 
         var liveAndFinishedFixtures = await _context.Fixtures
             .Where(x =>
@@ -804,14 +739,17 @@ public class DashboardController : Controller
         worksheet.Cell(6, 4).Value = "Department";
         worksheet.Cell(6, 5).Value = targetUser.Department ?? "-";
 
-        worksheet.Cell(7, 1).Value = "Total Score";
+        worksheet.Cell(7, 1).Value = "Score";
         worksheet.Cell(7, 2).Value = targetUser.TotalScore;
 
-        worksheet.Cell(7, 4).Value = "Exact Predictions";
+        worksheet.Cell(7, 4).Value = "Exact";
         worksheet.Cell(7, 5).Value = targetUser.ExactPredictionCount;
 
-        worksheet.Cell(8, 1).Value = "Generated On";
-        worksheet.Cell(8, 2).Value = DateTime.Now.ToString("dd-MMM-yyyy hh:mm tt");
+        worksheet.Cell(8, 1).Value = "Win";
+        worksheet.Cell(8, 2).Value = winMatchPredictionCount;
+
+        worksheet.Cell(8, 4).Value = "Generated On";
+        worksheet.Cell(8, 5).Value = DateTime.Now.ToString("dd-MMM-yyyy hh:mm tt");
 
         worksheet.Range(5, 1, 8, 5).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
         worksheet.Range(5, 1, 8, 5).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
@@ -831,7 +769,6 @@ public class DashboardController : Controller
         worksheet.Cell(headerRow, 9).Value = "Actual Score";
         worksheet.Cell(headerRow, 10).Value = "Point";
         worksheet.Cell(headerRow, 11).Value = "Participation";
-        
 
         var headerRange = worksheet.Range(headerRow, 1, headerRow, 11);
         headerRange.Style.Font.Bold = true;
@@ -1041,11 +978,170 @@ public class DashboardController : Controller
             buttonClass = "btn-primary"
         });
     }
+
+    private async Task<ApplicationUser?> GetCurrentValidUserAsync()
+    {
+        var userId = _userManager.GetUserId(User);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return null;
+        }
+
+        var currentUser = await _userManager.Users
+            .FirstOrDefaultAsync(x => x.Id == userId);
+
+        if (currentUser == null)
+        {
+            return null;
+        }
+
+        if (!currentUser.IsActive)
+        {
+            await _signInManager.SignOutAsync();
+            TempData["Error"] = "Your account is inactive. Please contact the administrator.";
+            return null;
+        }
+
+        if (currentUser.MustChangePassword)
+        {
+            TempData["Error"] = "Please change your default password first.";
+            return null;
+        }
+
+        return currentUser;
+    }
+
+    private List<DashboardBannerViewModel> GetDashboardBanners()
+    {
+        return new List<DashboardBannerViewModel>
+        {
+            new DashboardBannerViewModel
+            {
+                Title = "Transtec 360° Football Prediction",
+                Subtitle = "Predict fixtures, track points, and climb the leaderboard.",
+                ImageUrl = "/img/banner1.png",
+                ButtonText = "More Info",
+                RedirectUrl = "https://transcomdigital.com/"
+            },
+            new DashboardBannerViewModel
+            {
+                Title = "World Cup Prediction Challenge",
+                Subtitle = "Follow live, upcoming, and finished fixtures with smart prediction tracking.",
+                ImageUrl = "/img/banner2.png",
+                ButtonText = "Explore",
+                RedirectUrl = "https://transcomdigital.com/"
+            },
+            new DashboardBannerViewModel
+            {
+                Title = "Compete with Colleagues",
+                Subtitle = "Submit predictions, earn points, and win bragging rights.",
+                ImageUrl = "/img/banner3.png",
+                ButtonText = "Get More",
+                RedirectUrl = "https://www.transteclighting.com/"
+            }
+        };
+    }
+
     private async Task<List<LeaderboardUserViewModel>> GetRankedUsersAsync()
     {
         var players = await _userManager.GetUsersInRoleAsync("User");
-        return LeaderboardRankingHelper.Build(players);
+
+        var userIds = players
+            .Select(x => x.Id)
+            .ToList();
+
+        var winMatchPredictionCountMap = await BuildWinMatchPredictionCountMapAsync(userIds);
+
+        return LeaderboardRankingHelper.Build(
+            users: players,
+            take: players.Count,
+            scoredOnly: false,
+            winMatchPredictionCountMap: winMatchPredictionCountMap);
     }
+
+    private async Task<Dictionary<string, int>> BuildWinMatchPredictionCountMapAsync(List<string> userIds)
+    {
+        if (userIds == null || !userIds.Any())
+        {
+            return new Dictionary<string, int>();
+        }
+
+        var predictions = await _context.Predictions
+            .Include(x => x.Fixture)
+            .Where(x =>
+                userIds.Contains(x.UserId) &&
+                x.Fixture.Status == MatchStatus.Finished &&
+                x.Fixture.TeamOneActualGoal.HasValue &&
+                x.Fixture.TeamTwoActualGoal.HasValue)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return predictions
+            .Where(IsWinMatchPrediction)
+            .GroupBy(x => x.UserId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Count());
+    }
+
+    private static bool IsWinMatchPrediction(Prediction prediction)
+    {
+        if (prediction.Fixture == null)
+        {
+            return false;
+        }
+
+        if (!prediction.Fixture.TeamOneActualGoal.HasValue ||
+            !prediction.Fixture.TeamTwoActualGoal.HasValue)
+        {
+            return false;
+        }
+
+        var predictedResult = Math.Sign(
+            prediction.TeamOnePredictedGoal - prediction.TeamTwoPredictedGoal);
+
+        var actualResult = Math.Sign(
+            prediction.Fixture.TeamOneActualGoal.Value - prediction.Fixture.TeamTwoActualGoal.Value);
+
+        return predictedResult == actualResult;
+    }
+
+    private static int RankSortValue(string? rankText)
+    {
+        if (string.IsNullOrWhiteSpace(rankText))
+        {
+            return 999999;
+        }
+
+        var clean = rankText.Replace("#", "").Trim();
+
+        return int.TryParse(clean, out var value)
+            ? value
+            : 999999;
+    }
+
+    private static string GetStageName(FixtureStage stage) => stage switch
+    {
+        FixtureStage.GroupA => "Group A",
+        FixtureStage.GroupB => "Group B",
+        FixtureStage.GroupC => "Group C",
+        FixtureStage.GroupD => "Group D",
+        FixtureStage.GroupE => "Group E",
+        FixtureStage.GroupF => "Group F",
+        FixtureStage.GroupG => "Group G",
+        FixtureStage.GroupH => "Group H",
+        FixtureStage.GroupI => "Group I",
+        FixtureStage.GroupJ => "Group J",
+        FixtureStage.GroupK => "Group K",
+        FixtureStage.GroupL => "Group L",
+        FixtureStage.Roundof32 => "Round of 32",
+        FixtureStage.Roundof16 => "Round of 16",
+        FixtureStage.QuarterFinal => "Quarter Final",
+        FixtureStage.SemiFinal => "Semi Final",
+        FixtureStage.Final => "Final",
+        _ => stage.ToString()
+    };
 
     [HttpGet]
     public IActionResult Rules()

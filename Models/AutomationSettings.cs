@@ -89,4 +89,62 @@ public class AutomationSettings
 
     [Range(30, 300)]
     public int DefaultMatchDurationMinutes { get; set; } = 120;
+
+    // Ads global settings
+    public bool AdsEnabled { get; set; } = false;
+
+    // Ads platform control
+    public bool AdsShowOnDesktop { get; set; } = true;
+    public bool AdsShowOnTablet { get; set; } = true;
+    public bool AdsShowOnMobile { get; set; } = true;
+
+    // Ads audience control
+    public bool AdsShowToGuests { get; set; } = true;
+    public bool AdsShowToUsers { get; set; } = true;
+    public bool AdsShowToAdmins { get; set; } = false;
+
+    // Ads page control
+    public bool AdsShowOnDashboard { get; set; } = true;
+    public bool AdsShowOnPredictionScore { get; set; } = true;
+    public bool AdsShowOnLeaderboard { get; set; } = true;
+    public bool AdsShowOnRules { get; set; } = false;
+    public bool AdsShowOnLoginRegister { get; set; } = false;
+
+    // Ads timing
+    [Range(0, 300)]
+    public int AdsShowAfterSeconds { get; set; } = 25;
+
+    [Range(0, 120)]
+    public int AdsMandatoryWatchSeconds { get; set; } = 5;
+
+    [Range(5, 300)]
+    public int AdsAutoCloseSeconds { get; set; } = 20;
+
+    [Range(1, 60)]
+    public int AdsDefaultSlideDurationSeconds { get; set; } = 4;
+
+    // Ads skip and audio
+    public bool AdsShowSkipButton { get; set; } = true;
+    public bool AdsShowCountdown { get; set; } = true;
+    public bool AdsShowMuteButton { get; set; } = true;
+    public bool AdsRequireTapForSound { get; set; } = true;
+
+    // Ads frequency
+    public bool AdsShowOncePerSession { get; set; } = true;
+    public bool AdsShowOncePerDay { get; set; } = false;
+
+    [Range(1, 100)]
+    public int AdsMaxImpressionsPerDayPerUser { get; set; } = 3;
+
+    // Ads tracking
+    public bool AdsTrackImpression { get; set; } = true;
+    public bool AdsTrackSkip { get; set; } = true;
+    public bool AdsTrackClick { get; set; } = true;
+    public bool AdsTrackComplete { get; set; } = true;
+    public bool AdsTrackSoundEnabled { get; set; } = true;
+
+    // Ads schedule
+    public bool AdsEnableSchedule { get; set; } = false;
+    public DateTime? AdsStartAt { get; set; }
+    public DateTime? AdsEndAt { get; set; }
 }

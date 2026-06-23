@@ -784,7 +784,7 @@
         <i class="bi bi-x-lg"></i>
     </button>
 </div>
-
+@await Component.InvokeAsync("Ads", new { triggerMode = "AfterPredictionSubmit" })
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -1134,6 +1134,10 @@
 
                 updateDashboardPredictionCard(card, form, data);
                 showDashboardAjaxToast(data.message || "Prediction saved successfully.", "success");
+
+                if (typeof window.showPredictionSubmitAd === "function") {
+                   window.showPredictionSubmitAd();
+               }
             }
             catch (error) {
                 console.error(error);

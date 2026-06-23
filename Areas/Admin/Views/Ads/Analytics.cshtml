@@ -1,0 +1,764 @@
+﻿@model FootballPredictionGame.ViewModels.AdAnalyticsViewModel
+
+@{
+    ViewData["Title"] = "Ads Analytics";
+
+    string RateBadge(decimal value, string goodClass = "text-bg-success")
+    {
+        return value > 0 ? goodClass : "text-bg-secondary";
+    }
+
+    var maxDailyImpression = Model.DailyItems.Any()
+        ? Model.DailyItems.Max(x => x.ImpressionCount)
+        : 0;
+}
+
+<style>
+    .ads-analytics-page {
+        overflow: hidden;
+    }
+
+    .ads-analytics-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .ads-analytics-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .ads-analytics-actions .btn {
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+    .ads-analytics-filter {
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        background: #ffffff;
+        padding: 14px;
+        margin-bottom: 18px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, .05);
+    }
+
+        .ads-analytics-filter label {
+            font-weight: 800;
+            color: #334155;
+            font-size: .86rem;
+        }
+
+        .ads-analytics-filter .form-control {
+            border-radius: 12px;
+            min-height: 42px;
+        }
+
+        .ads-analytics-filter .btn {
+            border-radius: 999px;
+            font-weight: 800;
+            min-height: 42px;
+        }
+
+    .ads-analytics-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .ads-analytics-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ads-analytics-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: #eef6ff;
+        color: #0d6efd;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        font-size: 1.14rem;
+    }
+
+    .ads-analytics-card span {
+        display: block;
+        color: #64748b;
+        font-size: .76rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+    }
+
+    .ads-analytics-card strong {
+        display: block;
+        font-size: 1.12rem;
+        color: #111827;
+        line-height: 1.2;
+    }
+
+    .ads-analytics-section {
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        background: #ffffff;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, .05);
+    }
+
+    .ads-analytics-section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+        .ads-analytics-section-title h2 {
+            font-size: 1rem;
+            font-weight: 900;
+            margin: 0;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .ads-analytics-section-title small {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+    .ads-analytics-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .ads-analytics-sort-btn {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font-weight: 800;
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+        .ads-analytics-sort-btn:hover,
+        .ads-analytics-sort-btn:focus {
+            color: #0d6efd;
+        }
+
+    .ads-mini-bar {
+        min-width: 110px;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+        .ads-mini-bar span {
+            display: block;
+            height: 100%;
+            background: #0d6efd;
+            border-radius: 999px;
+        }
+
+    @@media (max-width: 991.98px) {
+        .ads-analytics-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .ads-analytics-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .ads-analytics-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .ads-analytics-actions {
+            width: 100%;
+        }
+
+            .ads-analytics-actions .btn {
+                flex: 1 1 auto;
+                font-size: .82rem;
+            }
+
+        .ads-analytics-summary {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .ads-analytics-filter .btn {
+            width: 100%;
+        }
+
+        .ads-analytics-section {
+            padding: 14px;
+        }
+    }
+</style>
+
+<div class="dashboard-card ads-analytics-page p-3 p-md-4 mb-4">
+
+    <div class="ads-analytics-header">
+        <div>
+            <span class="pill">
+                <i class="bi bi-graph-up"></i>
+                Ads Analytics
+            </span>
+
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                Ads Performance Dashboard
+            </h1>
+
+            <p class="text-muted mb-0">
+                Review campaign performance, device behavior, page-wise impact, and daily trends.
+            </p>
+        </div>
+
+        <div class="ads-analytics-actions">
+            <a asp-action="Index"
+               class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-left"></i>
+                Back to Ads
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Analytics" method="get" class="ads-analytics-filter">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">From Date</label>
+                <input type="date"
+                       name="fromDate"
+                       value="@Model.FromDate.ToString("yyyy-MM-dd")"
+                       class="form-control" />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">To Date</label>
+                <input type="date"
+                       name="toDate"
+                       value="@Model.ToDate.ToString("yyyy-MM-dd")"
+                       class="form-control" />
+            </div>
+
+            <div class="col-md-4 d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel"></i>
+                    Apply Filter
+                </button>
+
+                <a asp-action="Analytics" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Reset
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <div class="ads-analytics-summary">
+        <div class="ads-analytics-card">
+            <div class="ads-analytics-icon">
+                <i class="bi bi-eye"></i>
+            </div>
+            <div>
+                <span>Impressions</span>
+                <strong>@Model.TotalImpressions</strong>
+            </div>
+        </div>
+
+        <div class="ads-analytics-card">
+            <div class="ads-analytics-icon">
+                <i class="bi bi-cursor"></i>
+            </div>
+            <div>
+                <span>Clicks</span>
+                <strong>@Model.TotalClicks</strong>
+            </div>
+        </div>
+
+        <div class="ads-analytics-card">
+            <div class="ads-analytics-icon">
+                <i class="bi bi-skip-forward"></i>
+            </div>
+            <div>
+                <span>Skips</span>
+                <strong>@Model.TotalSkips</strong>
+            </div>
+        </div>
+
+        <div class="ads-analytics-card">
+            <div class="ads-analytics-icon">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+            <div>
+                <span>Completes</span>
+                <strong>@Model.TotalCompletes</strong>
+            </div>
+        </div>
+
+        <div class="ads-analytics-card">
+            <div class="ads-analytics-icon">
+                <i class="bi bi-percent"></i>
+            </div>
+            <div>
+                <span>CTR</span>
+                <strong>@Model.ClickThroughRate%</strong>
+            </div>
+        </div>
+
+        <div class="ads-analytics-card">
+            <div class="ads-analytics-icon">
+                <i class="bi bi-activity"></i>
+            </div>
+            <div>
+                <span>Skip Rate</span>
+                <strong>@Model.SkipRate%</strong>
+            </div>
+        </div>
+
+        <div class="ads-analytics-card">
+            <div class="ads-analytics-icon">
+                <i class="bi bi-trophy"></i>
+            </div>
+            <div>
+                <span>Completion Rate</span>
+                <strong>@Model.CompletionRate%</strong>
+            </div>
+        </div>
+
+        <div class="ads-analytics-card">
+            <div class="ads-analytics-icon">
+                <i class="bi bi-volume-up"></i>
+            </div>
+            <div>
+                <span>Sound Enabled</span>
+                <strong>@Model.TotalSoundEnabled</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="ads-analytics-section">
+        <div class="ads-analytics-section-title">
+            <h2>
+                <i class="bi bi-megaphone"></i>
+                Campaign-wise Performance
+            </h2>
+            <small>Performance grouped by ad campaign.</small>
+        </div>
+
+        <div class="ads-analytics-table-wrap">
+            <table class="table table-clean table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Ad</th>
+                        <th>
+                            <button type="button" class="ads-analytics-sort-btn" data-table="campaign" data-sort-field="impression" data-sort-direction="desc">
+                                Impression <i class="bi bi-arrow-down-up"></i>
+                            </button>
+                        </th>
+                        <th>Click</th>
+                        <th>Skip</th>
+                        <th>Complete</th>
+                        <th>CTR</th>
+                        <th>Skip Rate</th>
+                        <th>Completion</th>
+                        <th>Sound</th>
+                        <th>Close</th>
+                    </tr>
+                </thead>
+
+                <tbody id="campaignTableBody">
+                    @if (Model.Items == null || !Model.Items.Any())
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                No campaign analytics found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.Items)
+                        {
+                            <tr class="campaign-row"
+                                data-impression="@item.ImpressionCount"
+                                data-click="@item.ClickCount"
+                                data-skip="@item.SkipCount"
+                                data-complete="@item.CompleteCount">
+                                <td>
+                                    <strong>@item.AdTitle</strong>
+                                </td>
+                                <td>@item.ImpressionCount</td>
+                                <td>@item.ClickCount</td>
+                                <td>@item.SkipCount</td>
+                                <td>@item.CompleteCount</td>
+                                <td>
+                                    <span class="badge @RateBadge(item.ClickThroughRate)">
+                                        @item.ClickThroughRate%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(item.SkipRate > 50 ? "text-bg-warning" : "text-bg-info")">
+                                        @item.SkipRate%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @RateBadge(item.CompletionRate, "text-bg-primary")">
+                                        @item.CompletionRate%
+                                    </span>
+                                </td>
+                                <td>@item.SoundEnabledCount</td>
+                                <td>@item.CloseCount</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ads-analytics-section">
+        <div class="ads-analytics-section-title">
+            <h2>
+                <i class="bi bi-display"></i>
+                Device-wise Performance
+            </h2>
+            <small>Desktop, tablet, and mobile engagement.</small>
+        </div>
+
+        <div class="ads-analytics-table-wrap">
+            <table class="table table-clean table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Impression</th>
+                        <th>Click</th>
+                        <th>Skip</th>
+                        <th>Complete</th>
+                        <th>CTR</th>
+                        <th>Skip Rate</th>
+                        <th>Completion</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.DeviceItems == null || !Model.DeviceItems.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                No device data found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.DeviceItems)
+                        {
+                            <tr>
+                                <td><strong>@item.DeviceType</strong></td>
+                                <td>@item.ImpressionCount</td>
+                                <td>@item.ClickCount</td>
+                                <td>@item.SkipCount</td>
+                                <td>@item.CompleteCount</td>
+                                <td>
+                                    <span class="badge @RateBadge(item.ClickThroughRate)">
+                                        @item.ClickThroughRate%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(item.SkipRate > 50 ? "text-bg-warning" : "text-bg-info")">
+                                        @item.SkipRate%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @RateBadge(item.CompletionRate, "text-bg-primary")">
+                                        @item.CompletionRate%
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ads-analytics-section">
+        <div class="ads-analytics-section-title">
+            <h2>
+                <i class="bi bi-window-stack"></i>
+                Page-wise Performance
+            </h2>
+            <small>Which pages generate better ad engagement.</small>
+        </div>
+
+        <div class="ads-analytics-table-wrap">
+            <table class="table table-clean table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Page</th>
+                        <th>Impression</th>
+                        <th>Click</th>
+                        <th>Skip</th>
+                        <th>Complete</th>
+                        <th>CTR</th>
+                        <th>Skip Rate</th>
+                        <th>Completion</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.PageItems == null || !Model.PageItems.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                No page data found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.PageItems)
+                        {
+                            <tr>
+                                <td><strong>@item.PageName</strong></td>
+                                <td>@item.ImpressionCount</td>
+                                <td>@item.ClickCount</td>
+                                <td>@item.SkipCount</td>
+                                <td>@item.CompleteCount</td>
+                                <td>
+                                    <span class="badge @RateBadge(item.ClickThroughRate)">
+                                        @item.ClickThroughRate%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(item.SkipRate > 50 ? "text-bg-warning" : "text-bg-info")">
+                                        @item.SkipRate%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @RateBadge(item.CompletionRate, "text-bg-primary")">
+                                        @item.CompletionRate%
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ads-analytics-section">
+        <div class="ads-analytics-section-title">
+            <h2>
+                <i class="bi bi-calendar3"></i>
+                Daily Performance
+            </h2>
+            <small>Daily trend inside selected date range.</small>
+        </div>
+
+        <div class="ads-analytics-table-wrap">
+            <table class="table table-clean table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Impression</th>
+                        <th>Click</th>
+                        <th>Skip</th>
+                        <th>Complete</th>
+                        <th>CTR</th>
+                        <th>Skip Rate</th>
+                        <th>Completion</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.DailyItems == null || !Model.DailyItems.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                No daily data found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.DailyItems)
+                        {
+                            var width = maxDailyImpression <= 0
+                            ? 0
+                            : Math.Round((decimal)item.ImpressionCount * 100 / maxDailyImpression, 0);
+
+                            <tr>
+                                <td><strong>@item.Date.ToString("dd MMM yyyy")</strong></td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span>@item.ImpressionCount</span>
+                                        <div class="ads-mini-bar">
+                                            <span style="width:@width%"></span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@item.ClickCount</td>
+                                <td>@item.SkipCount</td>
+                                <td>@item.CompleteCount</td>
+                                <td>
+                                    <span class="badge @RateBadge(item.ClickThroughRate)">
+                                        @item.ClickThroughRate%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(item.SkipRate > 50 ? "text-bg-warning" : "text-bg-info")">
+                                        @item.SkipRate%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @RateBadge(item.CompletionRate, "text-bg-primary")">
+                                        @item.CompletionRate%
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ads-analytics-section">
+        <div class="ads-analytics-section-title">
+            <h2>
+                <i class="bi bi-list-check"></i>
+                Event Totals
+            </h2>
+            <small>Raw event counts inside selected date range.</small>
+        </div>
+
+        <div class="ads-analytics-table-wrap">
+            <table class="table table-clean table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.EventItems == null || !Model.EventItems.Any())
+                    {
+                        <tr>
+                            <td colspan="2" class="text-center text-muted py-4">
+                                No event data found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.EventItems)
+                        {
+                            <tr>
+                                <td><strong>@item.EventType</strong></td>
+                                <td>@item.Count</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            bindAdsAnalyticsSort();
+        });
+
+        function bindAdsAnalyticsSort() {
+            document.querySelectorAll(".ads-analytics-sort-btn").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const table = button.getAttribute("data-table");
+                    const field = button.getAttribute("data-sort-field");
+                    const currentDirection = button.getAttribute("data-sort-direction") || "desc";
+                    const nextDirection = currentDirection === "asc" ? "desc" : "asc";
+
+                    button.setAttribute("data-sort-direction", nextDirection);
+
+                    sortAdsAnalyticsRows(table, field, nextDirection);
+                    updateAdsAnalyticsSortIcons(button, nextDirection);
+                });
+            });
+        }
+
+        function sortAdsAnalyticsRows(table, field, direction) {
+            if (table !== "campaign" || !field) {
+                return;
+            }
+
+            const tbody = document.getElementById("campaignTableBody");
+
+            if (!tbody) {
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll(".campaign-row"));
+
+            rows.sort(function (a, b) {
+                const aValue = parseInt(a.getAttribute("data-" + field) || "0");
+                const bValue = parseInt(b.getAttribute("data-" + field) || "0");
+
+                return direction === "asc"
+                    ? aValue - bValue
+                    : bValue - aValue;
+            });
+
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateAdsAnalyticsSortIcons(activeButton, direction) {
+            document.querySelectorAll(".ads-analytics-sort-btn i").forEach(function (icon) {
+                icon.className = "bi bi-arrow-down-up";
+            });
+
+            const activeIcon = activeButton.querySelector("i");
+
+            if (activeIcon) {
+                activeIcon.className = direction === "asc"
+                    ? "bi bi-arrow-up-short"
+                    : "bi bi-arrow-down-short";
+            }
+        }
+    </script>
+}

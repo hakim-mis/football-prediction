@@ -21,6 +21,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<UserActiveSession> UserActiveSessions { get; set; }
     public DbSet<PredictionReminderLog> PredictionReminderLogs { get; set; }
     public DbSet<WeeklyPerformanceEmailLog> WeeklyPerformanceEmailLogs { get; set; }
+    public DbSet<Ad> Ads { get; set; }
+    public DbSet<AdSlide> AdSlides { get; set; }
+    public DbSet<AdLog> AdLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -294,6 +297,188 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+        // Ads
+        builder.Entity<Ad>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Title)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            entity.Property(x => x.Description)
+                .HasMaxLength(500);
+
+            entity.Property(x => x.ButtonText)
+                .HasMaxLength(80);
+
+            entity.Property(x => x.ButtonUrl)
+                .HasMaxLength(800);
+
+            entity.Property(x => x.CreatedByUserId)
+                .HasMaxLength(450);
+
+            entity.Property(x => x.UpdatedByUserId)
+                .HasMaxLength(450);
+
+            entity.Property(x => x.SelectionMode)
+                .HasConversion<string>()
+                .HasMaxLength(30)
+                .HasDefaultValue(AdSelectionMode.Ordered);
+
+            entity.Property(x => x.IsActive)
+                .HasDefaultValue(true);
+
+            entity.Property(x => x.IsDeleted)
+                .HasDefaultValue(false);
+
+            entity.Property(x => x.DisplayOrder)
+                .HasDefaultValue(0);
+
+            entity.Property(x => x.Priority)
+                .HasDefaultValue(0);
+
+            entity.Property(x => x.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            entity.HasMany(x => x.Slides)
+                .WithOne(x => x.Ad)
+                .HasForeignKey(x => x.AdId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(x => new
+            {
+                x.IsActive,
+                x.IsDeleted,
+                x.DisplayOrder
+            });
+
+            entity.HasIndex(x => new
+            {
+                x.StartAt,
+                x.EndAt
+            });
+
+            entity.HasIndex(x => x.Priority);
+        });
+
+        // AdSlides
+        builder.Entity<AdSlide>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Title)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            entity.Property(x => x.Description)
+                .HasMaxLength(500);
+
+            entity.Property(x => x.ImagePath)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(x => x.AudioPath)
+                .HasMaxLength(500);
+
+            entity.Property(x => x.ButtonText)
+                .HasMaxLength(80);
+
+            entity.Property(x => x.ButtonUrl)
+                .HasMaxLength(800);
+
+            entity.Property(x => x.DurationSeconds)
+                .HasDefaultValue(4);
+
+            entity.Property(x => x.DisplayOrder)
+                .HasDefaultValue(0);
+
+            entity.Property(x => x.IsActive)
+                .HasDefaultValue(true);
+
+            entity.Property(x => x.IsDeleted)
+                .HasDefaultValue(false);
+
+            entity.Property(x => x.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            entity.HasIndex(x => new
+            {
+                x.AdId,
+                x.IsActive,
+                x.IsDeleted,
+                x.DisplayOrder
+            });
+        });
+
+        // AdLogs
+        builder.Entity<AdLog>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.UserId)
+                .HasMaxLength(450);
+
+            entity.Property(x => x.SessionId)
+                .HasMaxLength(120);
+
+            entity.Property(x => x.EventType)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(x => x.DeviceType)
+                .HasMaxLength(50);
+
+            entity.Property(x => x.PageName)
+                .HasMaxLength(100);
+
+            entity.Property(x => x.PageUrl)
+                .HasMaxLength(800);
+
+            entity.Property(x => x.IpAddress)
+                .HasMaxLength(80);
+
+            entity.Property(x => x.UserAgent)
+                .HasMaxLength(1000);
+
+            entity.Property(x => x.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            entity.HasOne(x => x.Ad)
+                .WithMany()
+                .HasForeignKey(x => x.AdId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(x => x.AdSlide)
+                .WithMany()
+                .HasForeignKey(x => x.AdSlideId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasIndex(x => new
+            {
+                x.AdId,
+                x.EventType,
+                x.CreatedAt
+            });
+
+            entity.HasIndex(x => new
+            {
+                x.UserId,
+                x.CreatedAt
+            });
+
+            entity.HasIndex(x => new
+            {
+                x.SessionId,
+                x.CreatedAt
+            });
+
+            entity.HasIndex(x => new
+            {
+                x.DeviceType,
+                x.CreatedAt
+            });
         });
     }
 }

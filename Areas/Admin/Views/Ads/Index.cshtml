@@ -1,0 +1,748 @@
+﻿@model FootballPredictionGame.ViewModels.AdIndexViewModel
+
+@{
+    ViewData["Title"] = "Ads";
+
+    string ActiveBadge(bool active)
+    {
+        return active ? "text-bg-success" : "text-bg-secondary";
+    }
+
+    string ActiveText(bool active)
+    {
+        return active ? "Active" : "Inactive";
+    }
+
+    decimal Rate(int numerator, int denominator)
+    {
+        return denominator <= 0 ? 0 : Math.Round((decimal)numerator * 100 / denominator, 1);
+    }
+}
+
+<style>
+    .ads-admin-page {
+        overflow: hidden;
+    }
+
+    .ads-admin-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .ads-admin-title h1 {
+        line-height: 1.2;
+    }
+
+    .ads-admin-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .ads-admin-actions .btn {
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+    .ads-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .ads-summary-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+    }
+
+    .ads-summary-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #eef6ff;
+        color: #0d6efd;
+        flex: 0 0 auto;
+        font-size: 1.15rem;
+    }
+
+    .ads-summary-card span {
+        display: block;
+        color: #64748b;
+        font-size: .78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+    }
+
+    .ads-summary-card strong {
+        display: block;
+        color: #111827;
+        font-size: 1.05rem;
+        line-height: 1.2;
+    }
+
+    .ads-filter-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+    .ads-filter-btn {
+        border-radius: 999px;
+        font-weight: 700;
+    }
+
+    .ads-search-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px;
+        width: 100%;
+        margin-bottom: 14px;
+    }
+
+    .ads-search-box {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .ads-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        z-index: 2;
+    }
+
+    .ads-search-box .form-control {
+        padding-left: 38px;
+        padding-right: 42px;
+        min-height: 42px;
+        border-radius: 12px;
+        width: 100%;
+    }
+
+    .ads-search-clear {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 26px;
+        height: 26px;
+        border: 0;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        padding: 0;
+        font-size: .9rem;
+        line-height: 1;
+    }
+
+        .ads-search-clear:hover,
+        .ads-search-clear:focus {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    .ads-search-no-native-clear::-webkit-search-decoration,
+    .ads-search-no-native-clear::-webkit-search-cancel-button,
+    .ads-search-no-native-clear::-webkit-search-results-button,
+    .ads-search-no-native-clear::-webkit-search-results-decoration {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    .ads-search-no-native-clear {
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .ads-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .ads-sort-btn {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font-weight: 800;
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+        .ads-sort-btn:hover,
+        .ads-sort-btn:focus {
+            color: #0d6efd;
+        }
+
+    .ads-action-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    @@media (max-width: 991.98px) {
+        .ads-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .ads-admin-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .ads-admin-title h1 {
+            font-size: 1.25rem;
+        }
+
+        .ads-admin-title p {
+            font-size: .86rem;
+        }
+
+        .ads-admin-actions {
+            width: 100%;
+        }
+
+            .ads-admin-actions .btn {
+                flex: 1 1 auto;
+                font-size: .82rem;
+                padding: 7px 10px;
+            }
+
+        .ads-summary-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .ads-filter-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+            .ads-filter-row .btn {
+                width: 100%;
+                font-size: .8rem;
+                padding-left: 6px;
+                padding-right: 6px;
+            }
+
+        .ads-search-box .form-control {
+            min-height: 40px;
+            font-size: .86rem;
+            padding-left: 34px;
+            padding-right: 38px;
+        }
+
+        .ads-search-icon {
+            left: 10px;
+        }
+
+        .ads-search-clear {
+            right: 7px;
+            width: 24px;
+            height: 24px;
+            font-size: .82rem;
+        }
+    }
+</style>
+
+<div class="dashboard-card ads-admin-page p-3 p-md-4 mb-4">
+
+    <div class="ads-admin-header">
+        <div class="ads-admin-title">
+            <span class="pill">
+                <i class="bi bi-megaphone"></i>
+                Ads
+            </span>
+
+            <h1 class="h3 fw-bold mt-3 mb-1">
+                Ads Campaigns
+            </h1>
+
+            <p class="text-muted mb-0">
+                Manage promotional ad campaigns, slides, targeting, schedule, and performance analytics.
+            </p>
+        </div>
+
+        <div class="ads-admin-actions">
+            <a asp-area="Admin"
+               asp-controller="AutomationSettings"
+               asp-action="Index"
+               class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-robot"></i>
+                Settings
+            </a>
+
+            <a asp-action="Analytics"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-graph-up"></i>
+                Analytics
+            </a>
+
+            <a asp-action="Create"
+               class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i>
+                Create Ad
+            </a>
+        </div>
+    </div>
+
+    <div class="ads-summary-grid">
+
+        <div class="ads-summary-card">
+            <div class="ads-summary-icon">
+                <i class="bi bi-megaphone"></i>
+            </div>
+            <div>
+                <span>Total Ads</span>
+                <strong>@Model.TotalAds</strong>
+            </div>
+        </div>
+
+        <div class="ads-summary-card">
+            <div class="ads-summary-icon">
+                <i class="bi bi-toggle-on"></i>
+            </div>
+            <div>
+                <span>Active Ads</span>
+                <strong>@Model.ActiveAds</strong>
+            </div>
+        </div>
+
+        <div class="ads-summary-card">
+            <div class="ads-summary-icon">
+                <i class="bi bi-images"></i>
+            </div>
+            <div>
+                <span>Total Slides</span>
+                <strong>@Model.TotalSlides</strong>
+            </div>
+        </div>
+
+        <div class="ads-summary-card">
+            <div class="ads-summary-icon">
+                <i class="bi bi-eye"></i>
+            </div>
+            <div>
+                <span>Impressions</span>
+                <strong>@Model.TotalImpressions</strong>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="ads-filter-row">
+        <button type="button" class="btn btn-sm btn-primary ads-filter-btn" data-filter="all">
+            <i class="bi bi-grid"></i>
+            All
+        </button>
+
+        <button type="button" class="btn btn-sm btn-outline-success ads-filter-btn" data-filter="active">
+            <i class="bi bi-check-circle"></i>
+            Active
+        </button>
+
+        <button type="button" class="btn btn-sm btn-outline-secondary ads-filter-btn" data-filter="inactive">
+            <i class="bi bi-pause-circle"></i>
+            Inactive
+        </button>
+    </div>
+
+    <div class="ads-search-toolbar">
+        <div class="ads-search-box">
+            <span class="ads-search-icon">
+                <i class="bi bi-search"></i>
+            </span>
+
+            <input type="search"
+                   id="adsSearch"
+                   class="form-control ads-search-no-native-clear"
+                   placeholder="Search ads..." />
+
+            <button type="button"
+                    class="ads-search-clear"
+                    id="adsClearSearch"
+                    title="Clear search"
+                    aria-label="Clear search">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="ads-table-wrap">
+        <table class="table table-clean table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>
+                        <button type="button" class="ads-sort-btn" data-sort-field="title" data-sort-direction="asc">
+                            Ad
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button" class="ads-sort-btn" data-sort-field="active" data-sort-direction="desc">
+                            Status
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button" class="ads-sort-btn" data-sort-field="slides" data-sort-direction="desc">
+                            Slides
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button" class="ads-sort-btn" data-sort-field="priority" data-sort-direction="desc">
+                            Priority
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button" class="ads-sort-btn" data-sort-field="order" data-sort-direction="asc">
+                            Order
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button" class="ads-sort-btn" data-sort-field="impression" data-sort-direction="desc">
+                            Impression
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>CTR</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="adsTableBody">
+                @if (Model.Ads == null || !Model.Ads.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            No ad campaign found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var ad in Model.Ads)
+                    {
+                        var searchable = $"{ad.Title} {ad.Description} {ad.SelectionMode} {ActiveText(ad.IsActive)} {ad.Priority} {ad.DisplayOrder}".ToLowerInvariant();
+                        var ctr = Rate(ad.ClickCount, ad.ImpressionCount);
+
+                        <tr class="ads-row"
+                            data-search="@searchable"
+                            data-filter="@(ad.IsActive ? "active" : "inactive")"
+                            data-title="@ad.Title.ToLowerInvariant()"
+                            data-active="@(ad.IsActive ? 1 : 0)"
+                            data-slides="@ad.SlideCount"
+                            data-priority="@ad.Priority"
+                            data-order="@ad.DisplayOrder"
+                            data-impression="@ad.ImpressionCount">
+
+                            <td>
+                                <strong>@ad.Title</strong>
+
+                                @if (!string.IsNullOrWhiteSpace(ad.Description))
+                                {
+                                    <div class="small text-muted">
+                                        @ad.Description
+                                    </div>
+                                }
+
+                                <div class="small text-muted">
+                                    Mode: @ad.SelectionMode
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="badge @ActiveBadge(ad.IsActive)">
+                                    @ActiveText(ad.IsActive)
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-primary">
+                                    @ad.ActiveSlideCount / @ad.SlideCount
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-info">
+                                    @ad.Priority
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-light text-muted">
+                                    @ad.DisplayOrder
+                                </span>
+                            </td>
+
+                            <td>
+                                <strong>@ad.ImpressionCount</strong>
+                                <div class="small text-muted">
+                                    Skip @ad.SkipCount, Click @ad.ClickCount
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="badge @(ctr > 0 ? "text-bg-success" : "text-bg-secondary")">
+                                    @ctr%
+                                </span>
+                            </td>
+
+                            <td class="text-end">
+                                <div class="ads-action-row">
+
+                                    <a asp-action="Preview"
+                                       asp-route-id="@ad.Id"
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-eye"></i>
+                                        Preview
+                                    </a>
+                                    <a asp-action="Slides"
+                                       asp-route-adId="@ad.Id"
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-images"></i>
+                                        Slides
+                                    </a>
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@ad.Id"
+                                       class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-pencil"></i>
+                                        Edit
+                                    </a>
+
+                                    <form asp-action="ToggleActive"
+                                          asp-route-id="@ad.Id"
+                                          method="post"
+                                          class="d-inline">
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-sm @(ad.IsActive ? "btn-outline-warning" : "btn-outline-success")">
+                                            <i class="bi @(ad.IsActive ? "bi-pause-circle" : "bi-play-circle")"></i>
+                                            @(ad.IsActive ? "Disable" : "Enable")
+                                        </button>
+                                    </form>
+
+                                    <form asp-action="Delete"
+                                          asp-route-id="@ad.Id"
+                                          method="post"
+                                          class="d-inline">
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Delete this ad campaign? Slides will be hidden too.');">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div id="adsNoResult" class="empty-state mt-3 d-none">
+        No ad matched your search/filter.
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        let activeAdsFilter = "all";
+
+        document.addEventListener("DOMContentLoaded", function () {
+            bindAdsSearch();
+            bindAdsFilters();
+            bindAdsSort();
+        });
+
+        function bindAdsFilters() {
+            document.querySelectorAll(".ads-filter-btn").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    activeAdsFilter = button.getAttribute("data-filter") || "all";
+
+                    document.querySelectorAll(".ads-filter-btn").forEach(function (btn) {
+                        btn.classList.remove("btn-primary", "btn-success", "btn-secondary");
+                        btn.classList.add("btn-outline-primary");
+                    });
+
+                    button.classList.remove("btn-outline-primary", "btn-outline-success", "btn-outline-secondary");
+
+                    if (activeAdsFilter === "active") {
+                        button.classList.add("btn-success");
+                    } else if (activeAdsFilter === "inactive") {
+                        button.classList.add("btn-secondary");
+                    } else {
+                        button.classList.add("btn-primary");
+                    }
+
+                    applyAdsSearchAndFilter();
+                });
+            });
+        }
+
+        function bindAdsSearch() {
+            const searchInput = document.getElementById("adsSearch");
+            const clearButton = document.getElementById("adsClearSearch");
+
+            if (searchInput) {
+                searchInput.addEventListener("input", applyAdsSearchAndFilter);
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener("click", function () {
+                    if (searchInput) {
+                        searchInput.value = "";
+                        searchInput.focus();
+                    }
+
+                    applyAdsSearchAndFilter();
+                });
+            }
+        }
+
+        function applyAdsSearchAndFilter() {
+            const searchInput = document.getElementById("adsSearch");
+            const noResult = document.getElementById("adsNoResult");
+
+            const searchText = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+            let visibleCount = 0;
+
+            document.querySelectorAll(".ads-row").forEach(function (row) {
+                const searchable = row.getAttribute("data-search") || "";
+                const filter = row.getAttribute("data-filter") || "";
+
+                const matchesFilter = activeAdsFilter === "all" || filter === activeAdsFilter;
+                const matchesSearch = searchText === "" || searchable.includes(searchText);
+
+                if (matchesFilter && matchesSearch) {
+                    row.classList.remove("d-none");
+                    visibleCount++;
+                } else {
+                    row.classList.add("d-none");
+                }
+            });
+
+            if (noResult) {
+                if (visibleCount === 0 && document.querySelectorAll(".ads-row").length > 0) {
+                    noResult.classList.remove("d-none");
+                } else {
+                    noResult.classList.add("d-none");
+                }
+            }
+        }
+
+        function bindAdsSort() {
+            document.querySelectorAll(".ads-sort-btn").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const field = button.getAttribute("data-sort-field");
+                    const currentDirection = button.getAttribute("data-sort-direction") || "asc";
+                    const nextDirection = currentDirection === "asc" ? "desc" : "asc";
+
+                    button.setAttribute("data-sort-direction", nextDirection);
+
+                    sortAdsRows(field, nextDirection);
+                    applyAdsSearchAndFilter();
+                    updateAdsSortIcons(button, nextDirection);
+                });
+            });
+        }
+
+        function sortAdsRows(field, direction) {
+            const tbody = document.getElementById("adsTableBody");
+
+            if (!tbody || !field) {
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll(".ads-row"));
+
+            rows.sort(function (a, b) {
+                if (field === "title") {
+                    const aText = a.getAttribute("data-title") || "";
+                    const bText = b.getAttribute("data-title") || "";
+
+                    return direction === "asc"
+                        ? aText.localeCompare(bText)
+                        : bText.localeCompare(aText);
+                }
+
+                const aValue = parseInt(a.getAttribute("data-" + field) || "0");
+                const bValue = parseInt(b.getAttribute("data-" + field) || "0");
+
+                return direction === "asc"
+                    ? aValue - bValue
+                    : bValue - aValue;
+            });
+
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateAdsSortIcons(activeButton, direction) {
+            document.querySelectorAll(".ads-sort-btn i").forEach(function (icon) {
+                icon.className = "bi bi-arrow-down-up";
+            });
+
+            const activeIcon = activeButton.querySelector("i");
+
+            if (activeIcon) {
+                activeIcon.className = direction === "asc"
+                    ? "bi bi-arrow-up-short"
+                    : "bi bi-arrow-down-short";
+            }
+        }
+    </script>
+}
