@@ -26,8 +26,8 @@ public static class LeaderboardRankingHelper
                 PhotoPath = user.ProfilePhotoPath,
                 TotalScore = user.TotalScore,
                 ExactPredictionCount = user.ExactPredictionCount,
-                WinMatchPredictionCount = winMatchPredictionCountMap.TryGetValue(user.Id, out var winMatchCount)
-                    ? winMatchCount
+                WinMatchPredictionCount = winMatchPredictionCountMap.TryGetValue(user.Id, out var winCount)
+                    ? winCount
                     : 0,
                 CreatedAt = user.CreatedAt
             })
@@ -35,69 +35,33 @@ public static class LeaderboardRankingHelper
             .ThenByDescending(x => x.ExactPredictionCount)
             .ThenByDescending(x => x.WinMatchPredictionCount)
             .ThenBy(x => x.CreatedAt)
+            .ThenBy(x => x.FullName)
             .ToList();
-
-        var result = new List<LeaderboardUserViewModel>();
 
         var denseRank = 0;
         int? currentRank = null;
-
         int? previousScore = null;
-        int? previousExact = null;
-        int? previousWin = null;
 
         foreach (var user in orderedUsers)
         {
-            int? rank = null;
-
-            if (user.TotalScore > 0)
+            if (user.TotalScore <= 0)
             {
-                var isNewRank =
-                    previousScore != user.TotalScore ||
-                    previousExact != user.ExactPredictionCount ||
-                    previousWin != user.WinMatchPredictionCount;
-
-                if (isNewRank)
-                {
-                    denseRank++;
-                    currentRank = denseRank;
-
-                    previousScore = user.TotalScore;
-                    previousExact = user.ExactPredictionCount;
-                    previousWin = user.WinMatchPredictionCount;
-                }
-
-                rank = currentRank;
+                user.Rank = null;
+                continue;
             }
 
-            user.Rank = rank;
-            result.Add(user);
+            if (previousScore != user.TotalScore)
+            {
+                denseRank++;
+                currentRank = denseRank;
+                previousScore = user.TotalScore;
+            }
+
+            user.Rank = currentRank;
         }
 
         return take.HasValue
-            ? result.Take(take.Value).ToList()
-            : result;
-    }
-
-    private static bool IsWinMatchPrediction(Prediction prediction)
-    {
-        if (prediction.Fixture == null)
-        {
-            return false;
-        }
-
-        if (!prediction.Fixture.TeamOneActualGoal.HasValue ||
-            !prediction.Fixture.TeamTwoActualGoal.HasValue)
-        {
-            return false;
-        }
-
-        var predictedResult = Math.Sign(
-            prediction.TeamOnePredictedGoal - prediction.TeamTwoPredictedGoal);
-
-        var actualResult = Math.Sign(
-            prediction.Fixture.TeamOneActualGoal.Value - prediction.Fixture.TeamTwoActualGoal.Value);
-
-        return predictedResult == actualResult;
+            ? orderedUsers.Take(take.Value).ToList()
+            : orderedUsers;
     }
 }

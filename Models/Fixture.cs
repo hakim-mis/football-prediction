@@ -82,12 +82,15 @@ public enum FixtureStage
     [Display(Name = "Round of 16")]
     Roundof16 = 14,
 
-    [Display(Name = "Quarter Final")]
+    [Display(Name = "Quarter-finals")]
     QuarterFinal = 15,
 
-    [Display(Name = "Semi Final")]
+    [Display(Name = "Semi-finals")]
     SemiFinal = 16,
 
+    [Display(Name = "Third place play-off")]
+    ThirdPlacePlayOff = 17,
+
     [Display(Name = "Final")]
-    Final = 17
+    Final = 18
 }
