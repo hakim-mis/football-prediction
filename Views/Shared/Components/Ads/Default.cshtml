@@ -54,6 +54,7 @@
         align-items: center;
         justify-content: center;
         padding: 18px;
+        overflow: hidden;
     }
 
         .site-ads-overlay.show {
@@ -61,13 +62,16 @@
         }
 
     .site-ads-card {
-        width: min(760px, 100%);
+        width: min(760px, calc(100vw - 36px));
+        max-height: calc(100dvh - 36px);
         background: #ffffff;
         border-radius: 24px;
         overflow: hidden;
         box-shadow: 0 26px 80px rgba(0, 0, 0, .35);
         position: relative;
         animation: siteAdsPop .22s ease-out;
+        display: flex;
+        flex-direction: column;
     }
 
     @@keyframes siteAdsPop {
@@ -89,7 +93,7 @@
         right: 12px;
         z-index: 5;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
         gap: 8px;
         pointer-events: none;
@@ -107,13 +111,16 @@
         align-items: center;
         gap: 5px;
         backdrop-filter: blur(5px);
+        white-space: nowrap;
     }
 
     .site-ads-top-actions {
         pointer-events: auto;
         display: inline-flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 6px;
+        min-width: 0;
     }
 
     .site-ads-sound-btn,
@@ -129,6 +136,7 @@
         justify-content: center;
         gap: 5px;
         line-height: 1;
+        white-space: nowrap;
     }
 
     .site-ads-sound-btn {
@@ -151,6 +159,7 @@
     .site-ads-close-btn {
         width: 32px;
         height: 32px;
+        min-width: 32px;
         padding: 0;
         background: rgba(255, 255, 255, .92);
         color: #dc2626;
@@ -159,14 +168,23 @@
     .site-ads-media {
         position: relative;
         background: #0f172a;
+        flex: 0 0 auto;
+        width: 100%;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
     }
 
     .site-ads-image {
         width: 100%;
-        aspect-ratio: 16 / 8.5;
-        object-fit: cover;
+        height: auto;
+        max-width: 100%;
+        max-height: 68dvh;
+        object-fit: contain;
         display: block;
-        background: #e2e8f0;
+        background: #0f172a;
     }
 
     .site-ads-progress {
@@ -187,22 +205,27 @@
     }
 
     .site-ads-body {
-        padding: 18px 20px 20px;
+        padding: 14px 18px 16px;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
     }
 
     .site-ads-title {
-        font-size: 1.35rem;
+        font-size: 1.25rem;
         line-height: 1.25;
         font-weight: 900;
         color: #0f172a;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
+        word-break: break-word;
     }
 
     .site-ads-description {
         color: #475569;
-        line-height: 1.45;
-        font-size: .95rem;
-        margin-bottom: 14px;
+        line-height: 1.4;
+        font-size: .9rem;
+        margin-bottom: 12px;
+        word-break: break-word;
     }
 
     .site-ads-bottom-row {
@@ -217,6 +240,7 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        flex-wrap: wrap;
     }
 
     .site-ads-dot {
@@ -238,78 +262,298 @@
         font-weight: 800;
         padding-left: 16px;
         padding-right: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    @@media (min-width: 768px) and (max-width: 1199.98px) {
+        .site-ads-overlay {
+            padding: 20px;
+        }
+
+        .site-ads-card {
+            width: min(720px, calc(100vw - 40px));
+            max-height: calc(100dvh - 40px);
+            border-radius: 22px;
+        }
+
+        .site-ads-image {
+            max-height: 64dvh;
+            object-fit: contain;
+        }
+
+        .site-ads-body {
+            padding: 14px 18px 16px;
+        }
+
+        .site-ads-title {
+            font-size: 1.2rem;
+        }
     }
 
     @@media (max-width: 767.98px) {
         .site-ads-overlay {
-            padding: 0;
-            align-items: stretch;
-            justify-content: stretch;
+            padding: 10px;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
         .site-ads-card {
             width: 100%;
-            height: 100%;
-            border-radius: 0;
+            max-width: 430px;
+            height: auto;
+            max-height: calc(100dvh - 20px);
+            border-radius: 14px;
             display: flex;
             flex-direction: column;
-        }
-
-        .site-ads-media {
-            flex: 0 0 auto;
-        }
-
-        .site-ads-image {
-            aspect-ratio: 9 / 12;
-            min-height: 55vh;
-            max-height: 68vh;
-        }
-
-        .site-ads-body {
-            flex: 1 1 auto;
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .site-ads-title {
-            font-size: 1.25rem;
-        }
-
-        .site-ads-description {
-            font-size: .92rem;
         }
 
         .site-ads-topbar {
-            top: 10px;
-            left: 10px;
-            right: 10px;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            gap: 5px;
         }
 
         .site-ads-label {
-            font-size: .72rem;
-            padding: 6px 9px;
+            font-size: .68rem;
+            padding: 5px 7px;
+        }
+
+        .site-ads-top-actions {
+            gap: 4px;
         }
 
         .site-ads-sound-btn,
         .site-ads-skip-btn {
-            font-size: .72rem;
-            padding: 7px 9px;
+            font-size: .66rem;
+            padding: 6px 7px;
+            min-height: 29px;
+        }
+
+            .site-ads-sound-btn span {
+                display: none;
+            }
+
+        .site-ads-skip-btn {
+            min-width: 68px;
         }
 
         .site-ads-close-btn {
-            width: 31px;
-            height: 31px;
+            width: 29px;
+            height: 29px;
+            min-width: 29px;
+        }
+
+        .site-ads-media {
+            width: 100%;
+            height: auto;
+            max-height: 70dvh;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .site-ads-image {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+            max-height: 70dvh;
+            object-fit: contain;
+            display: block;
+            background: #0f172a;
+        }
+
+        .site-ads-body {
+            padding: 10px 12px 12px;
+            flex: 0 0 auto;
+            max-height: 28dvh;
+            overflow-y: auto;
+        }
+
+        .site-ads-title {
+            font-size: .95rem;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .site-ads-description {
+            font-size: .76rem;
+            line-height: 1.3;
+            margin-bottom: 8px;
         }
 
         .site-ads-bottom-row {
-            gap: 10px;
+            gap: 8px;
+        }
+
+        .site-ads-dots {
+            max-width: 100%;
+            gap: 5px;
+        }
+
+        .site-ads-dot {
+            width: 7px;
+            height: 7px;
+        }
+
+            .site-ads-dot.active {
+                width: 17px;
+            }
+
+        .site-ads-cta {
+            width: 100%;
+            min-height: 34px;
+            justify-content: center;
+            font-size: .78rem;
+        }
+    }
+
+    @@media (max-width: 390px) {
+        .site-ads-overlay {
+            padding: 8px;
+        }
+
+        .site-ads-card {
+            max-height: calc(100dvh - 16px);
+            border-radius: 12px;
+        }
+
+        .site-ads-topbar {
+            top: 7px;
+            left: 7px;
+            right: 7px;
+        }
+
+        .site-ads-label {
+            font-size: .62rem;
+            padding: 5px 6px;
+        }
+
+        .site-ads-sound-btn,
+        .site-ads-skip-btn {
+            font-size: .6rem;
+            padding: 6px 6px;
+            min-height: 28px;
+        }
+
+        .site-ads-skip-btn {
+            min-width: 62px;
+        }
+
+        .site-ads-close-btn {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+        }
+
+        .site-ads-media {
+            max-height: 70dvh;
+        }
+
+        .site-ads-image {
+            max-height: 70dvh;
+            object-fit: contain;
+        }
+
+        .site-ads-body {
+            padding: 9px 11px 11px;
+            max-height: 28dvh;
+        }
+
+        .site-ads-title {
+            font-size: .88rem;
+        }
+
+        .site-ads-description {
+            font-size: .72rem;
+            margin-bottom: 8px;
+        }
+
+        .site-ads-cta {
+            min-height: 32px;
+            font-size: .74rem;
+        }
+    }
+
+    @@media (max-width: 340px) {
+        .site-ads-label {
+            display: none;
+        }
+
+        .site-ads-topbar {
+            justify-content: flex-end;
+        }
+
+        .site-ads-title {
+            font-size: .84rem;
+        }
+
+        .site-ads-description {
+            font-size: .68rem;
+        }
+    }
+
+    @@media (max-width: 767.98px) and (orientation: landscape) {
+        .site-ads-overlay {
+            padding: 8px;
+        }
+
+        .site-ads-card {
+            width: min(760px, calc(100vw - 16px));
+            max-width: none;
+            height: auto;
+            max-height: calc(100dvh - 16px);
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(230px, .65fr);
+            border-radius: 14px;
+        }
+
+        .site-ads-media {
+            min-height: 0;
+            height: calc(100dvh - 16px);
+            max-height: calc(100dvh - 16px);
+        }
+
+        .site-ads-image {
+            width: 100%;
+            height: 100%;
+            max-height: none;
+            object-fit: contain;
+        }
+
+        .site-ads-body {
+            height: calc(100dvh - 16px);
+            max-height: calc(100dvh - 16px);
+            overflow-y: auto;
+            padding: 44px 12px 12px;
+        }
+
+        .site-ads-title {
+            font-size: .9rem;
+        }
+
+        .site-ads-description {
+            font-size: .72rem;
         }
 
         .site-ads-cta {
             width: 100%;
-            justify-content: center;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .site-ads-card {
+            animation: none;
+        }
+
+        .site-ads-progress-bar {
+            transition: none;
         }
     }
 </style>
@@ -328,7 +572,7 @@
                         class="site-ads-sound-btn"
                         id="siteAdsSoundBtn">
                     <i class="bi bi-volume-mute"></i>
-                    Sound
+                    <span>Sound</span>
                 </button>
 
                 <button type="button"
@@ -431,17 +675,17 @@
             return;
         }
 
-            if (config.triggerMode === "AfterPredictionSubmit") {
-        window.showPredictionSubmitAd = function () {
-            openAd();
-        };
-    } else {
-        const showDelay = Math.max(parseInt(config.showAfterSeconds || 0), 0) * 1000;
+        if (config.triggerMode === "AfterPredictionSubmit") {
+            window.showPredictionSubmitAd = function () {
+                openAd();
+            };
+        } else {
+            const showDelay = Math.max(parseInt(config.showAfterSeconds || 0), 0) * 1000;
 
-        window.setTimeout(function () {
-            openAd();
-        }, showDelay);
-    }
+            window.setTimeout(function () {
+                openAd();
+            }, showDelay);
+        }
 
         function isPlatformAllowed() {
             return true;
@@ -466,11 +710,15 @@
             return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
         }
 
+        function frequencyPrefix() {
+            return "siteAds_" + (config.triggerMode || "Timer") + "_" + config.adId;
+        }
+
         function canShowByFrequency() {
-            const frequencyPrefix = "siteAds_" + (config.triggerMode || "Timer") + "_" + config.adId;
-            const sessionKey = frequencyPrefix + "_Session";
-            const dayKey = frequencyPrefix + "_Day";
-            const dayCountKey = frequencyPrefix + "_DayCount_" + todayKey();
+            const prefix = frequencyPrefix();
+            const sessionKey = prefix + "_Session";
+            const dayKey = prefix + "_Day";
+            const dayCountKey = prefix + "_DayCount_" + todayKey();
 
             if (config.showOncePerSession && sessionStorage.getItem(sessionKey) === "1") {
                 return false;
@@ -491,9 +739,10 @@
         }
 
         function markFrequencyShown() {
-            const sessionKey = "siteAdsShownSession_" + config.adId;
-            const dayKey = "siteAdsShownDay_" + config.adId;
-            const dayCountKey = "siteAdsDayCount_" + config.adId + "_" + todayKey();
+            const prefix = frequencyPrefix();
+            const sessionKey = prefix + "_Session";
+            const dayKey = prefix + "_Day";
+            const dayCountKey = prefix + "_DayCount_" + todayKey();
 
             if (config.showOncePerSession) {
                 sessionStorage.setItem(sessionKey, "1");
@@ -513,6 +762,7 @@
             }
 
             hasOpened = true;
+
             if (!config.isPreview) {
                 markFrequencyShown();
             }
@@ -756,8 +1006,8 @@
                 }
 
                 soundBtn.innerHTML = soundEnabled
-                    ? '<i class="bi bi-volume-up"></i> Sound On'
-                    : '<i class="bi bi-volume-mute"></i> Sound';
+                    ? '<i class="bi bi-volume-up"></i><span>Sound On</span>'
+                    : '<i class="bi bi-volume-mute"></i><span>Sound</span>';
 
                 if (soundEnabled && config.trackSoundEnabled) {
                     trackAdEvent("SoundEnabled", slides[currentSlideIndex]?.slideId || null);
@@ -775,10 +1025,10 @@
         }
 
         function trackAdEvent(eventType, slideId) {
-
             if (config.isPreview) {
                 return;
             }
+
             fetch("/ads-tracking/track", {
                 method: "POST",
                 headers: {

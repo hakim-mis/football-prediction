@@ -139,12 +139,18 @@ public class DashboardController : Controller
                     WinMatchPredictionCount = rankInfo?.WinMatchPredictionCount ?? 0
                 };
             })
-            .OrderBy(x => RankSortValue(x.RankText))
-            .ThenByDescending(x => x.EarnedPoint)
+            .OrderByDescending(x => x.EarnedPoint)
+            .ThenBy(x => RankSortValue(x.RankText))
             .ThenByDescending(x => x.TotalScore)
-            .ThenByDescending(x => x.ExactPredictionCount)
-            .ThenByDescending(x => x.WinMatchPredictionCount)
+            //.ThenByDescending(x => x.ExactPredictionCount)
+            //.ThenByDescending(x => x.WinMatchPredictionCount)
             .ThenBy(x => x.UserName)
+            //.OrderBy(x => RankSortValue(x.RankText))
+            //.ThenByDescending(x => x.EarnedPoint)
+            //.ThenByDescending(x => x.TotalScore)
+            //.ThenByDescending(x => x.ExactPredictionCount)
+            //.ThenByDescending(x => x.WinMatchPredictionCount)
+            //.ThenBy(x => x.UserName)
             .ToList();
 
         var model = new FixturePredictionDetailViewModel
