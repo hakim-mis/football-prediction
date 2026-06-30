@@ -1143,8 +1143,9 @@ public class DashboardController : Controller
         FixtureStage.GroupL => "Group L",
         FixtureStage.Roundof32 => "Round of 32",
         FixtureStage.Roundof16 => "Round of 16",
-        FixtureStage.QuarterFinal => "Quarter Final",
-        FixtureStage.SemiFinal => "Semi Final",
+        FixtureStage.QuarterFinal => "Quarter-finals",
+        FixtureStage.SemiFinal => "Semi-finals",
+        FixtureStage.ThirdPlacePlayOff => "Third Place Play-off",
         FixtureStage.Final => "Final",
         _ => stage.ToString()
     };

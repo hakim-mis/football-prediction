@@ -14,22 +14,67 @@
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 12px;
+        gap: 14px;
         flex-wrap: wrap;
         margin-bottom: 18px;
+    }
+
+    .ad-form-title-block {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .ad-form-title-heading {
+        margin: 0;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        color: #111827 !important;
+        font-size: 1.55rem;
+        font-weight: 900;
+        line-height: 1.15;
+        letter-spacing: -.02em;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .ad-form-title-heading i {
+            color: #0d6efd;
+            font-size: 1.55rem;
+            line-height: 1;
+        }
+
+    .ad-form-main-title {
+        line-height: 1.2;
+        margin-bottom: 6px;
+    }
+
+    .ad-form-subtitle {
+        line-height: 1.45;
+        max-width: 780px;
     }
 
     .ad-form-actions {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 8px;
+        flex: 0 0 auto;
         flex-wrap: wrap;
     }
 
         .ad-form-actions .btn {
             border-radius: 999px;
-            font-weight: 700;
+            font-weight: 800;
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
 
     .ad-form-section {
@@ -66,6 +111,11 @@
         min-height: 42px;
     }
 
+    .ad-form-field textarea.form-control {
+        min-height: 90px;
+        resize: vertical;
+    }
+
     .ad-form-switch {
         background: #f8fafc;
         border: 1px solid #e5e7eb;
@@ -81,13 +131,21 @@
         .ad-form-switch .form-check {
             margin-bottom: 0;
             min-height: 0;
+            display: flex;
+            align-items: center;
         }
 
         .ad-form-switch .form-check-input {
             width: 2.4em;
             height: 1.25em;
             margin-top: 0;
+            cursor: pointer;
         }
+
+            .ad-form-switch .form-check-input:checked {
+                background-color: #198754;
+                border-color: #198754;
+            }
 
     .ad-form-footer {
         position: sticky;
@@ -109,7 +167,17 @@
             border-radius: 999px;
             font-weight: 800;
             min-width: 140px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
+
+    @@media (max-width: 991.98px) {
+        .ad-form-header {
+            gap: 12px;
+        }
+    }
 
     @@media (max-width: 767.98px) {
         .ad-form-page {
@@ -117,47 +185,162 @@
             border-radius: 16px;
         }
 
-        .ad-form-header h1 {
-            font-size: 1.25rem;
+        .ad-form-header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .ad-form-title-block {
+            grid-column: 1;
+            grid-row: 1;
+            min-width: 0;
+        }
+
+        .ad-form-title-heading {
+            font-size: 1.22rem;
+            gap: 7px;
+        }
+
+            .ad-form-title-heading i {
+                font-size: 1.22rem;
+            }
+
+        .ad-form-main-title,
+        .ad-form-subtitle {
+            display: none !important;
         }
 
         .ad-form-actions {
-            width: 100%;
+            grid-column: 2;
+            grid-row: 1;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
         }
 
             .ad-form-actions .btn {
-                flex: 1 1 auto;
-                font-size: .82rem;
+                min-height: 34px;
+                padding: 6px 10px;
+                font-size: .76rem;
+                border-radius: 999px;
             }
 
         .ad-form-section {
             padding: 14px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+
+        .ad-form-section-title {
+            font-size: .76rem;
+            margin-bottom: 12px;
+        }
+
+        .ad-form-field label,
+        .ad-form-switch label {
+            font-size: .84rem;
+        }
+
+        .ad-form-field .form-control,
+        .ad-form-field .form-select {
+            min-height: 40px;
+            font-size: .86rem;
+        }
+
+        .ad-form-switch {
+            min-height: 44px;
+            padding: 10px;
         }
 
         .ad-form-footer {
             flex-direction: column;
+            border-radius: 16px;
+            padding: 12px;
+            gap: 8px;
         }
 
             .ad-form-footer .btn {
                 width: 100%;
+                min-width: 0;
+                min-height: 40px;
+                font-size: .88rem;
             }
+    }
+
+    @@media (max-width: 420px) {
+        .ad-form-title-heading {
+            font-size: 1.1rem;
+        }
+
+            .ad-form-title-heading i {
+                font-size: 1.1rem;
+            }
+
+        .ad-form-actions {
+            gap: 5px;
+        }
+
+            .ad-form-actions .btn {
+                padding-left: 8px;
+                padding-right: 8px;
+                font-size: .7rem;
+            }
+
+        .ad-form-section {
+            padding: 12px;
+        }
+
+        .ad-form-section-title {
+            font-size: .72rem;
+        }
+
+        .ad-form-field label,
+        .ad-form-switch label {
+            font-size: .8rem;
+        }
+
+        .ad-form-switch {
+            gap: 8px;
+        }
+    }
+
+    @@media (max-width: 350px) {
+        .ad-form-header {
+            grid-template-columns: 1fr;
+            align-items: flex-start;
+        }
+
+        .ad-form-title-block {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .ad-form-actions {
+            grid-column: 1;
+            grid-row: 2;
+            justify-content: flex-start;
+            margin-top: 4px;
+        }
     }
 </style>
 
 <div class="dashboard-card ad-form-page p-3 p-md-4 mb-4">
 
     <div class="ad-form-header">
-        <div>
-            <span class="pill">
+        <div class="ad-form-title-block">
+            <h1 class="ad-form-title-heading">
                 <i class="bi bi-pencil"></i>
                 Edit Ad
-            </span>
-
-            <h1 class="h3 fw-bold mt-3 mb-1">
-                Edit Ad Campaign
             </h1>
 
-            <p class="text-muted mb-0">
+            <h2 class="h3 fw-bold mt-3 mb-1 ad-form-main-title">
+                Edit Ad Campaign
+            </h2>
+
+            <p class="text-muted mb-0 ad-form-subtitle">
                 Update campaign behavior, targeting, schedule, and default call-to-action.
             </p>
         </div>
@@ -170,9 +353,10 @@
                 Slides
             </a>
 
-            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <a asp-action="Index"
+               class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left"></i>
-                Back to Ads
+                Back
             </a>
         </div>
     </div>
@@ -231,6 +415,7 @@
                             <input asp-for="IsActive" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="IsActive" class="text-danger small"></span>
                 </div>
             </div>
         </div>
@@ -270,6 +455,7 @@
                             <input asp-for="ShowOnDesktop" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowOnDesktop" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
@@ -279,6 +465,7 @@
                             <input asp-for="ShowOnTablet" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowOnTablet" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
@@ -288,6 +475,7 @@
                             <input asp-for="ShowOnMobile" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowOnMobile" class="text-danger small"></span>
                 </div>
             </div>
         </div>
@@ -306,6 +494,7 @@
                             <input asp-for="ShowToGuests" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowToGuests" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
@@ -315,6 +504,7 @@
                             <input asp-for="ShowToUsers" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowToUsers" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
@@ -324,6 +514,7 @@
                             <input asp-for="ShowToAdmins" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowToAdmins" class="text-danger small"></span>
                 </div>
             </div>
         </div>
@@ -342,6 +533,7 @@
                             <input asp-for="ShowOnDashboard" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowOnDashboard" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
@@ -351,6 +543,7 @@
                             <input asp-for="ShowOnPredictionScore" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowOnPredictionScore" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
@@ -360,6 +553,7 @@
                             <input asp-for="ShowOnLeaderboard" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowOnLeaderboard" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
@@ -369,6 +563,7 @@
                             <input asp-for="ShowOnRules" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowOnRules" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
@@ -378,6 +573,7 @@
                             <input asp-for="ShowOnLoginRegister" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowOnLoginRegister" class="text-danger small"></span>
                 </div>
             </div>
         </div>
@@ -396,6 +592,7 @@
                             <input asp-for="ShowAfterPredictionSubmit" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowAfterPredictionSubmit" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
@@ -405,6 +602,7 @@
                             <input asp-for="ShowOnlyIfUserHasNoUpcomingPrediction" class="form-check-input" />
                         </div>
                     </div>
+                    <span asp-validation-for="ShowOnlyIfUserHasNoUpcomingPrediction" class="text-danger small"></span>
                 </div>
             </div>
         </div>

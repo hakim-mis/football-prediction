@@ -13,22 +13,67 @@
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 12px;
+        gap: 14px;
         flex-wrap: wrap;
         margin-bottom: 18px;
+    }
+
+    .ad-preview-title-block {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .ad-preview-title-heading {
+        margin: 0;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        color: #111827 !important;
+        font-size: 1.55rem;
+        font-weight: 900;
+        line-height: 1.15;
+        letter-spacing: -.02em;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .ad-preview-title-heading i {
+            color: #0d6efd;
+            font-size: 1.55rem;
+            line-height: 1;
+        }
+
+    .ad-preview-main-title {
+        line-height: 1.2;
+        margin-bottom: 6px;
+    }
+
+    .ad-preview-subtitle {
+        line-height: 1.45;
+        max-width: 780px;
     }
 
     .ad-preview-actions {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 8px;
+        flex: 0 0 auto;
         flex-wrap: wrap;
     }
 
         .ad-preview-actions .btn {
             border-radius: 999px;
-            font-weight: 700;
+            font-weight: 800;
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
 
     .ad-preview-panel {
@@ -44,12 +89,47 @@
             font-weight: 900;
             margin-bottom: 8px;
             color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 7px;
         }
 
         .ad-preview-panel p {
             color: #475569;
             margin-bottom: 14px;
             line-height: 1.5;
+        }
+
+    .ad-preview-panel-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .ad-preview-panel-text {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .ad-preview-panel-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex: 0 0 auto;
+    }
+
+        .ad-preview-panel-actions .btn {
+            border-radius: 999px;
+            font-weight: 800;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
     .ad-preview-note {
@@ -59,6 +139,7 @@
         padding: 12px;
         color: #334155;
         font-size: .9rem;
+        line-height: 1.45;
     }
 
     .ad-preview-start-btn {
@@ -68,27 +149,172 @@
         padding-right: 18px;
     }
 
+    @@media (max-width: 991.98px) {
+        .ad-preview-header {
+            gap: 12px;
+        }
+
+        .ad-preview-panel-top {
+            align-items: flex-start;
+        }
+    }
+
     @@media (max-width: 767.98px) {
         .ad-preview-page {
             padding: 14px !important;
             border-radius: 16px;
         }
 
-        .ad-preview-header h1 {
-            font-size: 1.25rem;
+        .ad-preview-header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .ad-preview-title-block {
+            grid-column: 1;
+            grid-row: 1;
+            min-width: 0;
+        }
+
+        .ad-preview-title-heading {
+            font-size: 1.22rem;
+            gap: 7px;
+        }
+
+            .ad-preview-title-heading i {
+                font-size: 1.22rem;
+            }
+
+        .ad-preview-main-title,
+        .ad-preview-subtitle {
+            display: none !important;
         }
 
         .ad-preview-actions {
-            width: 100%;
+            grid-column: 2;
+            grid-row: 1;
+            justify-content: flex-end;
+            align-items: center;
         }
 
             .ad-preview-actions .btn {
-                flex: 1 1 auto;
+                min-height: 34px;
+                padding: 6px 12px;
+                font-size: .78rem;
+                border-radius: 999px;
+            }
+
+                .ad-preview-actions .btn i {
+                    margin: 0;
+                }
+
+        .ad-preview-panel {
+            padding: 14px;
+            border-radius: 16px;
+        }
+
+        .ad-preview-panel-top {
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .ad-preview-panel h2 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .ad-preview-panel p {
+            font-size: .86rem;
+            line-height: 1.45;
+            margin-bottom: 12px;
+        }
+
+        .ad-preview-panel-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+            .ad-preview-panel-actions .btn {
+                width: 100%;
+                min-height: 38px;
+                font-size: .82rem;
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+
+        .ad-preview-note {
+            border-radius: 14px;
+            padding: 11px;
+            font-size: .82rem;
+        }
+    }
+
+    @@media (max-width: 420px) {
+        .ad-preview-title-heading {
+            font-size: 1.1rem;
+        }
+
+            .ad-preview-title-heading i {
+                font-size: 1.1rem;
+            }
+
+        .ad-preview-actions .btn {
+            padding-left: 10px;
+            padding-right: 10px;
+            font-size: .74rem;
+        }
+
+        .ad-preview-panel {
+            padding: 12px;
+        }
+
+            .ad-preview-panel h2 {
+                font-size: .96rem;
+            }
+
+            .ad-preview-panel p {
                 font-size: .82rem;
             }
 
-        .ad-preview-start-btn {
-            width: 100%;
+        .ad-preview-panel-actions {
+            gap: 7px;
+        }
+
+            .ad-preview-panel-actions .btn {
+                min-height: 36px;
+                font-size: .76rem;
+            }
+
+        .ad-preview-note {
+            font-size: .78rem;
+        }
+    }
+
+    @@media (max-width: 350px) {
+        .ad-preview-header {
+            grid-template-columns: 1fr;
+            align-items: flex-start;
+        }
+
+        .ad-preview-title-block {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .ad-preview-actions {
+            grid-column: 1;
+            grid-row: 2;
+            justify-content: flex-start;
+            margin-top: 4px;
+        }
+
+        .ad-preview-panel-actions {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -96,58 +322,66 @@
 <div class="dashboard-card ad-preview-page p-3 p-md-4 mb-4">
 
     <div class="ad-preview-header">
-        <div>
-            <span class="pill">
+        <div class="ad-preview-title-block">
+            <h1 class="ad-preview-title-heading">
                 <i class="bi bi-eye"></i>
                 Preview
-            </span>
-
-            <h1 class="h3 fw-bold mt-3 mb-1">
-                Preview Ad
             </h1>
 
-            <p class="text-muted mb-0">
+            <h2 class="h3 fw-bold mt-3 mb-1 ad-preview-main-title">
+                Preview Ad
+            </h2>
+
+            <p class="text-muted mb-0 ad-preview-subtitle">
                 Preview campaign: <strong>@Model.AdTitle</strong>
             </p>
         </div>
 
         <div class="ad-preview-actions">
-            <a asp-action="Slides"
-               asp-route-adId="@Model.AdId"
-               class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-images"></i>
-                Slides
-            </a>
-
             <a asp-action="Index"
-               class="btn btn-outline-secondary btn-sm">
+               class="btn btn-outline-primary btn-sm">
                 <i class="bi bi-arrow-left"></i>
-                Back to Ads
+                Back
             </a>
         </div>
     </div>
 
     <div class="ad-preview-panel">
-        <h2>
-            <i class="bi bi-play-circle"></i>
-            Preview Mode
-        </h2>
 
-        <p>
-            The ad preview opens automatically on this page. Preview mode does not count impressions, clicks, skips, completion, or daily/session frequency.
-        </p>
+        <div class="ad-preview-panel-top">
+            <div class="ad-preview-panel-text">
+                <h2>
+                    <i class="bi bi-play-circle"></i>
+                    Preview Mode
+                </h2>
 
-        <div class="ad-preview-note mb-3">
+                <p>
+                    The ad preview opens automatically on this page. Preview mode does not count impressions, clicks, skips, completion, or daily/session frequency.
+                </p>
+            </div>
+
+            <div class="ad-preview-panel-actions">
+                <a asp-action="Slides"
+                   asp-route-adId="@Model.AdId"
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-images"></i>
+                    Slides
+                </a>
+
+                <button type="button"
+                        class="btn btn-primary btn-sm ad-preview-start-btn"
+                        onclick="window.location.reload();">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Replay
+                </button>
+            </div>
+        </div>
+
+        <div class="ad-preview-note">
             <strong>Note:</strong>
             Audio may still require a tap on the Sound button because browsers block automatic sound until user interaction.
         </div>
 
-        <button type="button"
-                class="btn btn-primary ad-preview-start-btn"
-                onclick="window.location.reload();">
-            <i class="bi bi-arrow-clockwise"></i>
-            Replay Preview
-        </button>
     </div>
 
 </div>

@@ -20,22 +20,85 @@
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 12px;
+        gap: 14px;
         flex-wrap: wrap;
         margin-bottom: 18px;
+    }
+
+    .ad-slide-title-block {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .ad-slide-title-heading {
+        margin: 0;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        color: #111827 !important;
+        font-size: 1.55rem;
+        font-weight: 900;
+        line-height: 1.15;
+        letter-spacing: -.02em;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .ad-slide-title-heading i {
+            color: #0d6efd;
+            font-size: 1.55rem;
+            line-height: 1;
+        }
+
+    .ad-slide-main-title {
+        line-height: 1.2;
+        margin-bottom: 6px;
+    }
+
+    .ad-slide-subtitle {
+        line-height: 1.45;
+        max-width: 780px;
     }
 
     .ad-slide-actions {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 8px;
+        flex: 0 0 auto;
         flex-wrap: wrap;
     }
 
         .ad-slide-actions .btn {
             border-radius: 999px;
-            font-weight: 700;
+            font-weight: 800;
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+    .ad-slide-top-action-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+        .ad-slide-top-action-row .btn {
+            border-radius: 999px;
+            font-weight: 800;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
 
     .ad-slide-grid {
@@ -54,16 +117,50 @@
         flex-direction: column;
     }
 
+    .ad-slide-image-wrap {
+        width: 100%;
+        background: #0f172a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
     .ad-slide-image {
         width: 100%;
         aspect-ratio: 16 / 9;
-        object-fit: cover;
-        background: #f1f5f9;
+        object-fit: contain;
+        background: #0f172a;
+        display: block;
     }
 
     .ad-slide-body {
         padding: 14px;
         flex: 1 1 auto;
+    }
+
+    .ad-slide-card-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .ad-slide-card-title {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+        .ad-slide-card-title h5 {
+            color: #111827;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+    .ad-slide-description {
+        color: #64748b;
+        line-height: 1.4;
+        word-break: break-word;
     }
 
     .ad-slide-meta {
@@ -80,16 +177,39 @@
         background: #f8fafc;
         display: flex;
         align-items: center;
-        gap: 6px;
-        flex-wrap: wrap;
+        gap: 7px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-        .ad-slide-footer .btn {
-            border-radius: 10px;
-            font-weight: 700;
+        .ad-slide-footer .btn,
+        .ad-slide-footer form button {
+            border-radius: 999px;
+            font-weight: 800;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
 
-    @@media (max-width: 991.98px) {
+        .ad-slide-footer form {
+            display: inline-flex;
+            margin: 0;
+        }
+
+    .ad-slide-empty {
+        border: 1px dashed #bfdbfe;
+        background: #f8fbff;
+        border-radius: 18px;
+        padding: 26px 16px;
+        text-align: center;
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    @@media (max-width: 1199.98px) {
         .ad-slide-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -101,20 +221,170 @@
             border-radius: 16px;
         }
 
-        .ad-slide-header h1 {
-            font-size: 1.25rem;
+        .ad-slide-header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .ad-slide-title-block {
+            grid-column: 1;
+            grid-row: 1;
+            min-width: 0;
+        }
+
+        .ad-slide-title-heading {
+            font-size: 1.22rem;
+            gap: 7px;
+        }
+
+            .ad-slide-title-heading i {
+                font-size: 1.22rem;
+            }
+
+        .ad-slide-main-title,
+        .ad-slide-subtitle {
+            display: none !important;
         }
 
         .ad-slide-actions {
-            width: 100%;
+            grid-column: 2;
+            grid-row: 1;
+            justify-content: flex-end;
+            align-items: center;
         }
 
             .ad-slide-actions .btn {
-                flex: 1 1 auto;
-                font-size: .82rem;
+                min-height: 34px;
+                padding: 6px 12px;
+                font-size: .78rem;
+                border-radius: 999px;
+            }
+
+        .ad-slide-top-action-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 7px;
+            margin-bottom: 14px;
+        }
+
+            .ad-slide-top-action-row .btn {
+                width: 100%;
+                min-height: 36px;
+                font-size: .78rem;
+                padding-left: 8px;
+                padding-right: 8px;
             }
 
         .ad-slide-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .ad-slide-card {
+            border-radius: 16px;
+        }
+
+        .ad-slide-body {
+            padding: 12px;
+        }
+
+        .ad-slide-card-title-row {
+            gap: 8px;
+        }
+
+        .ad-slide-card-title h5 {
+            font-size: 1rem;
+        }
+
+        .ad-slide-description {
+            font-size: .82rem;
+        }
+
+        .ad-slide-meta {
+            gap: 5px;
+        }
+
+            .ad-slide-meta .badge {
+                font-size: .68rem;
+            }
+
+        .ad-slide-footer {
+            padding: 10px;
+            gap: 8px;
+        }
+
+            .ad-slide-footer .btn,
+            .ad-slide-footer form button {
+                min-height: 34px;
+                font-size: .78rem;
+                padding: 6px 10px;
+            }
+    }
+
+    @@media (max-width: 420px) {
+        .ad-slide-title-heading {
+            font-size: 1.1rem;
+        }
+
+            .ad-slide-title-heading i {
+                font-size: 1.1rem;
+            }
+
+        .ad-slide-actions .btn {
+            padding-left: 10px;
+            padding-right: 10px;
+            font-size: .74rem;
+        }
+
+        .ad-slide-top-action-row {
+            gap: 6px;
+        }
+
+            .ad-slide-top-action-row .btn {
+                min-height: 34px;
+                font-size: .72rem;
+                padding-left: 6px;
+                padding-right: 6px;
+            }
+
+        .ad-slide-card-title h5 {
+            font-size: .95rem;
+        }
+
+        .ad-slide-description {
+            font-size: .78rem;
+        }
+
+        .ad-slide-footer .btn,
+        .ad-slide-footer form button {
+            min-height: 32px;
+            font-size: .72rem;
+            padding: 6px 9px;
+        }
+    }
+
+    @@media (max-width: 350px) {
+        .ad-slide-header {
+            grid-template-columns: 1fr;
+            align-items: flex-start;
+        }
+
+        .ad-slide-title-block {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .ad-slide-actions {
+            grid-column: 1;
+            grid-row: 2;
+            justify-content: flex-start;
+            margin-top: 4px;
+        }
+
+        .ad-slide-top-action-row {
             grid-template-columns: 1fr;
         }
     }
@@ -123,54 +393,59 @@
 <div class="dashboard-card ad-slide-page p-3 p-md-4 mb-4">
 
     <div class="ad-slide-header">
-        <div>
-            <span class="pill">
+        <div class="ad-slide-title-block">
+            <h1 class="ad-slide-title-heading">
                 <i class="bi bi-images"></i>
                 Slides
-            </span>
-
-            <h1 class="h3 fw-bold mt-3 mb-1">
-                @Model.AdTitle
             </h1>
 
-            <p class="text-muted mb-0">
+            <h2 class="h3 fw-bold mt-3 mb-1 ad-slide-main-title">
+                @Model.AdTitle
+            </h2>
+
+            <p class="text-muted mb-0 ad-slide-subtitle">
                 Manage slides for this ad campaign. Each slide can have image, text, CTA, and optional audio.
             </p>
         </div>
 
         <div class="ad-slide-actions">
-
-            <a asp-action="Preview"
-               asp-route-id="@Model.AdId"
-               class="btn btn-outline-success btn-sm">
-                <i class="bi bi-eye"></i>
-                Preview
-            </a>
-            <a asp-action="CreateSlide"
-               asp-route-adId="@Model.AdId"
-               class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle"></i>
-                Add Slide
-            </a>
-
-            <a asp-action="Edit"
-               asp-route-id="@Model.AdId"
-               class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-pencil"></i>
-                Edit Ad
-            </a>
-
             <a asp-action="Index"
-               class="btn btn-outline-secondary btn-sm">
+               class="btn btn-outline-primary btn-sm">
                 <i class="bi bi-arrow-left"></i>
-                Back to Ads
+                Back
             </a>
         </div>
     </div>
 
+    <div class="ad-slide-top-action-row">
+
+        <a asp-action="Preview"
+           asp-route-id="@Model.AdId"
+           class="btn btn-outline-success btn-sm">
+            <i class="bi bi-eye"></i>
+            Preview
+        </a>
+
+        <a asp-action="CreateSlide"
+           asp-route-adId="@Model.AdId"
+           class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i>
+            Add Slide
+        </a>
+
+        <a asp-action="Edit"
+           asp-route-id="@Model.AdId"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-pencil"></i>
+            Edit Ad
+        </a>
+
+    </div>
+
     @if (Model.Slides == null || !Model.Slides.Any())
     {
-        <div class="empty-state">
+        <div class="ad-slide-empty">
+            <i class="bi bi-images"></i>
             No slide added yet.
         </div>
     }
@@ -180,18 +455,20 @@
             @foreach (var slide in Model.Slides)
             {
                 <div class="ad-slide-card">
-                    <img src="@MediaUrl(slide.ImagePath)"
-                         alt="@slide.Title"
-                         class="ad-slide-image" />
+                    <div class="ad-slide-image-wrap">
+                        <img src="@MediaUrl(slide.ImagePath)"
+                             alt="@slide.Title"
+                             class="ad-slide-image" />
+                    </div>
 
                     <div class="ad-slide-body">
-                        <div class="d-flex justify-content-between align-items-start gap-2">
-                            <div>
+                        <div class="ad-slide-card-title-row">
+                            <div class="ad-slide-card-title">
                                 <h5 class="fw-bold mb-1">@slide.Title</h5>
 
                                 @if (!string.IsNullOrWhiteSpace(slide.Description))
                                 {
-                                    <div class="text-muted small">
+                                    <div class="small ad-slide-description">
                                         @slide.Description
                                     </div>
                                 }
@@ -266,6 +543,7 @@
                                     class="btn btn-outline-danger btn-sm"
                                     onclick="return confirm('Delete this slide?');">
                                 <i class="bi bi-trash"></i>
+                                Delete
                             </button>
                         </form>
                     </div>
