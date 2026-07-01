@@ -1,0 +1,103 @@
+﻿@model FootballPredictionGame.ViewModels.DashboardBannerFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+<input asp-for="Id" type="hidden" />
+<input asp-for="ExistingImageUrl" type="hidden" />
+
+<div class="banner-form-section">
+    <div class="banner-form-section-title">
+        <i class="bi bi-card-text"></i>
+        Banner Content
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-8 banner-form-field">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" placeholder="Banner title" />
+            <span asp-validation-for="Title" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4 banner-form-field">
+            <label asp-for="DisplayOrder" class="form-label"></label>
+            <input asp-for="DisplayOrder" type="number" class="form-control" />
+            <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+        </div>
+
+        <div class="col-12 banner-form-field">
+            <label asp-for="Subtitle" class="form-label"></label>
+            <textarea asp-for="Subtitle" class="form-control" rows="3" placeholder="Banner subtitle"></textarea>
+            <span asp-validation-for="Subtitle" class="text-danger small"></span>
+        </div>
+    </div>
+</div>
+
+<div class="banner-form-section">
+    <div class="banner-form-section-title">
+        <i class="bi bi-image"></i>
+        Banner Image
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ExistingImageUrl))
+    {
+        <div class="banner-current-image-wrap mb-3">
+            <img src="@Model.ExistingImageUrl"
+                 class="banner-current-image"
+                 alt="@Model.Title" />
+        </div>
+    }
+
+    <div class="row g-3">
+        <div class="col-12 banner-form-field">
+            <label asp-for="ImageFile" class="form-label"></label>
+            <input asp-for="ImageFile"
+                   id="bannerImageInput"
+                   class="form-control"
+                   type="file"
+                   accept=".jpg,.jpeg,.png,.webp,image/*" />
+
+            <div class="small text-muted mt-1">
+                Recommended size: 1376 × 768 px. Allowed: JPG, PNG, WEBP. Max size: 2 MB.
+            </div>
+
+            <span asp-validation-for="ImageFile" class="text-danger small"></span>
+        </div>
+    </div>
+</div>
+
+<div class="banner-form-section">
+    <div class="banner-form-section-title">
+        <i class="bi bi-link-45deg"></i>
+        Button & Priority
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4 banner-form-field">
+            <label asp-for="ButtonText" class="form-label"></label>
+            <input asp-for="ButtonText" class="form-control" placeholder="More Info" />
+            <span asp-validation-for="ButtonText" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-8 banner-form-field">
+            <label asp-for="RedirectUrl" class="form-label"></label>
+            <input asp-for="RedirectUrl" class="form-control" placeholder="https://example.com" />
+            <span asp-validation-for="RedirectUrl" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6 banner-form-field">
+            <label asp-for="Priority" class="form-label"></label>
+            <input asp-for="Priority" type="number" min="1" max="999" class="form-control" />
+            <span asp-validation-for="Priority" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6">
+            <div class="banner-form-switch mt-md-4">
+                <label asp-for="IsActive"></label>
+                <div class="form-check form-switch">
+                    <input asp-for="IsActive" class="form-check-input" />
+                </div>
+            </div>
+            <span asp-validation-for="IsActive" class="text-danger small"></span>
+        </div>
+    </div>
+</div>

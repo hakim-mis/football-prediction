@@ -1,0 +1,131 @@
+﻿<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+
+<script>
+    let dashboardBannerCropper = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("bannerImageInput");
+        const cropArea = document.getElementById("bannerCropArea");
+        const cropImage = document.getElementById("bannerCropImage");
+        const form = document.querySelector("form[data-banner-form='true']");
+
+        const zoomIn = document.getElementById("cropZoomIn");
+        const zoomOut = document.getElementById("cropZoomOut");
+        const reset = document.getElementById("cropReset");
+
+        if (!input || !cropArea || !cropImage || !form) {
+            return;
+        }
+
+        input.addEventListener("change", function () {
+            const file = input.files && input.files.length > 0 ? input.files[0] : null;
+
+            if (!file) {
+                return;
+            }
+
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert("Only JPG, PNG, and WEBP images are allowed.");
+                input.value = "";
+                return;
+            }
+
+            if (file.size > 2 * 1024 * 1024) {
+                alert("Image size must be 2 MB or less.");
+                input.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                cropImage.src = event.target.result;
+                cropArea.classList.remove("d-none");
+
+                if (dashboardBannerCropper) {
+                    dashboardBannerCropper.destroy();
+                }
+
+                dashboardBannerCropper = new Cropper(cropImage, {
+                    aspectRatio: 16 / 9,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                    responsive: true,
+                    background: false,
+                    movable: true,
+                    zoomable: true,
+                    rotatable: false,
+                    scalable: false
+                });
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        if (zoomIn) {
+            zoomIn.addEventListener("click", function () {
+                if (dashboardBannerCropper) {
+                    dashboardBannerCropper.zoom(0.1);
+                }
+            });
+        }
+
+        if (zoomOut) {
+            zoomOut.addEventListener("click", function () {
+                if (dashboardBannerCropper) {
+                    dashboardBannerCropper.zoom(-0.1);
+                }
+            });
+        }
+
+        if (reset) {
+            reset.addEventListener("click", function () {
+                if (dashboardBannerCropper) {
+                    dashboardBannerCropper.reset();
+                }
+            });
+        }
+
+        form.addEventListener("submit", function (e) {
+            if (!dashboardBannerCropper) {
+                return;
+            }
+
+            e.preventDefault();
+
+            dashboardBannerCropper.getCroppedCanvas({
+                width: 1376,
+                height: 768,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: "high"
+            }).toBlob(function (blob) {
+                if (!blob) {
+                    form.submit();
+                    return;
+                }
+
+                const originalFile = input.files[0];
+                const fileName = originalFile && originalFile.name
+                    ? originalFile.name
+                    : "dashboard-banner.webp";
+
+                const croppedFile = new File([blob], fileName, {
+                    type: blob.type,
+                    lastModified: new Date().getTime()
+                });
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(croppedFile);
+                input.files = dataTransfer.files;
+
+                dashboardBannerCropper.destroy();
+                dashboardBannerCropper = null;
+
+                form.submit();
+            }, "image/webp", 0.9);
+        });
+    });
+</script>

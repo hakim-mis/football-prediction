@@ -1,0 +1,502 @@
+﻿@model FootballPredictionGame.ViewModels.DashboardBannerIndexViewModel
+
+@{
+    ViewData["Title"] = "Dashboard Banners";
+
+    string ActiveBadge(bool active)
+    {
+        return active ? "text-bg-success" : "text-bg-secondary";
+    }
+
+    string ActiveText(bool active)
+    {
+        return active ? "Active" : "Inactive";
+    }
+}
+
+<style>
+    .banner-page {
+        overflow: hidden;
+    }
+
+    .banner-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .banner-title-heading {
+        margin: 0;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        color: #111827 !important;
+        font-size: 1.55rem;
+        font-weight: 900;
+        line-height: 1.15;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .banner-title-heading i {
+            color: #0d6efd;
+            font-size: 1.55rem;
+        }
+
+    .banner-header-title {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .banner-main-title {
+        line-height: 1.2;
+        margin-bottom: 6px;
+    }
+
+    .banner-subtitle {
+        line-height: 1.45;
+        max-width: 780px;
+    }
+
+    .banner-header-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+        .banner-header-actions .btn {
+            border-radius: 999px;
+            font-weight: 800;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+    .banner-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .banner-summary-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        background: #ffffff;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+    }
+
+    .banner-summary-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: #eef6ff;
+        color: #0d6efd;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.14rem;
+        flex: 0 0 auto;
+    }
+
+    .banner-summary-card span {
+        display: block;
+        color: #64748b;
+        font-size: .76rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+    }
+
+    .banner-summary-card strong {
+        display: block;
+        color: #111827;
+        font-size: 1.12rem;
+        line-height: 1.2;
+    }
+
+    .banner-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        background: #ffffff;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .banner-table {
+        min-width: 980px;
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+
+        .banner-table th {
+            background: #f8fbff;
+            color: #334155;
+            font-weight: 900;
+            border-bottom: 1px solid #bfdbfe;
+        }
+
+    .banner-thumb {
+        width: 150px;
+        height: 84px;
+        border-radius: 12px;
+        object-fit: cover;
+        background: #e2e8f0;
+        border: 1px solid #e2e8f0;
+    }
+
+    .banner-title-cell {
+        min-width: 260px;
+        max-width: 320px;
+        white-space: normal;
+    }
+
+        .banner-title-cell strong {
+            color: #111827;
+            font-weight: 900;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .banner-title-cell div {
+            word-break: break-word;
+        }
+
+    .banner-action-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 7px;
+        flex-wrap: nowrap;
+        min-width: 260px;
+    }
+
+        .banner-action-row .btn,
+        .banner-action-row form button {
+            border-radius: 999px;
+            font-weight: 800;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .banner-action-row form {
+            margin: 0;
+            display: inline-flex;
+        }
+
+    @@media (max-width: 767.98px) {
+        .banner-page {
+            padding: 14px !important;
+            border-radius: 16px;
+        }
+
+        .banner-header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .banner-title-heading {
+            font-size: 1.2rem;
+            gap: 7px;
+        }
+
+            .banner-title-heading i {
+                font-size: 1.2rem;
+            }
+
+        .banner-main-title,
+        .banner-subtitle {
+            display: none !important;
+        }
+
+        .banner-header-actions .btn {
+            min-height: 34px;
+            padding: 6px 12px;
+            font-size: .78rem;
+        }
+
+        .banner-summary-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .banner-summary-card {
+            padding: 9px;
+            border-radius: 14px;
+            gap: 7px;
+        }
+
+        .banner-summary-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            font-size: .92rem;
+        }
+
+        .banner-summary-card span {
+            font-size: .58rem;
+        }
+
+        .banner-summary-card strong {
+            font-size: .92rem;
+        }
+
+        .banner-table {
+            min-width: 900px;
+            width: 900px;
+        }
+
+            .banner-table th,
+            .banner-table td {
+                font-size: .82rem;
+                padding: 10px 9px;
+            }
+
+        .banner-thumb {
+            width: 120px;
+            height: 68px;
+        }
+
+        .banner-title-cell {
+            min-width: 220px;
+            max-width: 240px;
+        }
+
+        .banner-action-row {
+            min-width: 220px;
+            gap: 8px;
+        }
+
+            .banner-action-row .btn,
+            .banner-action-row form button {
+                width: 34px;
+                height: 34px;
+                min-width: 34px;
+                padding: 0;
+                font-size: .8rem;
+            }
+
+                .banner-action-row .btn span,
+                .banner-action-row form button span {
+                    display: none;
+                }
+    }
+
+    @@media (max-width: 390px) {
+        .banner-title-heading {
+            font-size: 1.1rem;
+        }
+
+            .banner-title-heading i {
+                font-size: 1.1rem;
+            }
+
+        .banner-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .banner-table {
+            min-width: 860px;
+            width: 860px;
+        }
+    }
+</style>
+
+<div class="dashboard-card banner-page p-3 p-md-4 mb-4">
+
+    <div class="banner-header">
+        <div class="banner-header-title">
+            <h1 class="banner-title-heading">
+                <i class="bi bi-images"></i>
+                Banners
+            </h1>
+
+            <h2 class="h3 fw-bold mt-3 mb-1 banner-main-title">
+                Dashboard Banner Manager
+            </h2>
+
+            <p class="text-muted mb-0 banner-subtitle">
+                Upload, crop, activate, prioritize, and manage dashboard slider banners.
+            </p>
+        </div>
+
+        <div class="banner-header-actions">
+            <a asp-action="Create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i>
+                New Banner
+            </a>
+        </div>
+    </div>
+
+    <div class="banner-summary-grid">
+        <div class="banner-summary-card">
+            <div class="banner-summary-icon">
+                <i class="bi bi-images"></i>
+            </div>
+            <div>
+                <span>Total</span>
+                <strong>@Model.TotalBanners</strong>
+            </div>
+        </div>
+
+        <div class="banner-summary-card">
+            <div class="banner-summary-icon">
+                <i class="bi bi-toggle-on"></i>
+            </div>
+            <div>
+                <span>Active</span>
+                <strong>@Model.ActiveBanners</strong>
+            </div>
+        </div>
+
+        <div class="banner-summary-card">
+            <div class="banner-summary-icon">
+                <i class="bi bi-toggle-off"></i>
+            </div>
+            <div>
+                <span>Inactive</span>
+                <strong>@Model.InactiveBanners</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="banner-table-wrap">
+        <table class="table table-clean table-hover align-middle banner-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Banner</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Order</th>
+                    <th>Button</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Banners == null || !Model.Banners.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No banner found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var banner in Model.Banners)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@banner.ImageUrl"
+                                     alt="@banner.Title"
+                                     class="banner-thumb" />
+                            </td>
+
+                            <td class="banner-title-cell">
+                                <strong>@banner.Title</strong>
+
+                                @if (!string.IsNullOrWhiteSpace(banner.Subtitle))
+                                {
+                                    <div class="small text-muted mt-1">
+                                        @banner.Subtitle
+                                    </div>
+                                }
+                            </td>
+
+                            <td>
+                                <span class="badge @ActiveBadge(banner.IsActive)">
+                                    @ActiveText(banner.IsActive)
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-info">
+                                    @banner.Priority
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-light text-muted">
+                                    @banner.DisplayOrder
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(banner.ButtonText))
+                                {
+                                    <span class="badge text-bg-primary">
+                                        @banner.ButtonText
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">-</span>
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                <div class="banner-action-row">
+                                    <a asp-action="Edit"
+                                       asp-route-id="@banner.Id"
+                                       class="btn btn-outline-primary btn-sm"
+                                       title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                        <span>Edit</span>
+                                    </a>
+
+                                    <form asp-action="ToggleActive"
+                                          asp-route-id="@banner.Id"
+                                          method="post">
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-sm @(banner.IsActive ? "btn-outline-warning" : "btn-outline-success")"
+                                                title="@(banner.IsActive ? "Disable" : "Enable")">
+                                            <i class="bi @(banner.IsActive ? "bi-pause-circle" : "bi-play-circle")"></i>
+                                            <span>@(banner.IsActive ? "Disable" : "Enable")</span>
+                                        </button>
+                                    </form>
+
+                                    <form asp-action="Delete"
+                                          asp-route-id="@banner.Id"
+                                          method="post">
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-outline-danger btn-sm"
+                                                title="Delete"
+                                                onclick="return confirm('Delete this banner?');">
+                                            <i class="bi bi-trash"></i>
+                                            <span>Delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

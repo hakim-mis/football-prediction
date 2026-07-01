@@ -451,7 +451,9 @@ public class DashboardController : Controller
             TotalPredictionCount = totalPredictionCount,
             FinishedPredictionCount = finishedPredictionCount,
 
-            Banners = GetDashboardBanners()
+            //Banners = GetDashboardBanners()
+            Banners = await GetDashboardBannersAsync()
+
         };
 
         return model;
@@ -1018,36 +1020,58 @@ public class DashboardController : Controller
         return currentUser;
     }
 
-    private List<DashboardBannerViewModel> GetDashboardBanners()
+    private async Task<List<DashboardBannerViewModel>> GetDashboardBannersAsync()
     {
-        return new List<DashboardBannerViewModel>
-        {
-            new DashboardBannerViewModel
+        return await _context.DashboardBanners
+            .Where(x => x.IsActive)
+            .OrderByDescending(x => x.Priority)
+            .ThenBy(x => x.DisplayOrder)
+            .ThenByDescending(x => x.CreatedAtUtc)
+            .Select(x => new DashboardBannerViewModel
             {
-                Title = "Transtec 360° Football Prediction",
-                Subtitle = "Predict fixtures, track points, and climb the leaderboard.",
-                ImageUrl = "/img/banner1.png",
-                ButtonText = "More Info",
-                RedirectUrl = "https://transcomdigital.com/"
-            },
-            new DashboardBannerViewModel
-            {
-                Title = "World Cup Prediction Challenge",
-                Subtitle = "Follow live, upcoming, and finished fixtures with smart prediction tracking.",
-                ImageUrl = "/img/banner2.png",
-                ButtonText = "Explore",
-                RedirectUrl = "https://transcomdigital.com/"
-            },
-            new DashboardBannerViewModel
-            {
-                Title = "Compete with Colleagues",
-                Subtitle = "Submit predictions, earn points, and win bragging rights.",
-                ImageUrl = "/img/banner3.png",
-                ButtonText = "Get More",
-                RedirectUrl = "https://www.transteclighting.com/"
-            }
-        };
+                Id = x.Id,
+                Title = x.Title,
+                Subtitle = x.Subtitle,
+                ImageUrl = x.ImageUrl,
+                ButtonText = x.ButtonText,
+                RedirectUrl = x.RedirectUrl,
+                IsActive = x.IsActive,
+                Priority = x.Priority,
+                DisplayOrder = x.DisplayOrder
+            })
+            .ToListAsync();
     }
+
+    //private List<DashboardBannerViewModel> GetDashboardBanners()
+    //{
+    //    return new List<DashboardBannerViewModel>
+    //    {
+    //        new DashboardBannerViewModel
+    //        {
+    //            Title = "Transtec 360° Football Prediction",
+    //            Subtitle = "Predict fixtures, track points, and climb the leaderboard.",
+    //            ImageUrl = "/img/banner1.png",
+    //            ButtonText = "More Info",
+    //            RedirectUrl = "https://transcomdigital.com/"
+    //        },
+    //        new DashboardBannerViewModel
+    //        {
+    //            Title = "World Cup Prediction Challenge",
+    //            Subtitle = "Follow live, upcoming, and finished fixtures with smart prediction tracking.",
+    //            ImageUrl = "/img/banner2.png",
+    //            ButtonText = "Explore",
+    //            RedirectUrl = "https://transcomdigital.com/"
+    //        },
+    //        new DashboardBannerViewModel
+    //        {
+    //            Title = "Compete with Colleagues",
+    //            Subtitle = "Submit predictions, earn points, and win bragging rights.",
+    //            ImageUrl = "/img/banner3.png",
+    //            ButtonText = "Get More",
+    //            RedirectUrl = "https://www.transteclighting.com/"
+    //        }
+    //    };
+    //}
 
     private async Task<List<LeaderboardUserViewModel>> GetRankedUsersAsync()
     {

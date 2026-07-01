@@ -24,7 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Ad> Ads { get; set; }
     public DbSet<AdSlide> AdSlides { get; set; }
     public DbSet<AdLog> AdLogs { get; set; }
-
+    public DbSet<DashboardBanner> DashboardBanners { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -479,6 +479,40 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 x.DeviceType,
                 x.CreatedAt
             });
+        });
+
+        builder.Entity<DashboardBanner>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Title)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(x => x.Subtitle)
+                .HasMaxLength(300);
+
+            entity.Property(x => x.ImageUrl)
+                .IsRequired()
+                .HasMaxLength(300);
+
+            entity.Property(x => x.ButtonText)
+                .HasMaxLength(50);
+
+            entity.Property(x => x.RedirectUrl)
+                .HasMaxLength(500);
+
+            entity.Property(x => x.IsActive)
+                .HasDefaultValue(true);
+
+            entity.Property(x => x.Priority)
+                .HasDefaultValue(1);
+
+            entity.Property(x => x.DisplayOrder)
+                .HasDefaultValue(1);
+
+            entity.Property(x => x.CreatedAtUtc)
+                .HasDefaultValueSql("GETUTCDATE()");
         });
     }
 }

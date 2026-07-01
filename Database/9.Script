@@ -1,0 +1,89 @@
+﻿IF OBJECT_ID('dbo.DashboardBanners', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE dbo.DashboardBanners;
+END
+GO
+
+CREATE TABLE dbo.DashboardBanners
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+
+    Title NVARCHAR(150) NOT NULL,
+    Subtitle NVARCHAR(300) NULL,
+
+    ImageUrl NVARCHAR(300) NOT NULL,
+
+    ButtonText NVARCHAR(50) NULL,
+    RedirectUrl NVARCHAR(500) NULL,
+
+    IsActive BIT NOT NULL CONSTRAINT DF_DashboardBanners_IsActive DEFAULT (1),
+
+    Priority INT NOT NULL CONSTRAINT DF_DashboardBanners_Priority DEFAULT (1),
+    DisplayOrder INT NOT NULL CONSTRAINT DF_DashboardBanners_DisplayOrder DEFAULT (1),
+
+    CreatedAtUtc DATETIME2(7) NOT NULL CONSTRAINT DF_DashboardBanners_CreatedAtUtc DEFAULT (SYSUTCDATETIME()),
+    UpdatedAtUtc DATETIME2(7) NULL,
+
+    CreatedBy NVARCHAR(256) NULL,
+    UpdatedBy NVARCHAR(256) NULL,
+
+    CONSTRAINT PK_DashboardBanners PRIMARY KEY CLUSTERED (Id)
+);
+GO
+
+CREATE INDEX IX_DashboardBanners_IsActive_Priority_DisplayOrder
+ON dbo.DashboardBanners (IsActive, Priority DESC, DisplayOrder ASC, CreatedAtUtc DESC);
+GO
+
+------------
+INSERT INTO dbo.DashboardBanners
+(
+    Title,
+    Subtitle,
+    ImageUrl,
+    ButtonText,
+    RedirectUrl,
+    IsActive,
+    Priority,
+    DisplayOrder,
+    CreatedAtUtc,
+    CreatedBy
+)
+VALUES
+(
+    N'Transtec 360° Football Prediction',
+    N'Predict fixtures, track points, and climb the leaderboard.',
+    N'/img/banner1.png',
+    N'More Info',
+    N'https://transcomdigital.com/',
+    1,
+    3,
+    1,
+    SYSUTCDATETIME(),
+    N'System'
+),
+(
+    N'World Cup Prediction Challenge',
+    N'Follow live, upcoming, and finished fixtures with smart prediction tracking.',
+    N'/img/banner2.png',
+    N'Explore',
+    N'https://transcomdigital.com/',
+    1,
+    2,
+    2,
+    SYSUTCDATETIME(),
+    N'System'
+),
+(
+    N'Compete with Colleagues',
+    N'Submit predictions, earn points, and win bragging rights.',
+    N'/img/banner3.png',
+    N'Get More',
+    N'https://www.transteclighting.com/',
+    1,
+    1,
+    3,
+    SYSUTCDATETIME(),
+    N'System'
+);
+GO

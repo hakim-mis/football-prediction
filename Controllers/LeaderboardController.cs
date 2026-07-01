@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using FootballPredictionGame.Data;
 using FootballPredictionGame.Helpers;
 using FootballPredictionGame.Models;
@@ -105,5 +106,93 @@ public class LeaderboardController : Controller
             prediction.Fixture.TeamOneActualGoal.Value - prediction.Fixture.TeamTwoActualGoal.Value);
 
         return predictedResult == actualResult;
+    }
+
+    public async Task<IActionResult> DownloadExcel()
+    {
+        var players = await _userManager.GetUsersInRoleAsync("User");
+
+        var playerIds = players
+            .Select(x => x.Id)
+            .ToList();
+
+        var winMatchPredictionCountMap = await BuildWinMatchPredictionCountMapAsync(playerIds);
+
+        var allRankedUsers = LeaderboardRankingHelper.Build(
+            users: players,
+            take: players.Count,
+            scoredOnly: false,
+            winMatchPredictionCountMap: winMatchPredictionCountMap);
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Leaderboard");
+
+        worksheet.Cell(1, 1).Value = "SL";
+        worksheet.Cell(1, 2).Value = "Rank";
+        worksheet.Cell(1, 3).Value = "Player";
+        worksheet.Cell(1, 4).Value = "Designation";
+        worksheet.Cell(1, 5).Value = "Department";
+        worksheet.Cell(1, 6).Value = "Total Score";
+        worksheet.Cell(1, 7).Value = "Exact";
+        worksheet.Cell(1, 8).Value = "Win";
+
+        var headerRange = worksheet.Range(1, 1, 1, 8);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#0D6EFD");
+        headerRange.Style.Font.FontColor = XLColor.White;
+        headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        headerRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        var row = 2;
+        var sl = 1;
+
+        foreach (var user in allRankedUsers)
+        {
+            worksheet.Cell(row, 1).Value = sl;
+            worksheet.Cell(row, 2).Value = user.RankText;
+            worksheet.Cell(row, 3).Value = user.FullName;
+            worksheet.Cell(row, 4).Value = string.IsNullOrWhiteSpace(user.Designation) ? "-" : user.Designation;
+            worksheet.Cell(row, 5).Value = string.IsNullOrWhiteSpace(user.Department) ? "-" : user.Department;
+            worksheet.Cell(row, 6).Value = user.TotalScore;
+            worksheet.Cell(row, 7).Value = user.ExactPredictionCount;
+            worksheet.Cell(row, 8).Value = user.WinMatchPredictionCount;
+
+            row++;
+            sl++;
+        }
+
+        var usedRange = worksheet.RangeUsed();
+
+        if (usedRange != null)
+        {
+            usedRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            usedRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+            usedRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        }
+
+        worksheet.Column(1).Width = 8;
+        worksheet.Column(2).Width = 10;
+        worksheet.Column(3).Width = 28;
+        worksheet.Column(4).Width = 24;
+        worksheet.Column(5).Width = 24;
+        worksheet.Column(6).Width = 14;
+        worksheet.Column(7).Width = 10;
+        worksheet.Column(8).Width = 10;
+
+        worksheet.Columns(1, 8).AdjustToContents();
+
+        worksheet.SheetView.FreezeRows(1);
+        worksheet.RangeUsed()?.SetAutoFilter();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+
+        var fileName = $"Leaderboard_All_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+        return File(
+            stream.ToArray(),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName);
     }
 }

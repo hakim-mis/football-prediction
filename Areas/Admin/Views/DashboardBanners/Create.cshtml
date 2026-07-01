@@ -1,0 +1,58 @@
+﻿@model FootballPredictionGame.ViewModels.DashboardBannerFormViewModel
+
+@{
+    ViewData["Title"] = "Create Banner";
+}
+
+<partial name="_BannerFormStyles" />
+
+<div class="dashboard-card banner-form-page p-3 p-md-4 mb-4">
+
+    <div class="banner-form-header">
+        <div class="banner-form-title-block">
+            <h1 class="banner-form-title-heading">
+                <i class="bi bi-plus-circle"></i>
+                New Banner
+            </h1>
+
+            <h2 class="h3 fw-bold mt-3 mb-1 banner-form-main-title">
+                Create Dashboard Banner
+            </h2>
+
+            <p class="text-muted mb-0 banner-form-subtitle">
+                Upload, crop, and publish a new banner for the dashboard slider.
+            </p>
+        </div>
+
+        <div class="banner-form-actions">
+            <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data" data-banner-form="true">
+        @Html.AntiForgeryToken()
+
+        <partial name="_BannerForm" model="Model" />
+
+        <div class="banner-form-footer">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i>
+                Create Banner
+            </button>
+        </div>
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    @* <partial name="_BannerCropScripts" /> *@
+}
