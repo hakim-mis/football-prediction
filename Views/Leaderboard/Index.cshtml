@@ -6,6 +6,8 @@
     var selectedRange = (string?)ViewBag.Range ?? "1-50";
     var startSl = ViewBag.StartSl is int slValue ? slValue : 1;
 
+    var totalPlayableMatchCount = Model?.FirstOrDefault()?.TotalPlayableMatchCount ?? 0;
+
     string UserPhoto(string? path)
     {
         return string.IsNullOrWhiteSpace(path)
@@ -224,6 +226,10 @@
         -webkit-overflow-scrolling: touch;
     }
 
+    .leaderboard-table {
+        min-width: 1120px;
+    }
+
     .leaderboard-sort-btn {
         border: 0;
         background: transparent;
@@ -277,6 +283,18 @@
         background: #fff7ed;
         color: #b45309;
         border-color: #fed7aa;
+    }
+
+    .leaderboard-played-count {
+        background: #ecfdf5;
+        color: #047857;
+        border-color: #bbf7d0;
+    }
+
+    .leaderboard-not-played-count {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fecaca;
     }
 
     .leaderboard-count-badge.is-zero {
@@ -621,7 +639,7 @@
                                 class="leaderboard-sort-btn"
                                 data-sort-field="score"
                                 data-sort-direction="desc">
-                            Total Score
+                            Score
                             <i class="bi bi-arrow-down-up"></i>
                         </button>
                     </th>
@@ -646,6 +664,27 @@
                         </button>
                     </th>
 
+                    <th>
+                        <button type="button"
+                                class="leaderboard-sort-btn"
+                                data-sort-field="played"
+                                data-sort-direction="desc">
+                            @* Played Out Of @totalPlayableMatchCount *@
+                            Played/@totalPlayableMatchCount
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
+                    <th>
+                        <button type="button"
+                                class="leaderboard-sort-btn"
+                                data-sort-field="notplayed"
+                                data-sort-direction="asc">
+                            Not Played
+                            <i class="bi bi-arrow-down-up"></i>
+                        </button>
+                    </th>
+
                     <th>Detail</th>
                 </tr>
             </thead>
@@ -654,7 +693,7 @@
                 @if (Model == null || !Model.Any())
                 {
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-4">
+                        <td colspan="11" class="text-center text-muted py-4">
                             No active user found.
                         </td>
                     </tr>
@@ -670,7 +709,7 @@
                         var department = string.IsNullOrWhiteSpace(user.Department) ? "-" : user.Department;
                         var rankSort = RankSortValue(user.RankText);
 
-                        var searchableText = $"{sl} {user.RankText} {user.FullName} {designation} {department} {user.TotalScore} {user.ExactPredictionCount} {user.WinMatchPredictionCount}".ToLowerInvariant();
+                        var searchableText = $"{sl} {user.RankText} {user.FullName} {designation} {department} {user.TotalScore} {user.ExactPredictionCount} {user.WinMatchPredictionCount} {user.PlayedMatchCount} {user.TotalPlayableMatchCount} {user.NotPlayedMatchCount}".ToLowerInvariant();
 
                         <tr class="leaderboard-row-item"
                             data-search="@searchableText"
@@ -678,7 +717,9 @@
                             data-rank="@rankSort"
                             data-score="@user.TotalScore"
                             data-exact="@user.ExactPredictionCount"
-                            data-win="@user.WinMatchPredictionCount">
+                            data-win="@user.WinMatchPredictionCount"
+                            data-played="@user.PlayedMatchCount"
+                            data-notplayed="@user.NotPlayedMatchCount">
 
                             <td>
                                 <span class="leaderboard-sl-badge">
@@ -731,6 +772,19 @@
                             <td>
                                 <span class="leaderboard-count-badge leaderboard-win-count @(user.WinMatchPredictionCount == 0 ? "is-zero" : "")">
                                     @user.WinMatchPredictionCount
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="leaderboard-count-badge leaderboard-played-count @(user.PlayedMatchCount == 0 ? "is-zero" : "")">
+                                    @* @user.PlayedMatchCount / @user.TotalPlayableMatchCount *@
+                                    @user.PlayedMatchCount
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="leaderboard-count-badge leaderboard-not-played-count @(user.NotPlayedMatchCount == 0 ? "is-zero" : "")">
+                                    @user.NotPlayedMatchCount
                                 </span>
                             </td>
 
@@ -953,11 +1007,15 @@
             let priorityFields = [];
 
             if (primaryField === "score") {
-                priorityFields = ["score", "exact", "win", "rank"];
+                priorityFields = ["score", "exact", "win", "played", "rank"];
             } else if (primaryField === "exact") {
-                priorityFields = ["exact", "score", "win", "rank"];
+                priorityFields = ["exact", "score", "win", "played", "rank"];
             } else if (primaryField === "win") {
-                priorityFields = ["win", "score", "exact", "rank"];
+                priorityFields = ["win", "score", "exact", "played", "rank"];
+            } else if (primaryField === "played") {
+                priorityFields = ["played", "score", "exact", "win", "rank"];
+            } else if (primaryField === "notplayed") {
+                priorityFields = ["notplayed", "score", "exact", "win", "rank"];
             } else {
                 priorityFields = [primaryField];
             }
@@ -969,6 +1027,10 @@
 
                 if (field === "rank" || field === "sl") {
                     fieldDirection = "asc";
+                }
+
+                if (field === "notplayed") {
+                    fieldDirection = direction;
                 }
 
                 const result = compareRowsByField(a, b, field, fieldDirection);

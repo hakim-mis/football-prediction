@@ -12,5 +12,8 @@ public class LeaderboardUserViewModel
     public int TotalScore { get; set; }
     public int ExactPredictionCount { get; set; }
     public int WinMatchPredictionCount { get; set; }
+    public int PlayedMatchCount { get; set; }
+    public int TotalPlayableMatchCount { get; set; }
+    public int NotPlayedMatchCount { get; set; }
     public DateTime CreatedAt { get; set; }
 }

@@ -165,6 +165,12 @@
         color: #dc2626;
     }
 
+        .site-ads-close-btn:hover,
+        .site-ads-close-btn:focus {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
     .site-ads-media {
         position: relative;
         background: #0f172a;
@@ -583,10 +589,11 @@
                 </button>
 
                 <button type="button"
-                        class="site-ads-close-btn"
+                        class="site-ads-close-btn d-none"
                         id="siteAdsCloseBtn"
                         title="Close"
-                        aria-label="Close">
+                        aria-label="Close"
+                        disabled>
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
@@ -767,6 +774,8 @@
                 markFrequencyShown();
             }
 
+            hideCloseButton();
+
             overlay.classList.add("show");
             overlay.setAttribute("aria-hidden", "false");
             document.body.style.overflow = "hidden";
@@ -809,6 +818,16 @@
             clearInterval(progressTimer);
             clearInterval(mandatoryTimer);
             clearTimeout(autoCloseTimer);
+        }
+
+        function hideCloseButton() {
+            closeBtn.disabled = true;
+            closeBtn.classList.add("d-none");
+        }
+
+        function showCloseButton() {
+            closeBtn.disabled = false;
+            closeBtn.classList.remove("d-none");
         }
 
         function renderSlide(index) {
@@ -890,6 +909,8 @@
         function startMandatoryCountdown() {
             const mandatorySeconds = Math.max(parseInt(config.mandatoryWatchSeconds || 0), 0);
 
+            hideCloseButton();
+
             if (!config.showSkipButton) {
                 skipBtn.classList.add("d-none");
                 return;
@@ -922,6 +943,7 @@
         function enableSkip() {
             skipBtn.disabled = false;
             skipBtn.innerText = "Skip Ad";
+            showCloseButton();
         }
 
         function startAutoCloseTimer() {
@@ -984,6 +1006,10 @@
         });
 
         closeBtn.addEventListener("click", function () {
+            if (closeBtn.disabled) {
+                return;
+            }
+
             closeAd("Close");
         });
 
