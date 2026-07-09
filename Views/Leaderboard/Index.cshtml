@@ -1007,17 +1007,17 @@
             let priorityFields = [];
 
             if (primaryField === "score") {
-                priorityFields = ["score", "exact", "win", "played", "rank"];
+                priorityFields = ["score", "exact", "win", "rank", "sl"];
             } else if (primaryField === "exact") {
-                priorityFields = ["exact", "score", "win", "played", "rank"];
+                priorityFields = ["exact", "score", "win", "rank", "sl"];
             } else if (primaryField === "win") {
-                priorityFields = ["win", "score", "exact", "played", "rank"];
+                priorityFields = ["win", "score", "exact", "rank", "sl"];
             } else if (primaryField === "played") {
-                priorityFields = ["played", "score", "exact", "win", "rank"];
+                priorityFields = ["played", "sl"];
             } else if (primaryField === "notplayed") {
-                priorityFields = ["notplayed", "score", "exact", "win", "rank"];
+                priorityFields = ["notplayed", "sl"];
             } else {
-                priorityFields = [primaryField];
+                priorityFields = [primaryField, "sl"];
             }
 
             for (let i = 0; i < priorityFields.length; i++) {
@@ -1027,10 +1027,6 @@
 
                 if (field === "rank" || field === "sl") {
                     fieldDirection = "asc";
-                }
-
-                if (field === "notplayed") {
-                    fieldDirection = direction;
                 }
 
                 const result = compareRowsByField(a, b, field, fieldDirection);
